@@ -47,11 +47,83 @@ class AttendanceController extends AccountBaseController
         parent::__construct();
         $this->pageTitle = 'app.menu.attendance';
         $this->middleware(function ($request, $next) {
+            if (request()->is('api/*')) {
+                return $next($request);
+            }
             abort_403(!in_array('attendance', $this->user->modules));
             $this->viewAttendancePermission = user()->permission('view_attendance');
 
             return $next($request);
         });
+    }
+
+    public function getAttendances(Request $request)
+    {
+        try {
+            $user = auth()->user();
+            
+            $attendances = Attendance::where('user_id', $user->id)
+                ->orderBy('clock_in_time', 'desc')
+                ->limit(30)
+                ->get()
+                ->map(function($att) {
+                    $clockIn = $att->clock_in_time ? $att->clock_in_time->timezone(company()->timezone) : null;
+                    $clockOut = $att->clock_out_time ? $att->clock_out_time->timezone(company()->timezone) : null;
+                    
+                    return [
+                        'id' => $att->id,
+                        'date' => $clockIn ? $clockIn->locale('fr')->isoFormat('DD MMM YYYY') : 'N/A',
+                        'in' => $clockIn ? $clockIn->format('H:i') : '--:--',
+                        'out' => $clockOut ? $clockOut->format('H:i') : '--:--',
+                        'total' => $att->total_hours ? $att->total_hours.'h' : 'En cours',
+                        'raw_date' => $clockIn ? $clockIn->format('Y-m-d') : null
+                    ];
+                });
+
+            $activeAttendance = Attendance::where('user_id', $user->id)
+                ->whereNull('clock_out_time')
+                ->first();
+
+            return response()->json([
+                'history' => $attendances,
+                'active' => $activeAttendance ? true : false,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function clockInOut(Request $request)
+    {
+        try {
+            $user = auth()->user();
+            $now = now();
+
+            $active = Attendance::where('user_id', $user->id)
+                ->whereNull('clock_out_time')
+                ->first();
+
+            if ($active) {
+                $active->update([
+                    'clock_out_time' => $now,
+                    'updated_at' => $now
+                ]);
+                return response()->json(['status' => 'out', 'message' => 'Départ enregistré']);
+            } else {
+                Attendance::create([
+                    'user_id' => $user->id,
+                    'company_id' => $user->company_id ?? 1,
+                    'clock_in_time' => $now,
+                    'working_from' => 'Mobile',
+                    'clock_in_ip' => $request->ip() ?? '127.0.0.1',
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]);
+                return response()->json(['status' => 'in', 'message' => 'Arrivée enregistrée']);
+            }
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     public function index(Request $request)

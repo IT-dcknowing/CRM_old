@@ -128,6 +128,7 @@ use App\Http\Controllers\SituationFiscaleController;
 use App\Http\Controllers\SituationSocialeController;
 use App\Http\Controllers\RadiationRequestController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\NotesController;
 
 Route::group(['middleware' => 'auth', 'prefix' => 'account'], function () {
     Route::post('image/upload', [ImageController::class , 'store'])->name('image.store');
@@ -913,4 +914,9 @@ Route::group(['middleware' => 'auth', 'prefix' => 'account'], function () {
 
         Route::post('gantt_link.task_update', [GanttLinkController::class , 'taskUpdateController'])->name('gantt_link.task_update');
         Route::resource('gantt_link', GanttLinkController::class);
+
+        // Notes Workspace routes
+        Route::post('notes/upload', [NotesController::class, 'upload'])->name('notes.upload');
+        Route::post('notes/sync-blocks/{id}', [NotesController::class, 'syncBlocks'])->name('notes.sync_blocks');
+        Route::resource('notes', NotesController::class);
     });

@@ -37,6 +37,27 @@ class ExpenseController extends AccountBaseController
 
     public function index(ExpensesDataTable $dataTable)
     {
+        if ((request()->wantsJson() || request()->is('api/*')) && !request()->ajax()) {
+            $user = auth()->user();
+            $expenses = Expense::with(['currency', 'category', 'project'])
+                ->where('user_id', $user->id)
+                ->orWhere('added_by', $user->id)
+                ->orderBy('purchase_date', 'desc')
+                ->get()
+                ->map(function ($expense) {
+                    return [
+                        'id' => $expense->id,
+                        'item_name' => $expense->item_name,
+                        'price' => $expense->price,
+                        'currency_symbol' => $expense->currency ? $expense->currency->currency_symbol : '€',
+                        'status' => $expense->status,
+                        'purchase_date' => $expense->purchase_date ? $expense->purchase_date->format('d/m/Y') : 'N/A',
+                        'category' => $expense->category ? $expense->category->category_name : 'Général',
+                    ];
+                });
+            return response()->json($expenses);
+        }
+
         $viewPermission = user()->permission('view_expenses');
         abort_403(!in_array($viewPermission, ['all', 'added', 'owned', 'both']));
 

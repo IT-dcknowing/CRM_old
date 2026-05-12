@@ -42,7 +42,7 @@ return [
         ],
 
         'api' => [
-            'driver' => 'session',
+            'driver' => 'jwt',
             'provider' => 'api_users',
         ],
     ],
@@ -72,7 +72,7 @@ return [
 
         'api_users' => [
             'driver' => 'eloquent',
-            'model' => Modules\RestAPI\Entities\User::class,
+            'model' => App\Models\User::class,
             'table' => 'users'
         ],
     ],

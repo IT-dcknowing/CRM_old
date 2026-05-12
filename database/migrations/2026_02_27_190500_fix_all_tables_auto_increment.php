@@ -39,14 +39,18 @@ return new class extends Migration {
 
                 if (empty($columns)) {
                     try {
+                        // On vérifie s'il y a déjà une clé primaire
+                        $hasPk = !empty(DB::select("SHOW INDEX FROM `$table` WHERE Key_name = 'PRIMARY'"));
+                        $pkClause = $hasPk ? "" : " PRIMARY KEY";
+
                         // On tente de forcer l'auto-increment. 
-                        // On utilise INT ou BIGINT selon ce qui est le plus sûr, mais MODIFY id INT UNSIGNED AUTO_INCREMENT est généralement le défaut dans ce CRM
-                        DB::statement("ALTER TABLE `$table` MODIFY `id` INT UNSIGNED AUTO_INCREMENT");
+                        DB::statement("ALTER TABLE `$table` MODIFY `id` INT UNSIGNED AUTO_INCREMENT$pkClause");
                     }
                     catch (\Exception $e) {
                         try {
-                            // Si INT échoue (peut-être déjà BIGINT), on tente BIGINT
-                            DB::statement("ALTER TABLE `$table` MODIFY `id` BIGINT UNSIGNED AUTO_INCREMENT");
+                            $hasPk = !empty(DB::select("SHOW INDEX FROM `$table` WHERE Key_name = 'PRIMARY'"));
+                            $pkClause = $hasPk ? "" : " PRIMARY KEY";
+                            DB::statement("ALTER TABLE `$table` MODIFY `id` BIGINT UNSIGNED AUTO_INCREMENT$pkClause");
                         }
                         catch (\Exception $ex) {
                             file_put_contents(base_path('schema_fix_errors.txt'), "Error on $table: " . $ex->getMessage() . "\n", FILE_APPEND);

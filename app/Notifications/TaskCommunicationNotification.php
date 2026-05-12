@@ -33,6 +33,9 @@ class TaskCommunicationNotification extends BaseNotification
 
     public function toMail($notifiable): MailMessage
     {
+        // Attendre 10 secondes pour laisser le temps aux fichiers de s'uploader
+        sleep(10);
+
         // Recharger la tâche pour assurer la fraîcheur et charger les rôles pour la détection du client
         $reloadedTask = Task::withoutGlobalScopes()->with(['project', 'boardColumn', 'company', 'users.roles', 'files'])->find($this->taskId);
         if ($reloadedTask) {
@@ -122,6 +125,7 @@ class TaskCommunicationNotification extends BaseNotification
                 'low' => 'Faible'
             ];
             $translatedPriority = $priorityMap[strtolower($this->task->priority)] ?? ucfirst($this->task->priority);
+            $modifiedBy = user() ? user()->name : 'Système';
 
             $build = $this->build($notifiable)
                 ->subject('[Mise à jour] ' . $this->task->task_short_code . ' – ' . $this->task->heading)

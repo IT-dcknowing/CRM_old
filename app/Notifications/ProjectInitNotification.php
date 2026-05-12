@@ -32,6 +32,9 @@ class ProjectInitNotification extends BaseNotification
 
     public function toMail($notifiable): MailMessage
     {
+        // Attendre 10 secondes pour les fichiers
+        sleep(10);
+
         // Recharger le projet
         $reloadedProject = Project::withoutGlobalScopes()->with(['client', 'company', 'members', 'files'])->find($this->projectId);
         if ($reloadedProject) {
@@ -48,6 +51,7 @@ class ProjectInitNotification extends BaseNotification
 
         $attachments = [];
         if ($this->project->files) {
+            \Illuminate\Support\Facades\Log::info("DEBUG ProjectInitNotification - Fichiers trouvés pour le projet " . $this->project->id . ": " . $this->project->files->count());
             foreach ($this->project->files as $file) {
                 $attachments[] = [
                     'name' => $file->filename,

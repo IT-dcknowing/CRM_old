@@ -28,6 +28,10 @@
         </div>
     </div>
 </div>
+<div class="modal-footer">
+    <x-forms.button-secondary id="save-without-notify" class="mr-3">Sauvegarder sans notifier</x-forms.button-secondary>
+    <x-forms.button-primary id="confirm-project-notifications" icon="check">Confirmer et Sauvegarder</x-forms.button-primary>
+</div>
 
 <script>
     $(document).ready(function() {

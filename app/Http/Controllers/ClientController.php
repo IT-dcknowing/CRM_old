@@ -77,6 +77,20 @@ class ClientController extends AccountBaseController
      */
     public function index(ClientsDataTable $dataTable)
     {
+        if ((request()->wantsJson() || request()->is('api/*')) && !request()->ajax()) {
+            $clients = User::allClients()->map(function ($client) {
+                return [
+                    'id' => $client->id,
+                    'name' => $client->name,
+                    'email' => $client->email,
+                    'company_name' => $client->clientDetails ? $client->clientDetails->company_name : 'N/A',
+                    'mobile' => $client->mobile,
+                    'image' => $client->image_url,
+                ];
+            });
+            return response()->json($clients);
+        }
+
         $viewPermission = user()->permission('view_clients');
         $this->addClientPermission = user()->permission('add_clients');
 
@@ -97,6 +111,19 @@ class ClientController extends AccountBaseController
         }
 
         return $dataTable->render('clients.index', $this->data);
+    }
+
+    public function honoraires($id)
+    {
+        try {
+            $total = \App\Models\Invoice::where('client_id', $id)
+                ->where('status', 'paid')
+                ->sum('total');
+
+            return response()->json(['data' => $total]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -912,6 +939,13 @@ class ClientController extends AccountBaseController
             return $this->notes();
         case 'tickets':
             return $this->tickets();
+        case 'notes_workspace':
+            $this->notes = \App\Models\Note::where('noteable_id', $id)
+                ->where('noteable_type', \App\Models\User::class)
+                ->orderBy('updated_at', 'desc')
+                ->get();
+            $this->view = 'clients.ajax.notes_workspace';
+            break;
         case 'gdpr':
             $this->client = User::withoutGlobalScope(ActiveScope::class)->findOrFail($id);
             $this->consents = PurposeConsent::with(['user' => function ($query) use ($id) {

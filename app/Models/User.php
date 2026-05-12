@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Laravel\Sanctum\HasApiTokens; 
 use App\Enums\Salutation;
 use App\Notifications\ResetPassword;
 use App\Scopes\ActiveScope;
@@ -38,6 +39,7 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
     use HasCompany;
     use HasMaskImage;
     use UseDevices;
+    use HasApiTokens, Notifiable;
 
 
     const ALL_ADDED_BOTH = ['all', 'added', 'both'];

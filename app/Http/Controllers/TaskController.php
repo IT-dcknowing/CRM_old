@@ -58,6 +58,28 @@ class TaskController extends AccountBaseController
 
     public function index(TasksDataTable $dataTable)
     {
+        if ((request()->wantsJson() || request()->is('api/*')) && !request()->ajax()) {
+            $user = auth()->user();
+            $tasks = Task::with(['project', 'users'])
+                ->whereHas('users', function ($q) use ($user) {
+                    $q->where('user_id', $user->id);
+                })
+                ->orWhere('created_by', $user->id)
+                ->orderBy('due_date', 'asc')
+                ->get()
+                ->map(function ($task) {
+                    return [
+                        'id' => $task->id,
+                        'name' => $task->heading,
+                        'status' => $task->status,
+                        'project_name' => $task->project ? $task->project->project_name : 'Sans projet',
+                        'description' => $task->description,
+                        'due_date' => $task->due_date ? $task->due_date->format('d/m/Y') : 'Pas de date',
+                    ];
+                });
+            return response()->json($tasks);
+        }
+
         $viewPermission = user()->permission('view_tasks');
 
         abort_403(!in_array($viewPermission, ['all', 'added', 'owned', 'both']));
@@ -1115,6 +1137,13 @@ class TaskController extends AccountBaseController
                 break;
             case 'communication':
                 $this->tab = 'tasks.ajax.communication';
+                break;
+            case 'notes_workspace':
+                $this->notes = \App\Models\Note::where('noteable_id', $id)
+                    ->where('noteable_type', \App\Models\Task::class)
+                    ->orderBy('updated_at', 'desc')
+                    ->get();
+                $this->tab = 'tasks.ajax.notes_workspace';
                 break;
             case 'time_logs':
                 abort_403(!in_array('timelogs', user_modules()));

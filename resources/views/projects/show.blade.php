@@ -131,6 +131,10 @@ $projectArchived = $project->trashed();
                         </li>
                     @endif
 
+                    <li>
+                        <x-tab :href="route('projects.show', $project->id).'?tab=notes_workspace'" :text="__('Notes')" class="notes_workspace" ajax="false" />
+                    </li>
+
                     @if ($viewRatingPermission != 'none' && !is_null($project->client_id))
                         <li>
                             <x-tab :href="route('projects.show', $project->id).'?tab=rating'" :text="__('modules.projects.rating')" class="rating" ajax="false" />

@@ -64,6 +64,30 @@ class InvoiceController extends AccountBaseController
 
     public function index(InvoicesDataTable $dataTable)
     {
+        if ((request()->wantsJson() || request()->is('api/*')) && !request()->ajax()) {
+            $user = auth()->user();
+            $invoices = Invoice::with(['currency', 'project'])
+                ->where(function($q) use ($user) {
+                    $q->where('client_id', $user->id)
+                      ->orWhere('added_by', $user->id);
+                })
+                ->orderBy('issue_date', 'desc')
+                ->get()
+                ->map(function ($invoice) {
+                    return [
+                        'id' => $invoice->id,
+                        'invoice_number' => $invoice->invoice_number,
+                        'total' => $invoice->total,
+                        'amount_due' => $invoice->amountDue(),
+                        'status' => $invoice->status,
+                        'issue_date' => $invoice->issue_date ? $invoice->issue_date->format('d/m/Y') : 'N/A',
+                        'currency_symbol' => $invoice->currency ? $invoice->currency->currency_symbol : '€',
+                        'project_name' => $invoice->project ? $invoice->project->project_name : 'Sans projet',
+                    ];
+                });
+            return response()->json($invoices);
+        }
+
         $viewPermission = user()->permission('view_invoices');
         abort_403(!in_array($viewPermission, ['all', 'added', 'owned', 'both']));
 

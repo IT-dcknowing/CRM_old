@@ -379,6 +379,9 @@
                                 @endif
                             @endif
 
+                            <x-tab-item class="ajax-tab" :active="(request('view') === 'notes_workspace')"
+                                        :link="route('tasks.show', $task->id).'?view=notes_workspace'">@lang('Notes')</x-tab-item>
+
                             @if (($taskSettings->history == 'yes' && in_array('client', user_roles())) || in_array('admin', user_roles()) || in_array('employee', user_roles()))
                                 <x-tab-item class="ajax-tab" :active="(request('view') === 'history')"
                                             :link="route('tasks.show', $task->id).'?view=history'">@lang('modules.tasks.history')

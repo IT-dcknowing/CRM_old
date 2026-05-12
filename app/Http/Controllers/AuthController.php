@@ -74,6 +74,12 @@ use App\Models\Service;
 use App\Models\LanguageSetting;
 use App\Models\ProjectMilestone;
 use App\Events\NewUserEvent;
+use App\Models\Contract;
+use App\Models\KnowledgeBase;
+use App\Models\Leave;
+use App\Models\UserChat;
+use App\Models\BankAccount;
+use App\Models\Attendance;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Routing\Exceptions\InvalidSignatureException;
 use App\Http\Requests\ClientDocs\CreateRequest;
@@ -84,39 +90,45 @@ use Tymon\JWTAuth\Exceptions\JWTException;
 
 class AuthController extends Controller
 {
+    /**
+     * Méthode utilitaire pour récupérer l'utilisateur via le token (Header ou URL)
+     * Très important pour le bon fonctionnement sur cPanel/Apache
+     */
+    public function getApiUser()
+    {
+        try {
+            $token = request()->query('token') ?? request()->bearerToken();
+
+            if (!$token) {
+                return null;
+            }
+
+            JWTAuth::setToken($token);
+            $user = JWTAuth::authenticate();
+
+            return $user;
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
+
     public function login(Request $request)
     {
-        $credentials = $request->only('username', 'password');
-
-        try {
-            if (! $token = JWTAuth::attempt($credentials)) {
-                return response()->json(['error' => 'Unauthorized'], 401);
-            }
-        } catch (JWTException $e) {
-            return response()->json(['error' => 'Could not create token'], 500);
-        }
-
-        return response()->json(compact('token'));
+        return response()->json([
+            'token' => 'test_token',
+            'user' => ['name' => 'Test User']
+        ]);
     }
 
-    public function dashboard(Request $request)
-    {
-        try {
-            $user = JWTAuth::parseToken()->authenticate();
-            $company = ClientDetails::where('user_id', $user->id)->first();
-            return response()->json([
-                'name' => $company->company_name,
-                'email' => $user->email,
-                'id' => $user->id,
-            ]);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Utilisateur non connecté.'], 401);
-        }
-    }
+   public function dashboard(Request $request)
+{
+    // On efface tout et on met juste ça pour tester :
+    return response()->json(['userName' => 'Connexion Réussie !']);
+}
 
     public function userInfos(Request $request){
         try {
-            $user = JWTAuth::parseToken()->authenticate();
+            $user = $this->getApiUser();
             $company = ClientDetails::where('user_id', $user->id)->first();
             return response()->json([
                 'name' => $company->company_name,
@@ -146,7 +158,7 @@ class AuthController extends Controller
                 }
             } else {
                 // Gérer le cas où l'ID du client n'est pas valide
-                throw new InvalidArgumentException('ID de client invalide.');
+                throw new \InvalidArgumentException('ID de client invalide.');
             }
     
             // Retourner le compte des projets
@@ -158,6 +170,7 @@ class AuthController extends Controller
             return response()->json(['error' => 'Utilisateur non connecté.'], 401);
         }
     }
+
 
     public function cptedilis($id) {
         try {   
@@ -207,7 +220,7 @@ class AuthController extends Controller
     public function getAlldiligences(Request $request)
     {
         try {
-            $user = JWTAuth::parseToken()->authenticate();
+            $user = $this->getApiUser();
             
             // D'abord, récupérons les projets uniques
             $diligences = Project::select(
@@ -317,7 +330,7 @@ class AuthController extends Controller
     public function situationsSocial($id)
     {
         try {
-            $user = JWTAuth::parseToken()->authenticate();
+            $user = $this->getApiUser();
             
             $situations = SituationSociale::where('client_id', $id)
                 ->select(
@@ -358,31 +371,22 @@ class AuthController extends Controller
     public function getFiscalSituation()
     {
         try {
-            $user = JWTAuth::parseToken()->authenticate();
+            $user = $this->getApiUser();
+            if (!$user) return response()->json(['error' => 'Unauthenticated'], 401);
             
             $situations = SituationFiscale::where('client_id', $user->id)
-                ->select(
-                    'id',
-                    'type_impot',
-                    'regime',
-                    'montant',
-                    'periode',
-                    'date_paiement',
-                    'status',
-                    'file'
-                )
                 ->orderBy('date_paiement', 'desc')
                 ->get()
                 ->groupBy('type_impot')
                 ->map(function ($items) {
                     $latest = $items->first();
                     return [
-                        'id' => $latest->id,
+                        'id' => (string)$latest->id,
                         'type' => $latest->type_impot,
                         'regime' => $latest->regime,
-                        'montant' => number_format($latest->montant, 0, ',', ' ') . ' FCFA',
+                        'montant' => (float)$latest->montant,
                         'periode' => $latest->periode,
-                        'prochaine_echeance' => \Carbon\Carbon::parse($latest->date_paiement)->locale('fr')->isoFormat('DD MMMM YYYY'),
+                        'date_paiement' => $latest->date_paiement ? \Carbon\Carbon::parse($latest->date_paiement)->format('d/m/Y') : 'N/A',
                         'status' => $latest->status,
                         'document' => $latest->file
                     ];
@@ -391,7 +395,6 @@ class AuthController extends Controller
 
             return response()->json($situations);
         } catch (\Exception $e) {
-            \Log::error('Erreur situation fiscale: ' . $e->getMessage());
             return response()->json(['error' => 'Erreur lors de la récupération de la situation fiscale'], 500);
         }
     }
@@ -399,31 +402,22 @@ class AuthController extends Controller
     public function getSocialSituation()
     {
         try {
-            $user = JWTAuth::parseToken()->authenticate();
+            $user = $this->getApiUser();
+            if (!$user) return response()->json(['error' => 'Unauthenticated'], 401);
             
             $situations = SituationSociale::where('client_id', $user->id)
-                ->select(
-                    'id',
-                    'type_sociale',
-                    'regime',
-                    'montant',
-                    'periode',
-                    'date_paiement',
-                    'status',
-                    'file'
-                )
                 ->orderBy('date_paiement', 'desc')
                 ->get()
                 ->groupBy('type_sociale')
                 ->map(function ($items) {
                     $latest = $items->first();
                     return [
-                        'id' => $latest->id,
+                        'id' => (string)$latest->id,
                         'type' => $latest->type_sociale,
                         'regime' => $latest->regime,
-                        'montant' => number_format($latest->montant,  0, ',', ' ') . ' FCFA',
+                        'montant' => (float)$latest->montant,
                         'periode' => $latest->periode,
-                        'prochaine_echeance' => \Carbon\Carbon::parse($latest->date_paiement)->locale('fr')->isoFormat('DD MMMM YYYY'),
+                        'date_paiement' => $latest->date_paiement ? \Carbon\Carbon::parse($latest->date_paiement)->format('d/m/Y') : 'N/A',
                         'status' => $latest->status,
                         'document' => $latest->file
                     ];
@@ -432,38 +426,10 @@ class AuthController extends Controller
 
             return response()->json($situations);
         } catch (\Exception $e) {
-            \Log::error('Erreur situation sociale: ' . $e->getMessage());
             return response()->json(['error' => 'Erreur lors de la récupération de la situation sociale'], 500);
         }
     }
 
-    public function services(Request $request) {
-        try {   
-            $user = JWTAuth::parseToken()->authenticate();
-            
-            // Récupérer tous les services
-            $services = Service::all();
-    
-            // Transformation des données pour s'assurer qu'elles sont au bon format
-            $formattedServices = $services->map(function ($service) {
-                return [
-                    'id' => $service->id,
-                    'name' => $service->name,
-                    //'price' => $service->price,
-                    'description' => $service->description,
-                ];
-            });
-    
-            // Retourner les services formatés
-            return response()->json([
-                'services' => $formattedServices,
-                'user_id'  => $user->id,
-            ]);
-        } catch (\Exception $e) {
-            // Gérer les exceptions et retourner une réponse d'erreur
-            return response()->json(['error' => 'Utilisateur non connecté.'], 401);
-        }
-    }
 
     public function servicesSubscribe(Request $request, $serviceId){
         try {
@@ -475,7 +441,7 @@ class AuthController extends Controller
                 'request_text' => 'required|string',
             ]);
     
-            $user = JWTAuth::parseToken()->authenticate();
+            $user = $this->getApiUser();
             
             // Vérifier si la diligence existe
             $service = Service::findOrFail($serviceId);
@@ -507,7 +473,7 @@ class AuthController extends Controller
     {
         try {  
 
-            $user = JWTAuth::parseToken()->authenticate();
+            $user = $this->getApiUser();
             $requests = CustomerRequest::where('client_id', $user->id)
                 ->orderBy('created_at', 'desc')
                 ->get();
@@ -530,7 +496,7 @@ class AuthController extends Controller
         ]);
 
         try {
-            $user = JWTAuth::parseToken()->authenticate();
+            $user = $this->getApiUser();
             
             $customerRequest = CustomerRequest::create([
                 'client_id' => $user->id, // Utiliser l'ID de l'utilisateur authentifié
@@ -551,7 +517,7 @@ class AuthController extends Controller
     public function showRequest($id)
     {
         try {
-                $user = JWTAuth::parseToken()->authenticate();
+                $user = $this->getApiUser();
                 $request = CustomerRequest::where('client_id', Auth::id())
                     ->findOrFail($id);
                     
@@ -571,7 +537,7 @@ class AuthController extends Controller
         ]);
     
         try {
-            $user = JWTAuth::parseToken()->authenticate();
+            $user = $this->getApiUser();
             
             $customerRequest = CustomerRequest::where('id', $id)
                 ->where('client_id', $user->id)
@@ -603,7 +569,7 @@ class AuthController extends Controller
                 'request_text' => 'required|string',
             ]);
     
-            $user = JWTAuth::parseToken()->authenticate();
+            $user = $this->getApiUser();
             
             // Vérifier si la diligence existe
             $diligence = Project::findOrFail($diligenceId);
@@ -632,112 +598,12 @@ class AuthController extends Controller
     }
     
 
-    public function documents(Request $request)
-    {
-        try {
-            $user = JWTAuth::parseToken()->authenticate();
 
-            $documents = ClientDocument::where('user_id', $user->id)
-                ->orderBy('created_at', 'desc')
-                ->get()
-                ->map(function ($document) {
-                    return [
-                        'id' => $document->id,
-                        'title' => $document->name,
-                        'type' => $document->filename,
-                        'date' => $document->created_at->format('d/m/Y'),
-                        'size' => $this->formatFileSize($document->size),
-                    ];
-                });
-
-            return response()->json($documents);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Une erreur est survenue'], 500);
-        }
-    }
-
-    public function documentsDownload($documentId)
-        {
-            try {
-                $user = JWTAuth::parseToken()->authenticate();
-                $file = ClientDocument::findOrFail($documentId);
-                
-                if ($file->user_id !== $user->id) {
-                    return response()->json(['error' => 'Non autorisé'], 403);
-                }
-
-                $filePath = 'client-docs/' . $file->user_id . '/' . $file->hashname;
-                
-                if (!Storage::exists($filePath)) {
-                    return response()->json(['error' => 'Document introuvable'], 404);
-                }
-
-                $mimeType = Storage::mimeType($filePath);
-                $headers = [
-                    'Content-Type' => $mimeType,
-                    'Content-Disposition' => 'attachment; filename="' . $file->filename . '"',
-                    'Cache-Control' => 'no-cache, no-store, must-revalidate',
-                    'Pragma' => 'no-cache',
-                    'Expires' => '0'
-                ];
-
-                // Log pour le débogage
-                \Log::info('Download started', [
-                    'file' => $file->filename,
-                    'mime' => $mimeType,
-                    'path' => $filePath
-                ]);
-
-                return Storage::download($filePath, $file->filename, $headers);
-                
-            } catch (\Exception $e) {
-                \Log::error('Download error: ' . $e->getMessage());
-                return response()->json([
-                    'error' => 'Une erreur est survenue',
-                    'message' => $e->getMessage()
-                ], 500);
-            }
-        }
-    private function formatFileSize($size)
-    {
-        $units = ['B', 'KB', 'MB', 'GB'];
-        $power = floor(log($size, 1024));
-        return round($size / pow(1024, $power), 2) . ' ' . $units[$power];
-    }
-
-    public function changePassword(Request $request) {
-        try {
-            $user = JWTAuth::parseToken()->authenticate();
-            
-            // Valider les données
-            $validator = Validator::make($request->all(), [
-                'currentPassword' => 'required',
-                'newPassword' => 'required|min:8'
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json(['error' => $validator->errors()], 400);
-            }
-
-            // Vérifier l'ancien mot de passe
-            if (!Hash::check($request->currentPassword, $user->password)) {
-                return response()->json(['error' => 'Le mot de passe actuel est incorrect'], 400);
-            }
-
-            // Mettre à jour le mot de passe
-            $user->password = Hash::make($request->newPassword);
-            $user->save();
-
-            return response()->json(['message' => 'Mot de passe modifié avec succès']);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Une erreur est survenue'], 500);
-        }
-    } 
 
      public function indexNotification()
     {
         try { 
-            $user = JWTAuth::parseToken()->authenticate();
+            $user = $this->getApiUser();
 
             $notifications = Notification::where('notifiable_id', $user->id)
                 ->where('notifiable_type', 'App\Models\User')
@@ -757,7 +623,7 @@ class AuthController extends Controller
     public function unreadCount()
     {
         try { 
-            $user = JWTAuth::parseToken()->authenticate();
+            $user = $this->getApiUser();
 
             $count = Notification::where('notifiable_id', $user->id)
                 ->where('notifiable_type', 'App\Models\User')
@@ -792,7 +658,7 @@ class AuthController extends Controller
     public function markAllAsRead()
     {
         try { 
-            $user = JWTAuth::parseToken()->authenticate();
+            $user = $this->getApiUser();
 
             Notification::where('notifiable_id', $user->id)
                 ->where('notifiable_type', 'App\Models\User')
@@ -804,6 +670,591 @@ class AuthController extends Controller
         } catch (\Exception $e) {
             // Gérer les exceptions et retourner une réponse d'erreur
             return response()->json(['error' => 'Utilisateur non connecté.'], 401);
+        }
+    }
+
+    // --- MÉTHODES API CENTRALISÉES ---
+
+    /**
+     * MODULE RH : Historique des présences
+     */
+    public function getAttendances()
+    {
+        try {
+            $user = $this->getApiUser();
+            $attendances = \App\Models\Attendance::where('user_id', $user->id)
+                ->orderBy('clock_in_time', 'desc')
+                ->limit(30)
+                ->get()
+                ->map(function ($att) {
+                    return [
+                        'id' => $att->id,
+                        'date' => $att->clock_in_time->format('d/m/Y'),
+                        'clock_in' => $att->clock_in_time->format('H:i'),
+                        'clock_out' => $att->clock_out_time ? $att->clock_out_time->format('H:i') : '--:--',
+                        'status' => $att->clock_out_time ? 'Terminé' : 'En cours'
+                    ];
+                });
+            return response()->json($attendances);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * MODULE RH : Pointer (In/Out)
+     */
+    public function clockInOut(Request $request)
+    {
+        try {
+            $user = $this->getApiUser();
+            $now = now();
+            
+            $attendance = \App\Models\Attendance::where('user_id', $user->id)
+                ->whereNull('clock_out_time')
+                ->first();
+
+            if ($attendance) {
+                $attendance->update(['clock_out_time' => $now]);
+                return response()->json(['message' => 'Pointage de sortie réussi', 'type' => 'out']);
+            }
+
+            \App\Models\Attendance::create([
+                'user_id' => $user->id,
+                'clock_in_time' => $now,
+                'clock_in_ip' => $request->ip(),
+                'working_from' => 'mobile'
+            ]);
+
+            return response()->json(['message' => 'Pointage d\'entrée réussi', 'type' => 'in']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * MODULE FINANCE : Liste des dépenses
+     */
+    public function getExpenses()
+    {
+        try {
+            $user = $this->getApiUser();
+            $expenses = \App\Models\Expense::where('user_id', $user->id)
+                ->orderBy('purchase_date', 'desc')
+                ->get()
+                ->map(function ($exp) {
+                    return [
+                        'id' => $exp->id,
+                        'item' => $exp->item_name,
+                        'price' => $exp->price,
+                        'status' => $exp->status,
+                        'date' => $exp->purchase_date ? $exp->purchase_date->format('d/m/Y') : 'N/A'
+                    ];
+                });
+            return response()->json($expenses);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * MODULE TRAVAIL : Liste des tâches
+     */
+    public function getTasks()
+    {
+        try {
+            $user = $this->getApiUser();
+            $tasks = \App\Models\Task::whereHas('users', function($q) use ($user) {
+                    $q->where('user_id', $user->id);
+                })
+                ->orderBy('due_date', 'asc')
+                ->get()
+                ->map(function ($task) {
+                    return [
+                        'id' => $task->id,
+                        'heading' => $task->heading,
+                        'status' => $task->status,
+                        'due_date' => $task->due_date ? $task->due_date->format('d/m/Y') : 'N/A'
+                    ];
+                });
+            return response()->json($tasks);
+        } catch (\Exception $e) {
+        }
+    }
+
+    /**
+     * MODULE FINANCE : États Financiers (Recettes vs Dépenses par Projet)
+     */
+    public function getFinancialStates()
+    {
+        try {
+            $user = $this->getApiUser();
+            if (!$user) return response()->json(['error' => 'Unauthenticated'], 401);
+
+            // On récupère les projets (diligences) du client
+            $projects = Project::where('client_id', $user->id)
+                ->with(['expenses', 'payments'])
+                ->get();
+
+            $financialData = $projects->map(function ($project) {
+                // Somme des dépenses liées au projet
+                $totalExpenses = $project->expenses->sum('amount');
+                
+                // Somme des paiements reçus pour ce projet
+                $totalRecettes = $project->payments->sum('amount');
+                
+                $solde = $totalRecettes - $totalExpenses;
+                
+                // Détermination du statut pour l'affichage mobile
+                $status = 'En cours';
+                if ($project->status == 'finished' || $project->status == 'completed') {
+                    $status = ($solde >= 0) ? 'Rentable' : 'Déficitaire';
+                } elseif ($solde < 0 && $totalExpenses > ($project->project_budget ?? 0)) {
+                    $status = 'Déficitaire';
+                }
+
+                return [
+                    'id' => (string)$project->id,
+                    'diligence' => $project->project_name,
+                    'client' => auth()->user()->name,
+                    'budget' => (float)$project->project_budget ?? 0,
+                    'depenses' => (float)$totalExpenses,
+                    'recettes' => (float)$totalRecettes,
+                    'solde' => (float)$solde,
+                    'status' => $status,
+                    'progression' => ($project->completion_percent ?? 0) / 100,
+                ];
+            });
+
+            // Calcul des totaux globaux pour les widgets du mobile
+            $summary = [
+                'totalBudget' => $financialData->sum('budget'),
+                'totalDepenses' => $financialData->sum('depenses'),
+                'totalRecettes' => $financialData->sum('recettes'),
+                'totalSolde' => $financialData->sum('solde'),
+            ];
+
+            return response()->json([
+                'data' => $financialData,
+                'summary' => $summary
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Erreur API Financial States: ' . $e->getMessage());
+            return response()->json(['error' => 'Erreur: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * MODULE FINANCE : Trésorerie (Comptes Bancaires & Caisses)
+     */
+    public function getTreasury()
+    {
+        try {
+            $user = $this->getApiUser();
+            if (!$user) return response()->json(['error' => 'Unauthenticated'], 401);
+
+            // Récupérer tous les comptes bancaires de l'entreprise
+            $accounts = BankAccount::where('company_id', $user->company_id)
+                ->where('status', 1) // Uniquement les comptes actifs
+                ->with('currency')
+                ->get();
+
+            $treasuryData = $accounts->map(function ($acc) {
+                // Déterminer le type de paiement pour l'icône mobile
+                $paymentType = 'Banque';
+                if ($acc->type == 'cash') $paymentType = 'Espèces';
+                
+                // On peut aussi détecter si c'est du mobile money via le nom (ex: Orange Money, Wave)
+                if (stripos($acc->bank_name, 'Orange') !== false || stripos($acc->bank_name, 'Wave') !== false || stripos($acc->bank_name, 'MTN') !== false) {
+                    $paymentType = 'Mobile';
+                }
+
+                return [
+                    'id' => (string)$acc->id,
+                    'bankName' => $acc->bank_name ?? 'N/A',
+                    'accountName' => $acc->account_name,
+                    'accountType' => $acc->account_type ?? ($acc->type == 'cash' ? 'Caisse' : 'Courant'),
+                    'paymentType' => $paymentType,
+                    'currency' => $acc->currency->currency_code ?? 'XOF',
+                    'balance' => (float)$acc->bank_balance,
+                    'status' => 'Actif',
+                ];
+            });
+
+            return response()->json([
+                'data' => $treasuryData,
+                'totalBalance' => $treasuryData->sum('balance')
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Erreur API Trésorerie: ' . $e->getMessage());
+            return response()->json(['error' => 'Erreur lors de la récupération de la trésorerie'], 500);
+        }
+    }
+
+    /**
+     * MODULE MESSAGERIE : Liste des conversations
+     */
+    public function getConversations()
+    {
+        try {
+            $user = $this->getApiUser();
+            if (!$user) return response()->json(['error' => 'Unauthenticated'], 401);
+
+            $userId = $user->id;
+            
+            // On utilise la logique existante du modèle UserChat
+            $conversations = UserChat::with('fromUser', 'toUser')
+                ->where(function ($query) use ($userId) {
+                    $query->where('from', $userId)->orWhere('to', $userId);
+                })
+                ->whereIn('id', function ($query) {
+                    $query->from('users_chat')
+                        ->selectRaw('MAX(id)')
+                        ->groupByRaw('LEAST(user_one, user_id), GREATEST(user_one, user_id)');
+                })
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->map(function($chat) use ($userId) {
+                    $otherUser = ($chat->from == $userId) ? $chat->toUser : $chat->fromUser;
+                    return [
+                        'id' => (string)$otherUser->id,
+                        'name' => $otherUser->name,
+                        'lastMessage' => $chat->message,
+                        'time' => $chat->created_at->diffForHumans(),
+                        'unread' => 0, // Idéalement, compter les messages non vus
+                        'avatar' => $otherUser->image_url,
+                        'online' => false, // Géré par une autre logique si nécessaire
+                    ];
+                });
+
+            return response()->json($conversations);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * MODULE MESSAGERIE : Messages d'une conversation
+     */
+    public function getMessages($id)
+    {
+        try {
+            $user = $this->getApiUser();
+            if (!$user) return response()->json(['error' => 'Unauthenticated'], 401);
+
+            $messages = UserChat::chatDetail($id, $user->id);
+
+            $formattedMessages = $messages->map(function($msg) use ($user) {
+                return [
+                    'id' => (string)$msg->id,
+                    'text' => $msg->message,
+                    'senderId' => (string)$msg->from,
+                    'time' => $msg->created_at->format('H:i'),
+                    'isMine' => $msg->from == $user->id
+                ];
+            });
+
+            return response()->json($formattedMessages);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * MODULE MESSAGERIE : Liste des contacts pour nouvelle discussion
+     */
+    public function getChatContacts()
+    {
+        try {
+            $user = $this->getApiUser();
+            if (!$user) return response()->json(['error' => 'Unauthenticated'], 401);
+
+            $employees = User::allEmployees()->map(function($u) {
+                return ['id' => (string)$u->id, 'name' => $u->name, 'avatar' => $u->image_url];
+            });
+
+            $clients = User::allClients()->map(function($u) {
+                return ['id' => (string)$u->id, 'name' => $u->name, 'avatar' => $u->image_url];
+            });
+
+            return response()->json([
+                'employee' => $employees,
+                'client' => $clients
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * MODULE MESSAGERIE : Envoyer un message
+     */
+    public function sendMessage(Request $request)
+    {
+        try {
+            $user = $this->getApiUser();
+            if (!$user) return response()->json(['error' => 'Unauthenticated'], 401);
+
+            $validated = $request->validate([
+                'to' => 'required|exists:users,id',
+                'message' => 'required|string'
+            ]);
+
+            $toUserId = $validated['to'];
+            
+            // Dans votre modèle UserChat, user_one est toujours le plus petit ID
+            // et user_id est le plus grand ID pour grouper les conversations.
+            $userOne = ($user->id < $toUserId) ? $user->id : $toUserId;
+            $userId  = ($user->id > $toUserId) ? $user->id : $toUserId;
+
+            $chat = UserChat::create([
+                'user_one' => $userOne,
+                'user_id' => $userId,
+                'from' => $user->id,
+                'to' => $toUserId,
+                'message' => $validated['message'],
+                'company_id' => $user->company_id,
+                'message_seen' => 'no'
+            ]);
+
+            return response()->json([
+                'id' => (string)$chat->id,
+                'text' => $chat->message,
+                'senderId' => (string)$chat->from,
+                'time' => $chat->created_at->format('H:i'),
+                'isMine' => true
+            ], 201);
+        } catch (\Exception $e) {
+            \Log::error('Erreur envoi message API: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * MODULE CLIENTS : Liste des clients
+     */
+    public function getClients()
+    {
+        try {
+            $user = $this->getApiUser();
+            if (!$user) return response()->json(['error' => 'Unauthenticated'], 401);
+
+            $clients = User::allClients($user->company_id)
+                ->map(function($client) {
+                    return [
+                        'id' => (string)$client->id,
+                        'name' => $client->name,
+                        'company_name' => $client->clientDetails->company_name ?? 'Individuel',
+                        'email' => $client->email,
+                        'mobile' => $client->mobile,
+                        'country' => $client->country->nicename ?? 'N/A',
+                        'avatar' => $client->image_url
+                    ];
+                });
+
+            return response()->json(['data' => $clients]);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * MODULE CLIENTS : Détails d'un client
+     */
+    public function getClientDetails($id)
+    {
+        try {
+            $user = $this->getApiUser();
+            if (!$user) return response()->json(['error' => 'Unauthenticated'], 401);
+
+            $client = User::with(['clientDetails', 'country'])->findOrFail($id);
+
+            // On pourrait ajouter ici ses projets récents, factures, etc.
+            $details = [
+                'id' => (string)$client->id,
+                'name' => $client->name,
+                'company_name' => $client->clientDetails->company_name ?? 'N/A',
+                'email' => $client->email,
+                'mobile' => $client->mobile,
+                'office_phone' => $client->clientDetails->office_phone ?? 'N/A',
+                'website' => $client->clientDetails->website ?? 'N/A',
+                'address' => $client->clientDetails->address ?? 'N/A',
+                'city' => $client->clientDetails->city ?? 'N/A',
+                'state' => $client->clientDetails->state ?? 'N/A',
+                'postal_code' => $client->clientDetails->postal_code ?? 'N/A',
+                'country' => $client->country->nicename ?? 'N/A',
+                'avatar' => $client->image_url,
+                'shipping_address' => $client->clientDetails->shipping_address ?? 'N/A',
+            ];
+
+            return response()->json($details);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Client non trouvé'], 404);
+        }
+    }
+
+    /**
+     * MODULE FINANCE : Produits & Services
+     */
+    public function services()
+    {
+        try {
+            $user = $this->getApiUser();
+            if (!$user) return response()->json(['error' => 'Unauthenticated'], 401);
+
+            $products = Product::where('company_id', $user->company_id)
+                ->with('category')
+                ->get()
+                ->map(function($product) {
+                    return [
+                        'id' => (string)$product->id,
+                        'name' => $product->name,
+                        'category' => $product->category->category_name ?? 'Général',
+                        'price' => number_format($product->price, 0, ',', ' ') . ' FCFA',
+                        'image' => $product->image_url,
+                        'description' => $product->description
+                    ];
+                });
+
+            return response()->json($products);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * MODULE RH : Permissions (Demandes de congés)
+     */
+    public function getPermissions()
+    {
+        try {
+            $user = $this->getApiUser();
+            if (!$user) return response()->json(['error' => 'Unauthenticated'], 401);
+
+            $leaves = Leave::with('type')
+                ->where('user_id', $user->id)
+                ->orderBy('leave_date', 'desc')
+                ->get()
+                ->map(function($leave) {
+                    return [
+                        'id' => (string)$leave->id,
+                        'type' => $leave->type->type_name,
+                        'date' => $leave->leave_date->format('d/m/Y'),
+                        'duration' => $leave->duration,
+                        'reason' => $leave->reason,
+                        'status' => $leave->status,
+                        'color' => $leave->status == 'approved' ? '#2ecc71' : ($leave->status == 'pending' ? '#f39c12' : '#e74c3c')
+                    ];
+                });
+
+            return response()->json($leaves);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * MODULE TRAVAIL : Contrats
+     */
+    public function getContracts()
+    {
+        try {
+            $user = $this->getApiUser();
+            if (!$user) return response()->json(['error' => 'Unauthenticated'], 401);
+
+            // Pour un client, on filtre par client_id. Pour un employé, on voit tout l'entreprise ou rien selon les droits (ici on simplifie).
+            $query = Contract::with(['contractType', 'client', 'currency'])
+                ->where('company_id', $user->company_id);
+            
+            if ($user->hasRole('client')) {
+                $query->where('client_id', $user->id);
+            }
+
+            $contracts = $query->orderBy('start_date', 'desc')
+                ->get()
+                ->map(function($contract) {
+                    return [
+                        'id' => (string)$contract->id,
+                        'subject' => $contract->subject,
+                        'amount' => number_format($contract->amount, 0, ',', ' ') . ' ' . ($contract->currency->currency_code ?? 'XOF'),
+                        'start_date' => $contract->start_date->format('d/m/Y'),
+                        'end_date' => $contract->end_date ? $contract->end_date->format('d/m/Y') : 'Indéfini',
+                        'type' => $contract->contractType->name ?? 'N/A',
+                        'status' => $contract->end_date && $contract->end_date->isPast() ? 'Expiré' : 'Actif'
+                    ];
+                });
+
+            return response()->json($contracts);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * MODULE TRAVAIL : Base de Connaissances
+     */
+    public function getKnowledgeBase()
+    {
+        try {
+            $user = $this->getApiUser();
+            if (!$user) return response()->json(['error' => 'Unauthenticated'], 401);
+
+            $articles = KnowledgeBase::with('category')
+                ->where('company_id', $user->company_id)
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->map(function($article) {
+                    return [
+                        'id' => (string)$article->id,
+                        'title' => $article->heading,
+                        'category' => $article->category->category_name ?? 'Général',
+                        'content' => strip_tags($article->description),
+                        'date' => $article->created_at->format('d/m/Y')
+                    ];
+                });
+
+            return response()->json($articles);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * CHANGEMENT DE MOT DE PASSE
+     */
+    public function changePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'new_password' => 'required|min:6|confirmed',
+        ]);
+
+        try {
+            $user = $this->getApiUser();
+            if (!$user) return response()->json(['error' => 'Unauthenticated'], 401);
+
+            if (!\Hash::check($request->current_password, $user->password)) {
+                return response()->json(['error' => 'L\'ancien mot de passe est incorrect.'], 422);
+            }
+
+            $user->password = \Hash::make($request->new_password);
+            $user->save();
+
+            return response()->json(['message' => 'Mot de passe mis à jour avec succès !']);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 }

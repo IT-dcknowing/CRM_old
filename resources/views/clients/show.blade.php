@@ -83,6 +83,11 @@ $viewClientOrder = user()->permission('view_order');
                             class="notes" />
                     </li>
                     @endif
+
+                    <li>
+                        <x-tab :href="route('clients.show', $client->id).'?tab=notes_workspace'" ajax="false" :text="__('Notes')"
+                            class="notes_workspace" />
+                    </li>
                     {{--
                     @if ($viewTicket == 'all' || $viewTicket == 'added')
                     <li>

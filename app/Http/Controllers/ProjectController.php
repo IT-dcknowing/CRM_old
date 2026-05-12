@@ -92,8 +92,31 @@ class ProjectController extends AccountBaseController
         $viewPermission = user()->permission('view_projects');
         abort_403((!in_array($viewPermission, ['all', 'added', 'owned', 'both'])));
 
-        if (!request()->ajax()) {
+        if ((request()->wantsJson() || request()->is('api/*')) && !request()->ajax()) {
+            $user = auth()->user();
+            $projects = Project::select('id', 'project_name', 'deadline', 'status', 'completion_percent')
+                ->where(function($q) use ($user) {
+                    $q->where('client_id', $user->id)
+                      ->orWhereHas('members', function($query) use ($user) {
+                          $query->where('user_id', $user->id);
+                      });
+                })
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->map(function ($project) {
+                    return [
+                        'id' => $project->id,
+                        'project_name' => $project->project_name,
+                        'deadline' => $project->deadline ? $project->deadline->format('d/m/Y') : 'Pas de date',
+                        'status' => $project->status,
+                        'progress' => $project->completion_percent,
+                        'category_name' => 'Diligence'
+                    ];
+                });
+            return response()->json($projects);
+        }
 
+        if (!request()->ajax()) {
             if (in_array('client', user_roles())) {
                 $this->clients = User::client();
             }
@@ -108,7 +131,12 @@ class ProjectController extends AccountBaseController
         }
 
         return $dataTable->render('projects.index', $this->data);
+    }
 
+    public function getAlldiligences(Request $request)
+    {
+        // Cette méthode peut être appelée directement par la route /getAlldiligences
+        return $this->index(new ProjectsDataTable());
     }
 
     /**
@@ -285,7 +313,6 @@ class ProjectController extends AccountBaseController
      */
     public function store(StoreProject $request)
     {
-
         $this->addPermission = user()->permission('add_projects');
 
         abort_403(!in_array($this->addPermission, ['all', 'added']));
@@ -812,6 +839,13 @@ class ProjectController extends AccountBaseController
             }
 
             $this->view = 'projects.ajax.activity';
+            break;
+        case 'notes_workspace':
+            $this->notes = \App\Models\Note::where('noteable_id', $id)
+                ->where('noteable_type', \App\Models\Project::class)
+                ->orderBy('updated_at', 'desc')
+                ->get();
+            $this->view = 'projects.ajax.notes_workspace';
             break;
         case 'tickets':
             return $this->tickets($this->project->project_admin == user()->id);

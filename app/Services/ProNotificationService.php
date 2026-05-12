@@ -56,30 +56,38 @@ class ProNotificationService
     public function sendTaskInit(Task $task, User $notifiable, array $channels = ['email', 'whatsapp', 'sms'], $clientNameManual = null)
     {
         Log::info("Début sendTaskInit [ID:{$task->id}, Heading:{$task->heading}] pour {$notifiable->email}");
-        try {
-            // 1. Envoi Email & Database (Laravel par défaut)
-            if (in_array('email', $channels)) {
+
+        // 1. Envoi Email & Database (isolé pour ne pas bloquer les autres canaux)
+        if (in_array('email', $channels)) {
+            try {
                 Log::info("Tentative envoi email (Init) à {$notifiable->email}");
-                $notifiable->notifyNow(new TaskInitNotification($task, $clientNameManual));
+                $notifiable->notify(new TaskInitNotification($task, $clientNameManual));
                 $this->logNotification($task, $notifiable, 'type_1', 'email', 'sent');
                 Log::info("Email (Init) envoyé et loggé.");
+            } catch (\Throwable $e) {
+                Log::error("Erreur envoi email (Init) à {$notifiable->email}: " . $e->getMessage());
+                $this->logNotification($task, $notifiable, 'type_1', 'email', 'failed');
             }
+        }
 
-            // 2. Tentative WhatsApp
-            if (in_array('whatsapp', $channels)) {
+        // 2. Tentative WhatsApp (indépendant de l'email)
+        if (in_array('whatsapp', $channels)) {
+            try {
                 $to = $this->formatE164($notifiable->whatsapp ?? $notifiable->mobile);
                 Log::info("Tentative WhatsApp (Init) à " . ($to ?? 'vide'));
                 $this->sendWhatsApp($task, $notifiable, 'type_1');
+            } catch (\Throwable $e) {
+                Log::error("Erreur envoi WhatsApp (Init) à {$notifiable->email}: " . $e->getMessage());
             }
-
-            // 3. Tentative SMS (si explicitly demandé ou en fallback)
-            if (in_array('sms', $channels)) {
-                $this->sendSms($task, $notifiable, 'type_1');
-            }
-
         }
-        catch (\Throwable $e) {
-            Log::error("Erreur sendTaskInit: " . $e->getMessage());
+
+        // 3. Tentative SMS (indépendant de l'email)
+        if (in_array('sms', $channels)) {
+            try {
+                $this->sendSms($task, $notifiable, 'type_1');
+            } catch (\Throwable $e) {
+                Log::error("Erreur envoi SMS (Init) à {$notifiable->email}: " . $e->getMessage());
+            }
         }
     }
 
@@ -89,34 +97,41 @@ class ProNotificationService
     public function sendTaskCommunication(Task $task, User $notifiable, TaskNote $note = null, array $channels = ['email', 'whatsapp', 'sms'], $clientNameManual = null)
     {
         Log::info("Début sendTaskCommunication [ID:{$task->id}, Heading:{$task->heading}] pour {$notifiable->email}");
-        try {
-            $notification = new TaskCommunicationNotification($task, $note, $clientNameManual);
+        $notification = new TaskCommunicationNotification($task, $note, $clientNameManual);
 
-            // 1. Envoi Email
-            if (in_array('email', $channels)) {
+        // 1. Envoi Email (isolé)
+        if (in_array('email', $channels)) {
+            try {
                 Log::info("Tentative envoi email (Update) à {$notifiable->email}");
-                $notifiable->notifyNow($notification);
+                $notifiable->notify($notification);
                 $this->logNotification($task, $notifiable, 'communication', 'email', 'sent', $note ? $note->note : null);
                 Log::info("Email (Update) envoyé et loggé.");
+            } catch (\Throwable $e) {
+                Log::error("Erreur envoi email (Update) à {$notifiable->email}: " . $e->getMessage());
+                $this->logNotification($task, $notifiable, 'communication', 'email', 'failed', $note ? $note->note : null);
             }
+        }
 
-            // 2. WhatsApp
-            if (in_array('whatsapp', $channels)) {
+        // 2. WhatsApp (isolé)
+        if (in_array('whatsapp', $channels)) {
+            try {
                 $to = $this->formatE164($notifiable->whatsapp ?? $notifiable->mobile);
                 Log::info("Tentative WhatsApp (Update) à " . ($to ?? 'vide'));
                 $content = $notification->toWhatsAppContent($notifiable);
                 $this->sendWhatsApp($task, $notifiable, 'communication', $content);
+            } catch (\Throwable $e) {
+                Log::error("Erreur envoi WhatsApp (Update) à {$notifiable->email}: " . $e->getMessage());
             }
+        }
 
-            // 3. SMS
-            if (in_array('sms', $channels)) {
+        // 3. SMS (isolé)
+        if (in_array('sms', $channels)) {
+            try {
                 $content = $notification->toSmsContent();
                 $this->sendSms($task, $notifiable, 'communication', $content);
+            } catch (\Throwable $e) {
+                Log::error("Erreur envoi SMS (Update) à {$notifiable->email}: " . $e->getMessage());
             }
-
-        }
-        catch (\Throwable $e) {
-            Log::error("Erreur sendTaskCommunication: " . $e->getMessage());
         }
     }
 
@@ -132,7 +147,7 @@ class ProNotificationService
             // 1. Envoi Email
             if (in_array('email', $channels)) {
                 Log::info("Tentative envoi email (Project Init) à {$notifiable->email}");
-                $notifiable->notifyNow($notification);
+                $notifiable->notify($notification);
                 $this->logProjectNotification($project, $notifiable, 'project_init', 'email', 'sent');
                 Log::info("Email (Project Init) envoyé.");
             }
@@ -167,7 +182,7 @@ class ProNotificationService
             // 1. Envoi Email
             if (in_array('email', $channels)) {
                 Log::info("Tentative envoi email (Contract Init) à {$notifiable->email}");
-                $notifiable->notifyNow($notification);
+                $notifiable->notify($notification);
                 $this->logContractNotification($contract, $notifiable, 'contract_init', 'email', 'sent');
                 Log::info("Email (Contract Init) envoyé.");
             }
@@ -197,14 +212,18 @@ class ProNotificationService
         $to = $this->formatE164($notifiable->whatsapp ?? $notifiable->mobile);
 
         // Try Infobip first
-        $settings = sms_setting();
+        $settings = function_exists('sms_setting') ? sms_setting() : null;
+        
+        $infobipApiKey = config('services.infobip.api_key') ?: ($settings->infobip_api_key ?? null);
+        $infobipBaseUrl = config('services.infobip.base_url') ?: ($settings->infobip_base_url ?? null);
         
         Log::info('DEBUG Infobip Attempt', [
-            'key_start' => substr(config('services.infobip.api_key') ?: $settings->infobip_api_key, 0, 8),
-            'base_url' => config('services.infobip.base_url') ?: $settings->infobip_base_url
+            'key_start' => substr($infobipApiKey ?? '', 0, 8),
+            'base_url' => $infobipBaseUrl,
+            'sms_setting_loaded' => $settings ? true : false
         ]);
 
-        if ($settings->infobip_status || config('services.infobip.api_key')) {
+        if (($settings && $settings->infobip_status) || config('services.infobip.api_key')) {
             Log::info("Tentative WhatsApp via Infobip pour {$to}");
             
             // Build rich content if not provided (similar to NewClientTaskSms)

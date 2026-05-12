@@ -14,7 +14,7 @@ return new class extends Migration
         if (!Schema::hasColumn('pro_notification_logs', 'project_id')) {
             Schema::table('pro_notification_logs', function (Blueprint $table) {
                 $table->unsignedInteger('project_id')->nullable()->after('task_id');
-                $table->foreign('project_id')->references('id')->on('projects')->onDelete('cascade');
+                // $table->foreign('project_id')->references('id')->on('projects')->onDelete('cascade');
             });
         }
     }

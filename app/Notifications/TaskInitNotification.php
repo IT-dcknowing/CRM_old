@@ -38,9 +38,11 @@ class TaskInitNotification extends BaseNotification
 
     public function toMail($notifiable): MailMessage
     {
-        // Recharger la tâche depuis la BDD pour garantir les données fraîches
-        if ($this->taskId > 0) {
-            $reloadedTask = Task::withoutGlobalScopes()->with(['project', 'boardColumn', 'company', 'users.roles', 'files'])->find($this->taskId);
+        // Attendre 10 secondes pour laisser le temps aux fichiers de s'uploader (Dropzone)
+        sleep(10);
+
+        // Recharger la tâche pour assurer la fraîcheur et charger les rôles pour la détection du client
+        $reloadedTask = Task::withoutGlobalScopes()->with(['project', 'boardColumn', 'company', 'users.roles', 'files'])->find($this->taskId);
             
             if ($reloadedTask) {
                 $this->task = $reloadedTask;
@@ -48,9 +50,6 @@ class TaskInitNotification extends BaseNotification
             } else {
                  \Illuminate\Support\Facades\Log::warning("DEBUG TaskInitNotification :: Reload FAILED for ID " . $this->taskId);
             }
-        } else {
-            \Illuminate\Support\Facades\Log::error("DEBUG TaskInitNotification :: Cannot reload task with ID 0");
-        }
 
         $url = route('tasks.show', $this->task->id);
         $dueDate = $this->task->due_date ? $this->task->due_date->format($this->company->date_format) : 'N/A';
@@ -64,6 +63,7 @@ class TaskInitNotification extends BaseNotification
 
         $attachments = [];
         if ($this->task->files) {
+            \Illuminate\Support\Facades\Log::info("DEBUG TaskInitNotification - Fichiers trouvés pour la tâche " . $this->task->id . ": " . $this->task->files->count());
             foreach ($this->task->files as $file) {
                 // Pour une nouvelle tâche, on joint TOUS les fichiers déjà présents
                 $attachments[] = [
@@ -86,9 +86,10 @@ class TaskInitNotification extends BaseNotification
                 'taskStatus' => $this->task->boardColumn->column_name,
                 'recipientName' => $notifiable->name,
                 'priority' => $this->task->priority,
+                'projectName' => $this->task->project ? $this->task->project->project_name : null,
                 'specialistName' => $this->task->users->count() > 0
                 ? $this->task->users->pluck('name')->implode(', ')
-                : ($this->task->responsible_id ?\App\Models\User::find($this->task->responsible_id)->name : 'Équipe technique'),
+                : ($this->task->responsible_id ? \App\Models\User::find($this->task->responsible_id)->name : 'Équipe technique'),
                 'dueDate' => $dueDate,
                 'explanation' => $this->task->description ?: 'Aucune note particulière.',
                 'attachments' => $attachments,
@@ -151,7 +152,7 @@ class TaskInitNotification extends BaseNotification
                 'date' => now($this->company->timezone)->format($this->company->date_format),
                 'heure' => now($this->company->timezone)->format('H:i'),
                 'taskHeading' => $this->task->heading,
-                'taskReference' => $this->task->task_short_code ?: null, // null pour masquer dans Blade
+                'taskReference' => $this->task->task_short_code ?: $this->task->id,
                 'taskStatus' => $this->task->boardColumn->column_name,
                 'recipientName' => $notifiable->name,
                 'priority' => $translatedPriority,

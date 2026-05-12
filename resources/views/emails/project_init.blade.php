@@ -1,146 +1,78 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
     <meta charset="utf-8">
-    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { 
-            font-family: 'Public Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; 
-            color: #3d4852; 
-            line-height: 1.6; 
-            background-color: #f4f7f6; 
-            margin: 0; 
-            padding: 40px 20px; 
-        }
-        
-        .header-top { text-align: center; margin-bottom: 25px; }
-        .company-name { 
-            color: {{ $company->header_color }}; 
-            font-size: 24px; 
-            font-weight: bold; 
-            text-transform: uppercase; 
-            letter-spacing: 2px; 
-            margin-bottom: 5px; 
-        }
-        .header-line { border-top: 1px solid #e1e4e8; width: 150px; margin: 10px auto; }
-        .meta-info { font-size: 13px; color: #718096; margin-top: 5px; }
-        
-        .main-card { 
-            background-color: #ffffff; 
-            width: 100%; 
-            max-width: 650px; 
-            margin: 0 auto; 
-            border-radius: 12px; 
-            border: 1px solid #e1e4e8; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
-            overflow: hidden; 
-        }
-        .card-content { padding: 40px; }
-        
-        .objet { 
-            font-size: 22px; 
-            font-weight: 700; 
-            color: #1a202c; 
-            margin-bottom: 30px; 
-            border-bottom: 2px solid {{ $company->header_color }}22; 
-            padding-bottom: 20px; 
-        }
-        .greeting { font-size: 18px; margin-bottom: 20px; color: #2d3748; font-weight: 600; }
-        
-        .note-title { font-weight: 700; margin-bottom: 12px; font-size: 16px; color: #1a202c; }
-        .note-box { 
-            background-color: #f8fafc; 
-            border: 1px solid #edf2f7; 
-            border-radius: 10px; 
-            padding: 24px; 
-            color: #4a5568; 
-            font-size: 15px; 
-            margin-bottom: 30px; 
-        }
-        
-        .footer-text { margin-top: 40px; color: #718096; font-size: 14px; }
-        .signature { margin-top: 35px; font-size: 15px; color: #2d3748; }
-        .signature-name { 
-            font-weight: 700; 
-            font-size: 18px; 
-            margin-top: 8px; 
-            color: {{ $company->header_color }}; 
-            text-transform: uppercase; 
-        }
-
-        .attachments-section { border-top: 1px solid #edf2f7; padding-top: 25px; margin-top: 20px; }
-        .attachments-title { font-weight: bold; font-size: 15px; color: #2d3748; margin-bottom: 15px; }
-        
-        .attachments-list { list-style: none; padding: 0; margin: 0; }
-        .attachment-item { margin-bottom: 12px; font-size: 15px; display: flex; align-items: center; }
-        .attachment-bullet { color: {{ $company->header_color }}; margin-right: 12px; font-size: 18px; }
-        .attachment-link { color: {{ $company->header_color }}; text-decoration: none; font-weight: 500; }
-        .attachment-link:hover { text-decoration: underline; }
-
-        .btn-container { text-align: center; margin-top: 35px; }
-        .btn { 
-            background-color: {{ $company->header_color }}; 
-            color: #ffffff !important; 
-            padding: 14px 40px; 
-            text-decoration: none; 
-            border-radius: 8px; 
-            font-weight: 600; 
-            display: inline-block; 
-            font-size: 15px; 
-            box-shadow: 0 4px 6px {{ $company->header_color }}44;
+        body { font-family: 'Inter', sans-serif; background-color: #f5f7fa; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+        .wrapper { width: 100%; table-layout: fixed; background-color: #f5f7fa; padding: 48px 0; }
+        .container { max-width: 520px; margin: 0 auto; background-color: #ffffff; border-radius: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow: hidden; }
+        .header { padding: 32px 32px 0 32px; text-align: left; }
+        .logo { font-size: 20px; font-weight: 700; text-decoration: none; }
+        .logo-flow { color: #1e293b; }
+        .logo-task { color: #3b82f6; }
+        .content { padding: 24px 32px 32px 32px; }
+        .greeting { font-size: 16px; font-weight: 600; color: #1e293b; margin-bottom: 12px; }
+        .body-text { font-size: 15px; font-weight: 400; color: #475569; line-height: 1.6; margin-bottom: 32px; }
+        .info-section { margin-bottom: 32px; }
+        .info-row { display: flex; padding: 12px 0; border-bottom: 1px solid #edf2f7; }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { width: 100px; font-size: 13px; font-weight: 500; color: #64748b; flex-shrink: 0; }
+        .info-value { font-size: 14px; font-weight: 600; color: #1e293b; }
+        .pill-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+        .pill { background-color: #f1f5f9; padding: 6px 14px; border-radius: 30px; font-size: 13px; color: #3b82f6; text-decoration: none; font-weight: 500; display: inline-block; }
+        .btn-container { text-align: center; margin: 32px 0; }
+        .btn { background-color: #1e293b; color: #ffffff !important; padding: 12px 24px; border-radius: 40px; font-size: 14px; font-weight: 600; text-decoration: none; display: inline-block; }
+        .signature { font-size: 13px; font-weight: 400; color: #475569; margin-top: 32px; }
+        .signature-team { font-weight: 600; color: #1e293b; }
+        .footer { background-color: #fafbfc; padding: 20px 32px; text-align: center; border-top: 1px solid #edf2f7; }
+        .footer-text { font-size: 11px; font-weight: 400; color: #94a3b8; }
+        @media screen and (max-width: 480px) {
+            .container { margin: 0 12px; }
+            .content { padding: 20px 24px 32px 24px; }
+            .info-label { width: 85px; }
         }
     </style>
 </head>
 <body>
-    <div class="header-top">
-        <div class="company-name">{{ $companyName }}</div>
-        <div class="header-line"></div>
-        <div class="meta-info">Le {{ $date }} à {{ $heure }}</div>
-    </div>
-
-    <div class="main-card">
-        <div class="card-content">
-            <div class="objet">Ouverture de votre dossier : {{ $projectName }}</div>
-            
-            <div class="greeting">Bonjour {{ $recipientName }},</div>
-            
-            <div style="color: #4a5568; font-size: 15px; margin-bottom: 25px;">
-                Ceci est une confirmation concernant l'ouverture de votre nouvelle diligence (projet) au sein de notre établissement. 
+    <div class="wrapper">
+        <div class="container">
+            <div class="header">
+                <div class="logo"><span class="logo-flow">Flow</span><span class="logo-task">Task</span></div>
             </div>
+            <div class="content">
+                <div class="greeting">Bonjour {{ $recipientName }},</div>
+                <div class="body-text">Nous avons le plaisir de vous confirmer l'ouverture officielle de votre dossier de diligence au sein de notre établissement.</div>
 
-            <div class="note-title">Récapitulatif :</div>
-            <div class="note-box" style="line-height: 2;">
-                <span style="color: #718096;">•</span> <strong>Diligence :</strong> {{ $projectName }}<br>
-                <span style="color: #718096;">•</span> <strong>Statut :</strong> Dossier ouvert / En cours d'initialisation<br>
-            </div>
-
-            @if(isset($attachments) && count($attachments) > 0)
-                <div class="attachments-section">
-                    <div class="attachments-title">Pièces jointes incluses :</div>
-                    <ul class="attachments-list">
-                        @foreach($attachments as $attachment)
-                            <li class="attachment-item">
-                                <span class="attachment-bullet">•</span>
-                                <a href="{{ $attachment['url'] }}" class="attachment-link">{{ $attachment['name'] }}</a>
-                            </li>
-                        @endforeach
-                    </ul>
+                <div class="info-section">
+                    <div class="info-row"><div class="info-label">Diligence</div><div class="info-value">{{ $projectName }}</div></div>
+                    <div class="info-row"><div class="info-label">Statut</div><div class="info-value">Dossier ouvert</div></div>
+                    <div class="info-row"><div class="info-label">Date</div><div class="info-value">{{ $date }}</div></div>
                 </div>
-            @endif
 
-            <div class="footer-text">
-                Nous sommes ravis de vous accompagner dans cette démarche. Vous recevrez des notifications en temps réel au fur et à mesure de l'avancement de votre dossier.
-                <br><br>
-                Notre équipe reste à votre entière disposition pour tout complément d'information.
+                @if(isset($attachments) && count($attachments) > 0)
+                <div style="margin-bottom: 32px;">
+                    <div style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase;">Documents joints</div>
+                    <div class="pill-container">
+                        @foreach($attachments as $attachment)
+                        <a href="{{ $attachment['url'] }}" class="pill">{{ $attachment['name'] }}</a>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+
+                <div class="btn-container">
+                    <a href="{{ $url }}" class="btn">Voir mon dossier</a>
+                </div>
+
+                <div class="signature">
+                    Cordialement,<br>
+                    L'équipe <span class="signature-team">{{ $companyName }}</span>
+                </div>
             </div>
-
-            <div class="signature">
-                Cordialement,<br>
-                <div class="signature-name">{{ $companyName }}</div>
-            </div>
-
-            <div class="btn-container">
-                <a href="{{ $url }}" class="btn">Suivre mon dossier</a>
+            <div class="footer">
+                <div class="footer-text">&copy; {{ date('Y') }} {{ $companyName }}. Ouverture de diligence officielle.</div>
             </div>
         </div>
     </div>

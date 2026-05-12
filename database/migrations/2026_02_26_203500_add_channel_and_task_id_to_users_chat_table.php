@@ -16,7 +16,7 @@ return new class extends Migration
                 $table->string('channel')->nullable()->after('message_seen');
             }
             if (!Schema::hasColumn('users_chat', 'task_id')) {
-                $table->unsignedBigInteger('task_id')->nullable()->after('channel');
+                $table->unsignedInteger('task_id')->nullable()->after('channel');
                 $table->foreign('task_id')->references('id')->on('tasks')->onDelete('cascade')->onUpdate('cascade');
             }
         });
