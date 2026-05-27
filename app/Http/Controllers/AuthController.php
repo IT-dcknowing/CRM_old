@@ -79,8 +79,10 @@ use App\Models\KnowledgeBase;
 use App\Models\Leave;
 use App\Models\UserChat;
 use App\Models\BankAccount;
+use App\Models\Expense;
 use App\Models\Attendance;
 use Illuminate\Support\Facades\Session;
+
 use Illuminate\Routing\Exceptions\InvalidSignatureException;
 use App\Http\Requests\ClientDocs\CreateRequest;
 use App\Http\Requests\ClientDocs\UpdateRequest;
@@ -106,17 +108,36 @@ class AuthController extends Controller
             JWTAuth::setToken($token);
             $user = JWTAuth::authenticate();
 
+            \Illuminate\Support\Facades\Log::info("Utilisateur authentifie via API : " . ($user ? $user->email : 'AUCUN'));
+
             return $user;
         } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Erreur getApiUser : " . $e->getMessage() . " - Trace: " . $e->getTraceAsString());
             return null;
         }
     }
 
     public function login(Request $request)
     {
+        $credentials = $request->only('email', 'password');
+
+        try {
+            if (!$token = JWTAuth::attempt($credentials)) {
+                return response()->json(['error' => 'Identifiants invalides'], 401);
+            }
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Impossible de créer le token'], 500);
+        }
+
+        $user = auth()->user();
+        
+        // On s'assure de charger les rôles si nécessaire
+        $user->load('roles');
+
         return response()->json([
-            'token' => 'test_token',
-            'user' => ['name' => 'Test User']
+            'token' => $token,
+            'user' => $user,
+            'userName' => $user->name
         ]);
     }
 
@@ -221,50 +242,48 @@ class AuthController extends Controller
     {
         try {
             $user = $this->getApiUser();
-            
-            // D'abord, récupérons les projets uniques
+            if (!$user) return response()->json(['error' => 'Unauthenticated'], 401);
+
             $diligences = Project::select(
                     'projects.id',
                     'projects.project_name',
                     'projects.deadline',
                     'projects.status',  
-                    'project_category.category_name',
-                    'projects.client_id'
+                    'project_category.category_name'
                 )
                 ->leftJoin('project_category', 'project_category.id', '=', 'projects.category_id')
-                ->where('projects.client_id', $user->id)
-                ->get();
+                ->where(function($q) use ($user) {
+                    $q->where('projects.client_id', $user->id)
+                      ->orWhereExists(function($query) use ($user) {
+                          $query->select(DB::raw(1))
+                                ->from('project_members')
+                                ->whereColumn('project_members.project_id', 'projects.id')
+                                ->where('project_members.user_id', $user->id);
+                      });
+                })
+                ->orderBy('projects.created_at', 'desc')
+                ->get()
+                ->map(function ($project) {
+                    $collaborators = DB::table('project_members')
+                        ->join('users', 'users.id', '=', 'project_members.user_id')
+                        ->where('project_members.project_id', $project->id)
+                        ->pluck('users.name')
+                        ->unique()
+                        ->toArray();
 
-            // Ensuite, pour chaque projet, récupérons les collaborateurs
-            $formattedDiligences = $diligences->map(function ($project) {
-                // Récupérer tous les collaborateurs pour ce projet
-                $collaborators = DB::table('project_members')
-                    ->join('users', 'users.id', '=', 'project_members.user_id')
-                    ->where('project_members.project_id', $project->id)
-                    ->pluck('users.name')
-                    ->unique()
-                    ->implode(', ');
+                    return [
+                        'id' => $project->id,
+                        'project_name' => $project->project_name,
+                        'deadline' => $project->deadline ? \Carbon\Carbon::parse($project->deadline)->format('d/m/Y') : 'N/A',
+                        'status' => $project->status,
+                        'category_name' => $project->category_name ?? 'Général',
+                        'collaborators' => $collaborators
+                    ];
+                });
 
-                return [
-                    'id' => $project->id,
-                    'project_name' => $project->project_name,
-                    'deadline' => \Carbon\Carbon::parse($project->deadline)->locale('fr')->isoFormat('DD MMMM YYYY'),
-                    'status' => $project->status,
-                    'category_name' => $project->category_name,
-                    'collaborators' => $collaborators ?: 'Aucun collaborateur'
-                ];
-            });
-
-            // Pour debug
-            \Log::info('Diligences formatées:', ['data' => $formattedDiligences]);
-            
-            return response()->json($formattedDiligences);
+            return response()->json($diligences);
         } catch (\Exception $e) {
-            \Log::error('Erreur dans diligences: ' . $e->getMessage());
-            return response()->json([
-                'error' => 'Une erreur s\'est produite lors de la récupération des diligences.',
-                'details' => $e->getMessage()
-            ], 500);
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
@@ -289,85 +308,77 @@ class AuthController extends Controller
     public function situationsFiscal($id)
     {
         try {
-            //$user = JWTAuth::parseToken()->authenticate();
-            
+            $client = \App\Models\User::with('clientDetails')->find($id);
+            $clientName = $client ? $client->name : 'N/A';
+            $ncc = $client && $client->clientDetails ? $client->clientDetails->gst_number : 'N/A';
+            $regime = $client && $client->clientDetails ? $client->clientDetails->regime : 'N/A';
+            $activite = $client && $client->clientDetails ? $client->clientDetails->acti_prin : 'N/A';
+
             $situations = SituationFiscale::where('client_id', $id)
-                ->select(
-                    'id',
-                    'type_impot',
-                    'regime',
-                    'montant',
-                    'periode',
-                    'date_paiement',
-                    'status',
-                    'file'
-                )
                 ->orderBy('date_paiement', 'desc')
                 ->get()
-                ->groupBy('type_impot')
-                ->map(function ($items) {
-                    $latest = $items->first();
+                ->map(function($sit) use ($clientName, $ncc, $regime, $activite) {
                     return [
-                        'id' => $latest->id,
-                        'type' => $latest->type_impot,
-                        'regime' => $latest->regime,
-                        'montant' => number_format($latest->montant, 0, ',', ' ') . ' FCFA',
-                        'periode' => $latest->periode,
-                        'prochaine_echeance' => \Carbon\Carbon::parse($latest->date_paiement)->locale('fr')->isoFormat('DD MMMM YYYY'),
-                        'status' => $latest->status,
-                        'document' => $latest->file
+                        'id' => (string)$sit->id,
+                        'client' => $clientName,
+                        'ncc' => $ncc,
+                        'name' => $sit->type_impot,
+                        'regime' => $sit->regime ?? $regime,
+                        'activite' => $activite,
+                        'date' => $sit->date_paiement ? \Carbon\Carbon::parse($sit->date_paiement)->format('d/m/Y') : 'N/A',
+                        'lastDecl' => $sit->date_paiement ? \Carbon\Carbon::parse($sit->date_paiement)->format('d/m/Y') : 'N/A',
+                        'montant' => number_format($sit->montant, 0, ',', ' ') . ' XOF',
+                        'total' => number_format($sit->montant, 0, ',', ' ') . ' XOF',
+                        'status' => $sit->status
                     ];
-                })
-                ->values();
+                });
 
-            return response()->json($situations);
+            return response()->json([
+                'status' => 'success',
+                'data' => $situations
+            ]);
         } catch (\Exception $e) {
-            \Log::error('Erreur situation fiscale: ' . $e->getMessage());
-            return response()->json(['error' => 'Erreur lors de la récupération de la situation fiscale'], 500);
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
     public function situationsSocial($id)
     {
         try {
-            $user = $this->getApiUser();
-            
+            $client = \App\Models\User::with('clientDetails')->find($id);
+            $clientName = $client ? $client->name : 'N/A';
+            $ncc = $client && $client->clientDetails ? $client->clientDetails->gst_number : 'N/A';
+            $regime = $client && $client->clientDetails ? $client->clientDetails->regime : 'N/A';
+            $activite = $client && $client->clientDetails ? $client->clientDetails->acti_prin : 'N/A';
+
             $situations = SituationSociale::where('client_id', $id)
-                ->select(
-                    'id',
-                    'type_sociale',
-                    'regime',
-                    'montant',
-                    'periode',
-                    'date_paiement',
-                    'status',
-                    'file'
-                )
                 ->orderBy('date_paiement', 'desc')
                 ->get()
-                ->groupBy('type_sociale')
-                ->map(function ($items) {
-                    $latest = $items->first();
+                ->map(function($sit) use ($clientName, $ncc, $regime, $activite) {
                     return [
-                        'id' => $latest->id,
-                        'type' => $latest->type_sociale,
-                        'regime' => $latest->regime,
-                        'montant' => number_format($latest->montant, 0, ',', ' ') . ' FCFA',
-                        'periode' => $latest->periode,
-                        'prochaine_echeance' => \Carbon\Carbon::parse($latest->date_paiement)->locale('fr')->isoFormat('DD MMMM YYYY'),
-                        'status' => $latest->status,
-                        'document' => $latest->file
+                        'id' => (string)$sit->id,
+                        'client' => $clientName,
+                        'ncc' => $ncc,
+                        'name' => $sit->type_sociale,
+                        'regime' => $sit->regime ?? $regime,
+                        'activite' => $activite,
+                        'date' => $sit->date_paiement ? \Carbon\Carbon::parse($sit->date_paiement)->format('d/m/Y') : 'N/A',
+                        'lastDecl' => $sit->date_paiement ? \Carbon\Carbon::parse($sit->date_paiement)->format('d/m/Y') : 'N/A',
+                        'montant' => number_format($sit->montant, 0, ',', ' ') . ' XOF',
+                        'total' => number_format($sit->montant, 0, ',', ' ') . ' XOF',
+                        'status' => $sit->status
                     ];
-                })
-                ->values();
+                });
 
-            return response()->json($situations);
+            return response()->json([
+                'status' => 'success',
+                'data' => $situations
+            ]);
         } catch (\Exception $e) {
             \Log::error('Erreur situation sociale: ' . $e->getMessage());
             return response()->json(['error' => 'Erreur lors de la récupération de la situation sociale'], 500);
         }
     }
-
     public function getFiscalSituation()
     {
         try {
@@ -682,20 +693,37 @@ class AuthController extends Controller
     {
         try {
             $user = $this->getApiUser();
+            if (!$user) return response()->json(['error' => 'Unauthenticated'], 401);
+
+            $active = \App\Models\Attendance::where('user_id', $user->id)
+                ->whereNull('clock_out_time')
+                ->exists();
+
             $attendances = \App\Models\Attendance::where('user_id', $user->id)
                 ->orderBy('clock_in_time', 'desc')
                 ->limit(30)
                 ->get()
                 ->map(function ($att) {
+                    $total = 'N/A';
+                    if ($att->clock_out_time) {
+                        $diff = $att->clock_in_time->diff($att->clock_out_time);
+                        $total = $diff->format('%h h %i m');
+                    }
+
                     return [
                         'id' => $att->id,
                         'date' => $att->clock_in_time->format('d/m/Y'),
-                        'clock_in' => $att->clock_in_time->format('H:i'),
-                        'clock_out' => $att->clock_out_time ? $att->clock_out_time->format('H:i') : '--:--',
+                        'in' => $att->clock_in_time->format('H:i'),
+                        'out' => $att->clock_out_time ? $att->clock_out_time->format('H:i') : '--:--',
+                        'total' => $total,
                         'status' => $att->clock_out_time ? 'Terminé' : 'En cours'
                     ];
                 });
-            return response()->json($attendances);
+
+            return response()->json([
+                'active' => $active,
+                'history' => $attendances
+            ]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
@@ -760,13 +788,219 @@ class AuthController extends Controller
     /**
      * MODULE TRAVAIL : Liste des tâches
      */
+    public function getEmployees()
+    {
+        try {
+            // Tentative de récupération via une méthode personnalisée
+            try {
+                $employees = User::allEmployees();
+            } catch (\Exception $e) {
+                $employees = null;
+            }
+            
+            if (!$employees) {
+                $employees = User::with('employeeDetail', 'employeeDetail.department')->get();
+            }
+
+            $formatted = $employees->map(function($emp) {
+                $role = 'Employé';
+                if (isset($emp->roles) && count($emp->roles) > 0) {
+                    $role = $emp->roles[0]->name;
+                }
+
+                $dept = 'N/A';
+                if ($emp->employeeDetail && $emp->employeeDetail->department) {
+                    $dept = $emp->employeeDetail->department->team_name;
+                }
+
+                return [
+                    'id' => $emp->id,
+                    'name' => $emp->name,
+                    'role' => $role,
+                    'dept' => $dept,
+                    'avatar' => $emp->image_url,
+                    'status' => 'En ligne'
+                ];
+            });
+
+            return response()->json($formatted);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function storeEmployee(Request $request)
+    {
+        DB::beginTransaction();
+        try {
+            $authUser = $this->getApiUser();
+            if (!$authUser) return response()->json(['error' => 'Unauthenticated'], 401);
+
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|unique:users,email',
+                'password' => 'required|string|min:8',
+                'employee_id' => 'required|string|unique:employee_details,employee_id',
+                'address' => 'nullable|string',
+                'mobile' => 'nullable|string',
+                'joining_date' => 'required|date',
+                'gender' => 'required|in:male,female,others',
+                'designation_id' => 'nullable|integer',
+                'department_id' => 'nullable|integer',
+                'marital_status' => 'nullable|string',
+                'date_of_birth' => 'nullable|date',
+                'parent_id' => 'nullable|integer', // Responsable
+            ]);
+
+            // Mapper les valeurs de marital_status vers l'enum MaritalStatus
+            $maritalStatusMap = [
+                'unmarried' => 'single',
+                'single' => 'single',
+                'married' => 'married',
+                'widower' => 'widower',
+                'widow' => 'widow',
+                'separate' => 'separate',
+                'divorced' => 'divorced',
+                'engaged' => 'engaged',
+            ];
+            $maritalStatus = $maritalStatusMap[$validated['marital_status'] ?? 'single'] ?? 'single';
+
+            $companyId = $authUser->company_id ?? 1;
+
+            $user = User::create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'password' => Hash::make($validated['password']),
+                'mobile' => $validated['mobile'] ?? null,
+                'gender' => $validated['gender'],
+                'status' => 'active',
+                'company_id' => $companyId,
+            ]);
+
+            \App\Models\EmployeeDetails::create([
+                'user_id' => $user->id,
+                'employee_id' => $validated['employee_id'],
+                'address' => $validated['address'] ?? null,
+                'joining_date' => $validated['joining_date'],
+                'designation_id' => $validated['designation_id'] ?? null,
+                'department_id' => $validated['department_id'] ?? null,
+                'marital_status' => $maritalStatus,
+                'date_of_birth' => $validated['date_of_birth'] ?? null,
+                'reporting_to' => $validated['parent_id'] ?? null,
+                'added_by' => $authUser->id,
+                'company_id' => $companyId,
+            ]);
+
+            // Assigner le rôle 'employee' (indispensable pour que l'employé apparaisse dans les listes)
+            $employeeRole = Role::where('name', 'employee')->first();
+            if ($employeeRole) {
+                $user->attachRole($employeeRole);
+                $user->assignUserRolePermission($employeeRole->id);
+            }
+
+            DB::commit();
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Employé créé avec succès',
+                'user' => $user
+            ], 201);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Erreur storeEmployee: ' . $e->getMessage() . ' - Trace: ' . $e->getTraceAsString());
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+    }
+
+    /**
+     * MODULE RH : Détail d'un employé par ID
+     */
+    public function getEmployeeDetail($id)
+    {
+        try {
+            $user = $this->getApiUser();
+            if (!$user) return response()->json(['error' => 'Unauthenticated'], 401);
+
+            $employee = User::withoutGlobalScope(\App\Scopes\ActiveScope::class)
+                ->with(['employeeDetail.department', 'employeeDetail.designation', 'employeeDetail.reportingTo'])
+                ->findOrFail($id);
+
+            $detail = $employee->employeeDetail;
+
+            // Compter les projets et tâches assignés
+            $projectsCount = DB::table('project_members')->where('user_id', $id)->count();
+            $tasksCount = DB::table('task_users')->where('user_id', $id)->count();
+
+            return response()->json([
+                'id' => $employee->id,
+                'name' => $employee->name,
+                'email' => $employee->email,
+                'mobile' => $employee->mobile,
+                'gender' => $employee->gender,
+                'avatar' => $employee->image_url,
+                'status' => $employee->status,
+                'role' => $detail && $detail->designation ? $detail->designation->name : 'Employé',
+                'dept' => $detail && $detail->department ? $detail->department->team_name : 'N/A',
+                'joining_date' => $detail && $detail->joining_date ? $detail->joining_date->format('d/m/Y') : 'N/A',
+                'address' => $detail ? $detail->address : null,
+                'marital_status' => $detail ? ($detail->marital_status->value ?? $detail->marital_status ?? 'N/A') : 'N/A',
+                'date_of_birth' => $detail && $detail->date_of_birth ? $detail->date_of_birth->format('d/m/Y') : 'N/A',
+                'reporting_to' => $detail && $detail->reportingTo ? $detail->reportingTo->name : 'N/A',
+                'employee_id' => $detail ? $detail->employee_id : 'N/A',
+                'projects_count' => $projectsCount,
+                'tasks_count' => $tasksCount,
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Erreur getEmployeeDetail: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getFormData()
+    {
+        try {
+            $user = $this->getApiUser();
+            if (!$user) return response()->json(['error' => 'Unauthenticated'], 401);
+
+            $departments = DB::table('teams')->where('company_id', $user->company_id)->select('id', 'team_name as name')->get();
+            $designations = DB::table('designations')->where('company_id', $user->company_id)->select('id', 'name')->get();
+            $employees = User::allEmployees(null, true, null, $user->company_id)->map(function($u) {
+
+                return ['id' => $u->id, 'name' => $u->name];
+            });
+
+            return response()->json([
+                'departments' => $departments,
+                'designations' => $designations,
+                'employees' => $employees
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+
     public function getTasks()
     {
         try {
             $user = $this->getApiUser();
-            $tasks = \App\Models\Task::whereHas('users', function($q) use ($user) {
-                    $q->where('user_id', $user->id);
+            if (!$user) return response()->json(['error' => 'Unauthenticated'], 401);
+
+            $tasks = \App\Models\Task::where(function($q) use ($user) {
+                    $q->whereHas('project', function($query) use ($user) {
+                        $query->where('client_id', $user->id)
+                              ->orWhereExists(function($sub) use ($user) {
+                                  $sub->select(DB::raw(1))
+                                      ->from('project_members')
+                                      ->whereColumn('project_members.project_id', 'projects.id')
+                                      ->where('project_members.user_id', $user->id);
+                              });
+                    })
+                    ->orWhereHas('users', function($query) use ($user) {
+                        $query->where('user_id', $user->id);
+                    })
+                    ->orWhere('added_by', $user->id);
                 })
+                ->with(['project'])
                 ->orderBy('due_date', 'asc')
                 ->get()
                 ->map(function ($task) {
@@ -774,11 +1008,164 @@ class AuthController extends Controller
                         'id' => $task->id,
                         'heading' => $task->heading,
                         'status' => $task->status,
-                        'due_date' => $task->due_date ? $task->due_date->format('d/m/Y') : 'N/A'
+                        'priority' => $task->priority ?? 'medium',
+                        'due_date' => $task->due_date ? \Carbon\Carbon::parse($task->due_date)->format('d/m/Y') : 'N/A',
+                        'project_name' => $task->project ? $task->project->project_name : 'Général'
                     ];
                 });
+
             return response()->json($tasks);
         } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getTaskDetail($id)
+    {
+        try {
+            $user = $this->getApiUser();
+            if (!$user) return response()->json(['error' => 'Unauthenticated'], 401);
+
+            $task = \App\Models\Task::with(['project', 'users', 'createBy', 'boardColumn'])
+                ->findOrFail($id);
+
+            return response()->json([
+                'id' => $task->id,
+                'heading' => $task->heading,
+                'description' => $task->description,
+                'status' => $task->status,
+                'priority' => $task->priority,
+                'due_date' => $task->due_date ? \Carbon\Carbon::parse($task->due_date)->format('d/m/Y') : 'N/A',
+                'project_name' => $task->project ? $task->project->project_name : 'Général',
+                'created_by' => $task->createBy ? $task->createBy->name : 'N/A',
+                'column' => $task->boardColumn ? $task->boardColumn->column_name : 'N/A',
+                'assignees' => $task->users->map(function($u) {
+                    return [
+                        'id' => $u->id,
+                        'name' => $u->name,
+                        'image_url' => $u->image_url
+                    ];
+                })
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * MODULE TRAVAIL : Mise à jour d'une tâche (status, priority, etc.)
+     */
+    public function updateTask(Request $request, $id)
+    {
+        try {
+            $user = $this->getApiUser();
+            if (!$user) return response()->json(['error' => 'Unauthenticated'], 401);
+
+            $task = \App\Models\Task::findOrFail($id);
+
+            // Mise à jour des champs envoyés
+            if ($request->has('status')) {
+                $task->status = $request->status;
+            }
+            if ($request->has('priority')) {
+                $task->priority = $request->priority;
+            }
+            if ($request->has('heading')) {
+                $task->heading = $request->heading;
+            }
+
+            $task->save();
+
+            return response()->json([
+                'message' => 'Tâche mise à jour avec succès',
+                'task' => [
+                    'id' => $task->id,
+                    'heading' => $task->heading,
+                    'status' => $task->status,
+                    'priority' => $task->priority,
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getClients()
+    {
+        try {
+            $user = $this->getApiUser();
+            if (!$user) return response()->json(['error' => 'Unauthenticated'], 401);
+
+            $clientsQuery = \App\Models\User::without('session')
+                ->join('role_user', 'role_user.user_id', '=', 'users.id')
+                ->join('roles', 'roles.id', '=', 'role_user.role_id')
+                ->leftJoin('client_details', 'users.id', '=', 'client_details.user_id')
+                ->select('users.id', 'users.name', 'users.email', 'client_details.company_name', 'users.mobile', 'users.country_id')
+                ->where('roles.name', 'client')
+                ->where('users.status', 'active');
+                
+            if ($user->company_id) {
+                $clientsQuery->where('users.company_id', $user->company_id);
+            }
+            
+            if ($user->hasRole('client')) {
+                $clientsQuery->where('users.id', $user->id);
+            }
+            
+            $viewClientPermission = $user->permission('view_clients');
+            if ($viewClientPermission == 'none') {
+                return response()->json([]);
+            } elseif ($viewClientPermission == 'added') {
+                $clientsQuery->where('client_details.added_by', $user->id);
+            }
+
+            $clients = $clientsQuery->orderBy('users.name', 'asc')->get()->map(function ($client) {
+                return [
+                    'id' => $client->id,
+                    'name' => $client->name,
+                    'company_name' => $client->company_name ?? 'Individuel',
+                    'email' => $client->email,
+                    'mobile' => $client->mobile,
+                    'country' => 'N/A'
+                ];
+            });
+
+            return response()->json($clients);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getProjectDetail($id)
+    {
+        try {
+            $user = $this->getApiUser();
+            if (!$user) return response()->json(['error' => 'Unauthenticated'], 401);
+
+            $project = Project::with(['client', 'members', 'category'])
+                ->findOrFail($id);
+
+            return response()->json([
+                'id' => $project->id,
+                'project_name' => $project->project_name,
+                'project_summary' => $project->project_summary,
+                'status' => $project->status,
+                'deadline' => $project->deadline ? \Carbon\Carbon::parse($project->deadline)->format('d/m/Y') : 'N/A',
+                'start_date' => $project->start_date ? \Carbon\Carbon::parse($project->start_date)->format('d/m/Y') : 'N/A',
+                'category_name' => $project->category ? $project->category->category_name : 'Général',
+                'client' => [
+                    'name' => $project->client ? $project->client->name : 'N/A',
+                    'company_name' => $project->client && $project->client->clientDetails ? $project->client->clientDetails->company_name : 'Individuel'
+                ],
+                'members' => $project->members->map(function($u) {
+                    return [
+                        'id' => $u->id,
+                        'name' => $u->name
+                    ];
+                })
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
@@ -1038,31 +1425,7 @@ class AuthController extends Controller
     /**
      * MODULE CLIENTS : Liste des clients
      */
-    public function getClients()
-    {
-        try {
-            $user = $this->getApiUser();
-            if (!$user) return response()->json(['error' => 'Unauthenticated'], 401);
 
-            $clients = User::allClients($user->company_id)
-                ->map(function($client) {
-                    return [
-                        'id' => (string)$client->id,
-                        'name' => $client->name,
-                        'company_name' => $client->clientDetails->company_name ?? 'Individuel',
-                        'email' => $client->email,
-                        'mobile' => $client->mobile,
-                        'country' => $client->country->nicename ?? 'N/A',
-                        'avatar' => $client->image_url
-                    ];
-                });
-
-            return response()->json(['data' => $clients]);
-
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
-    }
 
     /**
      * MODULE CLIENTS : Détails d'un client
@@ -1100,6 +1463,198 @@ class AuthController extends Controller
         }
     }
 
+    public function storeClient(Request $request)
+    {
+        DB::beginTransaction();
+        try {
+            $user_auth = $this->getApiUser();
+            
+            // Validation de base
+            $request->validate([
+                'companyName' => 'required',
+                'leaderName' => 'required',
+                'email' => 'required|email|unique:users,email',
+                'mobile' => 'required',
+                'password' => 'required|min:8',
+            ]);
+
+            // 1. Création de l'utilisateur (Auth)
+            $user = new User();
+            $user->name = $request->leaderName;
+            $user->email = $request->email;
+            $user->password = Hash::make($request->password);
+            $user->mobile = $request->mobile;
+            $user->gender = strtolower($request->gender ?? 'male');
+            $user->status = 'active';
+            $user->login = 'enable';
+            $user->company_id = $user_auth->company_id ?? 1; // On récupère la company de celui qui crée
+            
+            // Gestion de l'avatar
+            if ($request->hasFile('avatar')) {
+                $user->image = Files::upload($request->avatar, 'avatar');
+            }
+            
+            $user->save();
+
+            // Attacher le rôle client
+            $role = Role::where('name', 'client')->first();
+            if ($role) {
+                $user->attachRole($role->id);
+            }
+
+            // 2. Détails du client
+            $client = new ClientDetails();
+            $client->user_id = $user->id;
+            $client->company_id = $user->company_id;
+            $client->company_name = $request->companyName;
+            $client->company_name_com = $request->tradeName; // Nom commercial
+            $client->address = $request->address;
+            $client->website = $request->website;
+            $client->office = $request->officePhone; // Correction: office_phone -> office
+            $client->city = $request->city;
+            $client->postal_code = $request->postalCode;
+            $client->shipping_address = $request->shippingAddress;
+            $client->skype = $request->whatsapp;
+
+            $client->note = $request->note;
+            
+            // Nouveaux champs mappés selon ClientDetails.php
+            $client->formjurid = $request->legalForm;
+            $client->regime = $request->taxRegime;
+            $client->acti_prin = $request->mainActivities;
+            $client->section = $request->section;
+            $client->parcelle = $request->parcelle;
+            $client->imp_centre = $request->taxCenter;
+            $client->codeacti = $request->activityCode;
+            $client->montcapit = $request->capital;
+            $client->numrccm = $request->rccm;
+            $client->gst_number = $request->taxAccount;
+            
+            $client->added_by = $user_auth->id ?? null;
+
+            // Gestion du logo
+            if ($request->hasFile('logo')) {
+                $client->company_logo = Files::upload($request->logo, 'client-logo');
+            }
+
+            $client->save();
+
+            DB::commit();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Client créé avec succès',
+                'user' => $user
+            ], 201);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Erreur storeClient: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+    }
+
+    public function destroyClient($id)
+    {
+        DB::beginTransaction();
+        try {
+            $user_auth = $this->getApiUser();
+            if (!$user_auth) return response()->json(['error' => 'Unauthenticated'], 401);
+
+            $client = User::findOrFail($id);
+            
+            // On s'assure qu'on ne supprime pas un admin ou soi-même par erreur
+            if ($client->hasRole('admin')) {
+                return response()->json(['error' => 'Impossible de supprimer un administrateur'], 403);
+            }
+
+            // Suppression des détails d'abord (clé étrangère potentielle)
+            ClientDetails::where('user_id', $id)->delete();
+            
+            // Suppression de l'utilisateur
+            $client->delete();
+
+            DB::commit();
+            return response()->json(['message' => 'Client supprimé avec succès']);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function updateClient(Request $request, $id)
+    {
+        DB::beginTransaction();
+        try {
+            $user = User::findOrFail($id);
+            $client = ClientDetails::where('user_id', $id)->firstOrFail();
+
+            // Validation (email unique sauf pour cet utilisateur)
+            $request->validate([
+                'companyName' => 'required',
+                'leaderName' => 'required',
+                'email' => 'required|email|unique:users,email,' . $id,
+                'mobile' => 'required',
+            ]);
+
+            // 1. Mise à jour User
+            $user->name = $request->leaderName;
+            $user->email = $request->email;
+            if ($request->password) {
+                $user->password = Hash::make($request->password);
+            }
+            $user->mobile = $request->mobile;
+            $user->gender = strtolower($request->gender ?? $user->gender);
+            
+            if ($request->hasFile('avatar')) {
+                $user->image = Files::upload($request->avatar, 'avatar');
+            }
+            $user->save();
+
+            // 2. Mise à jour ClientDetails
+            $client->company_name = $request->companyName;
+            $client->company_name_com = $request->tradeName;
+            $client->address = $request->address;
+            $client->website = $request->website;
+            $client->office = $request->officePhone;
+            $client->city = $request->city;
+            $client->postal_code = $request->postalCode;
+            $client->shipping_address = $request->shippingAddress;
+            $client->skype = $request->whatsapp;
+            $client->note = $request->note;
+            
+            $client->formjurid = $request->legalForm;
+            $client->regime = $request->taxRegime;
+            $client->acti_prin = $request->mainActivities;
+            $client->section = $request->section;
+            $client->parcelle = $request->parcelle;
+            $client->imp_centre = $request->taxCenter;
+            $client->codeacti = $request->activityCode;
+            $client->montcapit = $request->capital;
+            $client->numrccm = $request->rccm;
+            $client->gst_number = $request->taxAccount;
+
+            if ($request->hasFile('logo')) {
+                $client->company_logo = Files::upload($request->logo, 'client-logo');
+            }
+
+            $client->save();
+
+            DB::commit();
+            return response()->json(['message' => 'Client mis à jour avec succès']);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+    }
+
+
+
+
+
+
     /**
      * MODULE FINANCE : Produits & Services
      */
@@ -1124,6 +1679,37 @@ class AuthController extends Controller
                 });
 
             return response()->json($products);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getServiceDetail($id)
+    {
+        try {
+            $user = $this->getApiUser();
+            if (!$user) return response()->json(['error' => 'Unauthenticated'], 401);
+
+            $product = Product::where('company_id', $user->company_id)
+                ->with(['category', 'subCategory', 'unit', 'tax'])
+                ->findOrFail($id);
+
+            return response()->json([
+                'id' => (string)$product->id,
+                'name' => $product->name,
+                'price' => number_format($product->price, 0, ',', ' ') . ' FCFA',
+                'tax' => $product->tax ? ($product->tax->tax_name . ' (' . $product->tax->rate_percent . '%)') : '--',
+                'unitType' => $product->unit ? $product->unit->unit_type : '-',
+                'hsnSac' => $product->hsn_sac_code ?? '--',
+                'sku' => $product->sku ?? '--',
+                'category' => $product->category->category_name ?? '--',
+                'subCategory' => $product->subCategory->category_name ?? '--',
+                'canPurchase' => $product->allow_purchase == 1,
+                'isDownloadable' => $product->downloadable == 1,
+                'description' => $product->description ?? '--',
+                'image' => $product->image_url ?: null
+            ]);
 
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
@@ -1158,6 +1744,89 @@ class AuthController extends Controller
             return response()->json($leaves);
 
         } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * MODULE RH : Soumettre une demande de permission (conges)
+     */
+    public function storePermission(Request $request)
+    {
+        DB::beginTransaction();
+        try {
+            $user = $this->getApiUser();
+            if (!$user) return response()->json(['error' => 'Unauthenticated'], 401);
+
+            $validated = $request->validate([
+                'type' => 'required|string',
+                'start_date' => 'required|string',
+                'end_date' => 'required|string',
+                'reason' => 'nullable|string',
+            ]);
+
+            // Parse dates
+            try {
+                if (str_contains($validated['start_date'], '/')) {
+                    $startDate = Carbon::createFromFormat('d/m/Y', $validated['start_date'])->startOfDay();
+                } else {
+                    $startDate = Carbon::parse($validated['start_date'])->startOfDay();
+                }
+            } catch (\Exception $e) {
+                return response()->json(['error' => 'Format de date de début invalide (attendu JJ/MM/AAAA)'], 422);
+            }
+
+            try {
+                if (str_contains($validated['end_date'], '/')) {
+                    $endDate = Carbon::createFromFormat('d/m/Y', $validated['end_date'])->startOfDay();
+                } else {
+                    $endDate = Carbon::parse($validated['end_date'])->startOfDay();
+                }
+            } catch (\Exception $e) {
+                return response()->json(['error' => 'Format de date de fin invalide (attendu JJ/MM/AAAA)'], 422);
+            }
+
+            if ($startDate->gt($endDate)) {
+                return response()->json(['error' => 'La date de début doit être antérieure à la date de fin'], 422);
+            }
+
+            // Trouver un type de congé correspondant
+            $leaveType = \App\Models\LeaveType::where('type_name', 'like', '%' . $validated['type'] . '%')->first();
+            if (!$leaveType) {
+                $leaveType = \App\Models\LeaveType::first();
+            }
+
+            if (!$leaveType) {
+                return response()->json(['error' => 'Aucun type de congé configuré dans le système.'], 422);
+            }
+
+            $uniqueId = \Illuminate\Support\Str::random(16);
+            $multipleDates = \Carbon\CarbonPeriod::create($startDate, $endDate);
+            $duration = $startDate->eq($endDate) ? 'full day' : 'multiple';
+
+            foreach ($multipleDates as $date) {
+                $leave = new Leave();
+                $leave->user_id = $user->id;
+                $leave->unique_id = $uniqueId;
+                $leave->leave_type_id = $leaveType->id;
+                $leave->duration = $duration;
+                $leave->leave_date = $date->format('Y-m-d');
+                $leave->reason = $validated['reason'] ?? '';
+                $leave->status = 'pending';
+                $leave->added_by = $user->id;
+                $leave->save();
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Demande de permission soumise avec succès.'
+            ], 201);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Erreur storePermission: ' . $e->getMessage());
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
@@ -1209,7 +1878,7 @@ class AuthController extends Controller
             $user = $this->getApiUser();
             if (!$user) return response()->json(['error' => 'Unauthenticated'], 401);
 
-            $articles = KnowledgeBase::with('category')
+            $articles = KnowledgeBase::with('knowledgebasecategory')
                 ->where('company_id', $user->company_id)
                 ->orderBy('created_at', 'desc')
                 ->get()
@@ -1217,7 +1886,7 @@ class AuthController extends Controller
                     return [
                         'id' => (string)$article->id,
                         'title' => $article->heading,
-                        'category' => $article->category->category_name ?? 'Général',
+                        'category' => $article->knowledgebasecategory->name ?? 'Général',
                         'content' => strip_tags($article->description),
                         'date' => $article->created_at->format('d/m/Y')
                     ];
@@ -1231,8 +1900,149 @@ class AuthController extends Controller
     }
 
     /**
-     * CHANGEMENT DE MOT DE PASSE
+     * MODULE FINANCE : Factures
      */
+    public function getInvoices()
+    {
+        try {
+            $user = $this->getApiUser();
+            if (!$user) return response()->json(['error' => 'Unauthenticated'], 401);
+
+            $query = Invoice::where('company_id', $user->company_id);
+            if ($user->hasRole('client')) {
+                $query->where('client_id', $user->id);
+            }
+
+            $invoices = $query->orderBy('issue_date', 'desc')
+                ->get()
+                ->map(function($inv) {
+                    return [
+                        'id' => $inv->id,
+                        'invoiceNumber' => $inv->invoice_number,
+                        'client' => $inv->client->name ?? 'N/A',
+                        'amount' => number_format($inv->total, 0, ',', ' ') . ' FCFA',
+                        'date' => $inv->issue_date->format('d/m/Y'),
+                        'status' => $inv->status,
+                        'statusColor' => $inv->status == 'paid' ? '#2ecc71' : '#f1c40f'
+                    ];
+                });
+
+            return response()->json($invoices);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * MODULE DOCUMENTS : Liste des documents
+     */
+    public function documents()
+    {
+        try {
+            $user = $this->getApiUser();
+            if (!$user) return response()->json(['error' => 'Unauthenticated'], 401);
+
+            $documents = \App\Models\EmployeeDocument::where('user_id', $user->id)
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->map(function ($doc) {
+                    $sizeFormatted = 'Inconnue';
+                    if ($doc->size) {
+                        $bytes = intval($doc->size);
+                        if ($bytes >= 1048576) {
+                            $sizeFormatted = number_format($bytes / 1048576, 2) . ' Mo';
+                        } elseif ($bytes >= 1024) {
+                            $sizeFormatted = number_format($bytes / 1024, 2) . ' Ko';
+                        } else {
+                            $sizeFormatted = $bytes . ' o';
+                        }
+                    }
+
+                    return [
+                        'id' => $doc->id,
+                        'name' => $doc->name ?: $doc->filename,
+                        'filename' => $doc->filename,
+                        'size' => $sizeFormatted,
+                        'created_at' => $doc->created_at ? $doc->created_at->format('d/m/Y') : 'Récemment',
+                        'doc_url' => $doc->doc_url
+                    ];
+                });
+
+            return response()->json($documents);
+        } catch (\Exception $e) {
+            \Log::error('Erreur getDocuments API: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * MODULE DOCUMENTS : Téléchargement direct
+     */
+    public function documentsDownload($id)
+    {
+        try {
+            $user = $this->getApiUser() ?: auth()->user();
+            
+            if (!$user && request()->has('token')) {
+                try {
+                    $user = auth('api')->setToken(request()->query('token'))->authenticate();
+                } catch (\Exception $e) {}
+            }
+
+            $file = \App\Models\EmployeeDocument::findOrFail($id);
+
+            if ($user && $file->user_id != $user->id && !$user->hasRole('admin')) {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
+
+            $path = storage_path('app/' . \App\Models\EmployeeDocument::FILE_PATH . '/' . $file->user_id . '/' . $file->hashname);
+            
+            if (!file_exists($path)) {
+                $path = public_path('user-uploads/' . \App\Models\EmployeeDocument::FILE_PATH . '/' . $file->user_id . '/' . $file->hashname);
+                if (!file_exists($path)) {
+                    return response()->json(['message' => 'Fichier introuvable sur le serveur.'], 404);
+                }
+            }
+
+            return response()->download($path, $file->filename);
+        } catch (\Exception $e) {
+            \Log::error('Erreur documentsDownload: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Récupérer tous les utilisateurs de l'application
+     */
+    public function getAllUsers(Request $request)
+    {
+        try {
+            $user = $this->getApiUser();
+            if (!$user) return response()->json(['error' => 'Unauthenticated'], 401);
+
+            // Récupérer tous les utilisateurs actifs avec leurs données
+            $users = User::select('id', 'name', 'email', 'mobile', 'image', 'status')
+                        ->where('status', 'active')
+                        ->orderBy('name', 'asc')
+                        ->get()
+                        ->map(function($u) {
+                            return [
+                                'id' => (string)$u->id,
+                                'name' => $u->name,
+                                'email' => $u->email,
+                                'phone' => $u->mobile ?? '',
+                                'image_url' => $u->image_url,
+                                'status' => $u->status
+                            ];
+                        });
+
+            return response()->json($users);
+        } catch (\Exception $e) {
+            \Log::error('Erreur getAllUsers: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
     public function changePassword(Request $request)
     {
         $request->validate([
@@ -1258,3 +2068,6 @@ class AuthController extends Controller
         }
     }
 }
+
+
+

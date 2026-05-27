@@ -25,39 +25,83 @@ Route::get('/user-infos', [AuthController::class, 'userInfos']);
 Route::get('/notifications', [AuthController::class, 'indexNotification']);
 Route::get('/notifications/unread-count', [AuthController::class, 'unreadCount']);
 Route::get('/clients', [AuthController::class, 'getClients']);
+Route::post('/clients', [AuthController::class, 'storeClient']);
+Route::delete('/clients/{id}', [AuthController::class, 'destroyClient']);
+Route::put('/clients/{id}', [AuthController::class, 'updateClient']);
+Route::get('/tasks', [AuthController::class, 'getTasks']);
+Route::get('/tasks/{id}', [AuthController::class, 'getTaskDetail']);
+Route::put('/tasks/{id}', [AuthController::class, 'updateTask']);
+Route::get('/projects/{id}', [AuthController::class, 'getProjectDetail']);
+Route::get('/employees', [AuthController::class, 'getEmployees']);
 Route::get('/clients/{id}', [AuthController::class, 'getClientDetails']);
 
-// MODULE TRAVAIL
-Route::get('/getAlldiligences', [AuthController::class, 'getAlldiligences']);
+
+
+
+// --- MODULE TRAVAIL ---
 Route::get('/tasks', [AuthController::class, 'getTasks']);
+Route::get('/getAlldiligences', [AuthController::class, 'getAlldiligences']);
+Route::post('/customer-requests/storeRequest', [AuthController::class, 'storeRequest']);
 Route::get('/contracts', [AuthController::class, 'getContracts']);
 Route::get('/knowledge-base', [AuthController::class, 'getKnowledgeBase']);
 
-// MODULE RH
-Route::get('/attendances', [AuthController::class, 'getAttendances']);
-Route::post('/attendances/clock-in-out', [AuthController::class, 'clockInOut']);
+// --- MODULE RH ---
+Route::get('/employees', [AuthController::class, 'getEmployees']);
+Route::post('/employees', [AuthController::class, 'storeEmployee']);
+Route::get('/employees/{id}', [AuthController::class, 'getEmployeeDetail']);
+Route::get('/employee-form-data', [AuthController::class, 'getFormData']);
+Route::prefix('attendances')->group(function () {
+    Route::get('/', [AuthController::class, 'getAttendances']);
+    Route::post('/clock-in-out', [AuthController::class, 'clockInOut']);
+});
+Route::post('/clock-in-out', [AuthController::class, 'clockInOut']); // Alias pour mobile
 Route::get('/permissions', [AuthController::class, 'getPermissions']);
+Route::post('/permissions', [AuthController::class, 'storePermission']);
+Route::prefix('rh')->group(function () {
+    Route::get('/permissions', [AuthController::class, 'getPermissions']);
+    Route::post('/permissions', [AuthController::class, 'storePermission']);
+});
 
-// MODULE FINANCE
+// --- MODULE FINANCE ---
+Route::prefix('finance')->group(function () {
+    Route::get('/expenses', [AuthController::class, 'getExpenses']);
+    Route::get('/invoices', [AuthController::class, 'getInvoices']);
+    Route::get('/financial-states', [AuthController::class, 'getFinancialStates']);
+    Route::get('/treasury', [AuthController::class, 'getTreasury']);
+});
+// Compatibilité arrière
 Route::get('/expenses', [AuthController::class, 'getExpenses']);
-Route::get('/invoices', [AuthController::class, 'getInvoices']);
-Route::get('/financial-states', [AuthController::class, 'getFinancialStates']); // NOUVEAU
-Route::get('/treasury', [AuthController::class, 'getTreasury']); // NOUVEAU
-
-// MODULE TAX & SOCIAL
-Route::get('/situations-fiscal', [AuthController::class, 'getFiscalSituation']);
-Route::get('/situations-social', [AuthController::class, 'getSocialSituation']);
-
-// SERVICES & REQUÊTES
+Route::get('/financial-states', [AuthController::class, 'getFinancialStates']);
+Route::get('/treasury', [AuthController::class, 'getTreasury']);
 Route::get('/services', [AuthController::class, 'services']);
-Route::get('/requests', [AuthController::class, 'indexRequest']);
-Route::post('/requests', [AuthController::class, 'storeRequest']);
+Route::get('/services/{id}', [AuthController::class, 'getServiceDetail']);
 
-// MESSAGERIE
+// --- MODULE TAX & SOCIAL (SITUATIONS) ---
+Route::prefix('situations-fiscal')->group(function () {
+    Route::get('/', [AuthController::class, 'getFiscalSituation']);
+    Route::get('/user', [AuthController::class, 'getFiscalSituation']);
+});
+Route::prefix('situations-social')->group(function () {
+    Route::get('/', [AuthController::class, 'getSocialSituation']);
+    Route::get('/user', [AuthController::class, 'getSocialSituation']);
+});
+Route::get('/dashboard/situationsFiscal/{id}', [AuthController::class, 'situationsFiscal']);
+Route::get('/dashboard/situationsSocial/{id}', [AuthController::class, 'situationsSocial']);
+
+// --- NOTIFICATIONS (Actions additionnelles) ---
+Route::prefix('notifications')->group(function () {
+    Route::get('/indexNotification', [AuthController::class, 'indexNotification']);
+    Route::post('/mark-as-read', [AuthController::class, 'markAsRead']);
+    Route::post('/mark-all-as-read', [AuthController::class, 'markAllAsRead']);
+});
+
+// --- MESSAGERIE ---
 Route::get('/conversations', [AuthController::class, 'getConversations']);
 Route::get('/messages/{id}', [AuthController::class, 'getMessages']);
-Route::post('/messages', [AuthController::class, 'sendMessage']); // NOUVEAU
+Route::post('/messages', [AuthController::class, 'sendMessage']);
 Route::get('/chat-contacts', [AuthController::class, 'getChatContacts']);
+Route::get('/all-users', [AuthController::class, 'getAllUsers']);  // Récupérer TOUS les utilisateurs
+
 
 // DOCUMENTS
 Route::get('/documents', [AuthController::class, 'documents']);
