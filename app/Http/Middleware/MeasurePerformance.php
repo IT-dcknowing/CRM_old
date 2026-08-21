@@ -34,21 +34,28 @@ class MeasurePerformance
         }
 
         $requetes = [];
-
-        DB::listen(function ($query) use (&$requetes) {
-            $requetes[] = [
-                'sql'  => $query->sql,
-                'time' => $query->time,
-            ];
-        });
-
         $debut = microtime(true);
+
+        // L'instrumentation ne doit jamais empecher la page de s'afficher :
+        // toute erreur ici est avalee, la requete suit son cours normalement.
+        try {
+            DB::listen(function ($query) use (&$requetes) {
+                $requetes[] = [
+                    'sql'  => $query->sql,
+                    'time' => $query->time,
+                ];
+            });
+        } catch (\Throwable $e) {
+            return $next($request);
+        }
 
         $response = $next($request);
 
-        $dureeMs = (microtime(true) - $debut) * 1000;
-
-        $this->journaliser($request, $requetes, $dureeMs);
+        try {
+            $this->journaliser($request, $requetes, (microtime(true) - $debut) * 1000);
+        } catch (\Throwable $e) {
+            // Un diagnostic qui echoue ne doit pas casser la reponse.
+        }
 
         return $response;
     }
