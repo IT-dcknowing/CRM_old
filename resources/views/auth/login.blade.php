@@ -1,7 +1,7 @@
 <x-auth>
     <form id="login-form" action="{{ route('login') }}" class="ajax-form" method="POST">
         {{ csrf_field() }}
-        <h3 class=" mb-4 f-w-500">Bienvenue sur DCK FLOW TASK! 👋</h3>
+        <h3 class=" mb-4 f-w-500">Bienvenue sur DCK FLOW TASK!</h3>
         <span align="left">Veuillez vous connecter à votre compte et commencer l'aventure</span>
         <br><br> 
         <script>   
