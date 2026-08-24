@@ -484,6 +484,240 @@
   border-bottom-color:var(--act);
 }
 
+/* ══════════════════════════════════════════════════════════════
+   PHASE 3 — BARRE LATERALE ET EN-TETE
+   ──────────────────────────────────────────────────────────────
+   Portee : .dck-chrome, posee sur <aside> et <header>.
+   Ces deux conteneurs sont communs a toute l'application : cette
+   section est donc la seule a s'appliquer hors des modules deja
+   habilles. Aucune condition de permission n'est touchee — les
+   entrees de menu restent pilotees par les memes @if Blade.
+   ══════════════════════════════════════════════════════════════ */
+.dck-chrome {
+  --n0:#ffffff; --n50:#f9fafb; --n100:#f3f4f6; --n200:#e5e7eb;
+  --n300:#d1d5db; --n400:#9ca3af; --n500:#6b7280;
+  --n700:#374151; --n800:#1f2937; --n900:#111827;
+
+  --surface:var(--n0);
+  --surface-2:var(--n50);
+  --surface-3:var(--n100);
+  --line:var(--n200);
+  --line-strong:var(--n300);
+  --tx:var(--n900);
+  --tx-2:var(--n700);
+  --tx-3:var(--n500);
+  --tx-4:var(--n400);
+  --act:#000000;
+  --act-hover:#1f2937;
+  --act-tx:#ffffff;
+  --r-sm:8px; --r:12px; --r-full:999px;
+  --f-num:"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* ── Barre laterale ─────────────────────────────────────────── */
+.dck-chrome .main-sidebar,
+.dck-chrome.sidebar-dark .main-sidebar,
+.dck-chrome.sidebar-light .main-sidebar {
+  background:var(--surface) !important;
+  border-right:1px solid var(--line);
+}
+
+/* Bloc de marque */
+.dck-chrome .sidebar-brand-box {
+  height:64px;
+  display:flex;
+  align-items:center;
+  padding:0 18px;
+  background:var(--surface) !important;
+  border-bottom:1px solid var(--line);
+}
+.dck-chrome .sidebar-brand-name h1,
+.dck-chrome .sidebar-brand h1 {
+  font-size:14.5px !important;
+  font-weight:700 !important;
+  letter-spacing:-.02em;
+  color:var(--tx) !important;
+}
+.dck-chrome .text-white-shade { color:var(--tx) !important; }
+.dck-chrome .sidebar-brand img { max-height:32px; width:auto; }
+
+/* Entrees de menu */
+.dck-chrome .accordionItem { margin:0 10px 2px; }
+.dck-chrome .nav-item,
+.dck-chrome .accordionItemHeading {
+  display:flex;
+  align-items:center;
+  gap:11px;
+  padding:9px 10px !important;
+  border-radius:var(--r-sm);
+  font-size:14px !important;
+  font-weight:500;
+  color:var(--tx-2) !important;
+  transition:background-color .14s ease, color .14s ease;
+}
+.dck-chrome .sidebar-text-color { color:var(--tx-2) !important; }
+
+.dck-chrome .nav-item:hover,
+.dck-chrome .accordionItemHeading:hover {
+  background:var(--surface-3);
+  color:var(--tx) !important;
+  text-decoration:none;
+}
+
+/* Entree active */
+.dck-chrome .accordionItem.active > .nav-item,
+.dck-chrome .nav-item.active,
+.dck-chrome .accordionItemHeading.active {
+  background:var(--act) !important;
+  color:var(--act-tx) !important;
+  font-weight:600;
+}
+.dck-chrome .accordionItem.active > .nav-item svg,
+.dck-chrome .nav-item.active svg { color:var(--act-tx); }
+
+.dck-chrome .nav-item svg,
+.dck-chrome .accordionItemHeading svg {
+  width:18px;
+  height:18px;
+  flex:0 0 auto;
+  opacity:.9;
+}
+
+/* Compteur d'entree */
+.dck-chrome .menu-item-count {
+  margin-left:auto;
+  padding:1px 7px;
+  background:var(--surface-3);
+  color:var(--tx-3);
+  border-radius:var(--r-full);
+  font-family:var(--f-num);
+  font-size:11px;
+  font-weight:600;
+}
+.dck-chrome .nav-item.active .menu-item-count,
+.dck-chrome .accordionItem.active .menu-item-count {
+  background:rgba(255,255,255,.18);
+  color:var(--act-tx);
+}
+
+/* Sous-menus */
+.dck-chrome .accordionItemContent {
+  margin:2px 0 6px 30px;
+  padding-left:11px;
+  border-left:1px solid var(--line);
+}
+.dck-chrome .accordionItemContent a {
+  display:block;
+  padding:7px 10px;
+  border-radius:var(--r-sm);
+  font-size:13.5px !important;
+  color:var(--tx-3) !important;
+}
+.dck-chrome .accordionItemContent a:hover {
+  background:var(--surface-3);
+  color:var(--tx) !important;
+  text-decoration:none;
+}
+.dck-chrome .text-lightest { color:var(--tx-3) !important; }
+
+/* ── En-tete ────────────────────────────────────────────────── */
+.dck-chrome.main-header {
+  height:64px;
+  background:var(--surface) !important;
+  border-bottom:1px solid var(--line);
+  box-shadow:none;
+}
+.dck-chrome .navbar-left,
+.dck-chrome .navbar-right { display:flex; align-items:center; }
+
+.dck-chrome .app-title,
+.dck-chrome .page-title {
+  font-size:15.5px !important;
+  font-weight:600;
+  letter-spacing:-.02em;
+  color:var(--tx) !important;
+}
+
+/* Boutons a icone */
+.dck-chrome .header-icon-box {
+  display:grid;
+  place-items:center;
+  width:36px;
+  height:36px;
+  border-radius:var(--r-sm);
+  color:var(--tx-2) !important;
+  transition:background-color .14s ease;
+}
+.dck-chrome .header-icon-box:hover {
+  background:var(--surface-3);
+  color:var(--tx) !important;
+  text-decoration:none;
+}
+.dck-chrome .header-icon-box i { font-size:16px; }
+
+/* Pastille de notification */
+.dck-chrome .badge-primary,
+.dck-chrome .unread-notifications-count {
+  background:#b42318 !important;
+  color:#fff !important;
+  border:2px solid var(--surface);
+  border-radius:var(--r-full);
+  font-family:var(--f-num);
+  font-size:10px;
+  font-weight:600;
+  padding:1px 5px;
+}
+
+/* Recherche globale */
+.dck-chrome .search-form input,
+.dck-chrome #search-input,
+.dck-chrome input[type="search"] {
+  height:auto;
+  padding:8px 12px 8px 34px;
+  background:var(--surface-2);
+  border:1px solid var(--line);
+  border-radius:var(--r-sm);
+  font-size:13.5px;
+  color:var(--tx);
+}
+.dck-chrome .search-form input:focus,
+.dck-chrome input[type="search"]:focus {
+  outline:none;
+  background:var(--surface);
+  border-color:var(--act);
+  box-shadow:0 0 0 2px rgba(0,0,0,.9);
+}
+
+/* Menus deroulants de l'en-tete */
+.dck-chrome .dropdown-menu {
+  padding:6px;
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  box-shadow:0 4px 16px rgba(16,24,40,.10), 0 1px 3px rgba(16,24,40,.06);
+}
+.dck-chrome .dropdown-item {
+  display:flex;
+  align-items:center;
+  gap:9px;
+  padding:8px 10px !important;
+  border-radius:var(--r-sm);
+  font-size:13.5px !important;
+  color:var(--tx-2) !important;
+}
+.dck-chrome .dropdown-item:hover {
+  background:var(--surface-3);
+  color:var(--tx) !important;
+}
+.dck-chrome .dropdown-divider { margin:5px 4px; border-color:var(--line); }
+
+/* Focus visible au clavier */
+.dck-chrome a:focus-visible,
+.dck-chrome button:focus-visible {
+  outline:2px solid var(--act);
+  outline-offset:2px;
+  border-radius:6px;
+}
+
 /* ── Accessibilite et mouvement ─────────────────────────────── */
 @media (prefers-reduced-motion:reduce) {
   .dck-front * { transition-duration:.01ms !important; animation-duration:.01ms !important; }

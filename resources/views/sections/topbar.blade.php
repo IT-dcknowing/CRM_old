@@ -1,5 +1,5 @@
 <!-- HEADER START -->
-<header class="main-header clearfix bg-white" id="header">
+<header class="main-header clearfix bg-white dck-chrome" id="header">
 
 
     <!-- NAVBAR LEFT(MOBILE MENU COLLAPSE) START-->
