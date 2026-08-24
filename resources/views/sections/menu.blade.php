@@ -54,12 +54,12 @@
             </x-slot>
             @if ($sidebarUserPermissions['view_lead'] != 5 && $sidebarUserPermissions['view_lead'] != 'none')
             <div class="accordionItemContent ">
-                <x-sub-menu-item :link="route('lead-contact.index')" :text="__('app.leadContact')" />
+                <x-sub-menu-item :link="(Route::has('lead-contact.index') ? route('lead-contact.index') : null)" :text="__('app.leadContact')" />
             </div>
             @endif
             @if ($sidebarUserPermissions['view_deals'] != 5 && $sidebarUserPermissions['view_deals'] != 'none')
                 <div class="accordionItemContent ">
-                    <x-sub-menu-item :link="route('deals.index')" :text="__('app.deal')" />
+                    <x-sub-menu-item :link="(Route::has('deals.index') ? route('deals.index') : null)" :text="__('app.deal')" />
                 </div>
             @endif
         </x-menu-item>
@@ -105,18 +105,18 @@
                         <x-sub-menu-item :link="route('employees.index')" :text="__('app.menu.employees')" />
                     @endif
                     @if (in_array('leaves', user_modules()) && $sidebarUserPermissions['view_leave'] != 5 && $sidebarUserPermissions['view_leave'] != 'none')
-                        <x-sub-menu-item :link="route('leaves.index')" :text="__('app.menu.leaves')" />
+                        <x-sub-menu-item :link="(Route::has('leaves.index') ? route('leaves.index') : null)" :text="__('app.menu.leaves')" />
                     @endif
                     {{--
                         @if (in_array('attendance', user_modules()) && isset($sidebarUserPermissions['view_shift_roster']) && $sidebarUserPermissions['view_shift_roster'] != 5 && $sidebarUserPermissions['view_shift_roster'] != 'none')
-                            <x-sub-menu-item :link="route('shifts.index')" :text="__('app.menu.shiftRoster')" /> 
+                            <x-sub-menu-item :link="(Route::has('shifts.index') ? route('shifts.index') : null)" :text="__('app.menu.shiftRoster')" /> 
                         @endif
                     --}}
                     @if (in_array('attendance', user_modules()) && $sidebarUserPermissions['view_attendance'] != 5 && $sidebarUserPermissions['view_attendance'] != 'none')
-                        <x-sub-menu-item :link="route('attendances.index')" :text="__('app.menu.attendance')" />
+                        <x-sub-menu-item :link="(Route::has('attendances.index') ? route('attendances.index') : null)" :text="__('app.menu.attendance')" />
                     @endif
                     @if (in_array('holidays', user_modules()) && $sidebarUserPermissions['view_holiday'] != 5 && $sidebarUserPermissions['view_holiday'] != 'none')
-                        <x-sub-menu-item :link="route('holidays.index')" :text="__('app.menu.holiday')" />
+                        <x-sub-menu-item :link="(Route::has('holidays.index') ? route('holidays.index') : null)" :text="__('app.menu.holiday')" />
                     @endif
                     @if (isset($sidebarUserPermissions['view_designation']) && $sidebarUserPermissions['view_designation'] == 4 )
                         <x-sub-menu-item :link="route('designations.index')" :text="__('app.menu.designation')" />
@@ -125,10 +125,10 @@
                         <x-sub-menu-item :link="route('departments.index')" :text="__('app.menu.department')" />
                     @endif
                     @if (isset($sidebarUserPermissions['view_appreciation']) && $sidebarUserPermissions['view_appreciation'] != 5)
-                        <x-sub-menu-item :link="route('appreciations.index')" :text="__('app.menu.appreciation')" />
+                        <x-sub-menu-item :link="(Route::has('appreciations.index') ? route('appreciations.index') : null)" :text="__('app.menu.appreciation')" />
                     @endif
                     @if (isset($sidebarUserPermissions['view_appreciation'])  && $sidebarUserPermissions['view_appreciation'] == 5 && isset($sidebarUserPermissions['manage_award']) && $sidebarUserPermissions['manage_award'] == 4)
-                        <x-sub-menu-item :link="route('awards.index')" :text="__('app.menu.appreciation')" />
+                        <x-sub-menu-item :link="(Route::has('awards.index') ? route('awards.index') : null)" :text="__('app.menu.appreciation')" />
                     @endif
                     <!-- NAV ITEM - CUSTOM MODULES  -->
                     @foreach ($worksuitePlugins as $item)
@@ -149,27 +149,27 @@
             </x-slot>
         </x-menu-item>
         {{-- [MODULE RETIRE] Espace client : Comptabilite et Gestion, Formation, Fiscalite, Autres services, Factures
-        <x-menu-item class="message-menu" icon="chat-left-text" :link="route('projects.comptaGestion')" :text="__('Comptabilité et Gestion')">
+        <x-menu-item class="message-menu" icon="chat-left-text" :link="(Route::has('projects.comptaGestion') ? route('projects.comptaGestion') : null)" :text="__('Comptabilité et Gestion')">
             <x-slot name="iconPath">
                 <path d="M5.757 1.071a.5.5 0 0 1 .172.686L3.383 6h9.234L10.07 1.757a.5.5 0 1 1 .858-.514L13.783 6H15a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1v4.5a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 1 13.5V9a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h1.217L5.07 1.243a.5.5 0 0 1 .686-.172zM2 9v4.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V9H2zM1 7v1h14V7H1zm3 3a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0v-3A.5.5 0 0 1 4 10zm2 0a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0v-3A.5.5 0 0 1 6 10zm2 0a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0v-3A.5.5 0 0 1 8 10zm2 0a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0v-3a.5.5 0 0 1 .5-.5zm2 0a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0v-3a.5.5 0 0 1 .5-.5z" />
             </x-slot>
         </x-menu-item>
-        <x-menu-item class="message-menu" icon="chat-left-text" :link="route('projects.formation')" :text="__('Formation et information')">
+        <x-menu-item class="message-menu" icon="chat-left-text" :link="(Route::has('projects.formation') ? route('projects.formation') : null)" :text="__('Formation et information')">
             <x-slot name="iconPath">
                 <path d="M8 1a5 5 0 0 0-5 5v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a6 6 0 1 1 12 0v6a2.5 2.5 0 0 1-2.5 2.5H9.366a1 1 0 0 1-.866.5h-1a1 1 0 1 1 0-2h1a1 1 0 0 1 .866.5H11.5A1.5 1.5 0 0 0 13 12h-1a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h1V6a5 5 0 0 0-5-5z" />
             </x-slot>
         </x-menu-item>
-        <x-menu-item class="message-menu" icon="chat-left-text" :link="route('projects.fiscalite')" :text="__('Fiscalité')">
+        <x-menu-item class="message-menu" icon="chat-left-text" :link="(Route::has('projects.fiscalite') ? route('projects.fiscalite') : null)" :text="__('Fiscalité')">
             <x-slot name="iconPath">
                 <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zM5 8h6a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z" />
             </x-slot>
         </x-menu-item>
-        <x-menu-item class="message-menu" icon="chat-left-text" :link="route('projects.autresServices')" :text="__('Autres services')">
+        <x-menu-item class="message-menu" icon="chat-left-text" :link="(Route::has('projects.autresServices') ? route('projects.autresServices') : null)" :text="__('Autres services')">
             <x-slot name="iconPath">
                 <path d="M7.5 1.018a7 7 0 0 0-4.79 11.566L7.5 7.793V1.018zm1 0V7.5h6.482A7.001 7.001 0 0 0 8.5 1.018zM14.982 8.5H8.207l-4.79 4.79A7 7 0 0 0 14.982 8.5zM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8z" />
             </x-slot>
         </x-menu-item>
-        <x-menu-item class="message-menu" icon="chat-left-text" :link="route('invoices.index')" :text="__('app.menu.invoices')">
+        <x-menu-item class="message-menu" icon="chat-left-text" :link="(Route::has('invoices.index') ? route('invoices.index') : null)" :text="__('app.menu.invoices')">
             <x-slot name="iconPath">
                 <path d="M4 10.781c.148 1.667 1.513 2.85 3.591 3.003V15h1.043v-1.216c2.27-.179 3.678-1.438 3.678-3.3 0-1.59-.947-2.51-2.956-3.028l-.722-.187V3.467c1.122.11 1.879.714 2.07 1.616h1.47c-.166-1.6-1.54-2.748-3.54-2.875V1H7.591v1.233c-1.939.23-3.27 1.472-3.27 3.156 0 1.454.966 2.483 2.661 2.917l.61.162v4.031c-1.149-.17-1.94-.8-2.131-1.718H4zm3.391-3.836c-1.043-.263-1.6-.825-1.6-1.616 0-.944.704-1.641 1.8-1.828v3.495l-.2-.05zm1.591 1.872c1.287.323 1.852.859 1.852 1.769 0 1.097-.826 1.828-2.2 1.939V8.73l.348.086z" />
             </x-slot>
@@ -217,7 +217,7 @@
                     @endif
                     {{-- [MODULE RETIRE] Etats Financiers et Formation (timelogs)
                     @if (in_array('timelogs', user_modules()) && $sidebarUserPermissions['view_timelogs'] != 5 && $sidebarUserPermissions['view_timelogs'] != 'none')
-                        <x-sub-menu-item :link="route('projects.etatFinanciers')" :text="__('Etats Financiers')" />
+                        <x-sub-menu-item :link="(Route::has('projects.etatFinanciers') ? route('projects.etatFinanciers') : null)" :text="__('Etats Financiers')" />
                     @endif
                     @if (in_array('timelogs', user_modules()) && $sidebarUserPermissions['view_timelogs'] != 5 && $sidebarUserPermissions['view_timelogs'] != 'none')
                         <x-sub-menu-item :link="route('timelogs.index')" :text="__('Formation')" />
@@ -242,28 +242,28 @@
                 </x-slot>
                 <div class="accordionItemContent">
                     @if (in_array('leads', user_modules()) && $sidebarUserPermissions['view_lead_proposals'] != 5 && $sidebarUserPermissions['view_lead_proposals'] != 'none')
-                        <x-sub-menu-item :link="route('proposals.index')" :text="__('app.menu.proposal')" /> 
+                        <x-sub-menu-item :link="(Route::has('proposals.index') ? route('proposals.index') : null)" :text="__('app.menu.proposal')" /> 
                     @endif
                     @if (in_array('estimates', user_modules()) && $sidebarUserPermissions['view_estimates'] != 5 && $sidebarUserPermissions['view_estimates'] != 'none')
-                        <x-sub-menu-item :link="route('estimates.index')" :text="__('app.menu.estimates')" />
+                        <x-sub-menu-item :link="(Route::has('estimates.index') ? route('estimates.index') : null)" :text="__('app.menu.estimates')" />
                     @endif
                     @if (in_array('invoices', user_modules()) && $sidebarUserPermissions['view_invoices'] != 5 && $sidebarUserPermissions['view_invoices'] != 'none')
-                        <x-sub-menu-item :link="route('invoices.index')" :text="__('app.menu.invoices')" />
+                        <x-sub-menu-item :link="(Route::has('invoices.index') ? route('invoices.index') : null)" :text="__('app.menu.invoices')" />
                     @endif
                     @if (in_array('payments', user_modules()) && $sidebarUserPermissions['view_payments'] != 5 && $sidebarUserPermissions['view_payments'] != 'none')
-                        <x-sub-menu-item :link="route('payments.index')" :text="__('app.menu.payments')" />
+                        <x-sub-menu-item :link="(Route::has('payments.index') ? route('payments.index') : null)" :text="__('app.menu.payments')" />
                     @endif
                     {{--
                         @if (in_array('invoices', user_modules()) && $sidebarUserPermissions['view_invoices'] != 5 && $sidebarUserPermissions['view_invoices'] != 'none')
-                            <x-sub-menu-item :link="route('creditnotes.index')"
+                            <x-sub-menu-item :link="(Route::has('creditnotes.index') ? route('creditnotes.index') : null)"
                                             :text="__('app.menu.credit-note')" />
                         @endif
                     --}}
                     @if (in_array('expenses', user_modules()) && $sidebarUserPermissions['view_expenses'] != 5 && $sidebarUserPermissions['view_expenses'] != 'none')
-                        <x-sub-menu-item :link="route('expenses.index')" :text="__('app.menu.expenses')" />
+                        <x-sub-menu-item :link="(Route::has('expenses.index') ? route('expenses.index') : null)" :text="__('app.menu.expenses')" />
                     @endif
                     @if (in_array('bankaccount', user_modules()) && $sidebarUserPermissions['view_bankaccount'] != 5 && $sidebarUserPermissions['view_bankaccount'] != 'none')
-                        <x-sub-menu-item :link="route('bankaccounts.index')" :text="__('app.menu.bankaccount')" />
+                        <x-sub-menu-item :link="(Route::has('bankaccounts.index') ? route('bankaccounts.index') : null)" :text="__('app.menu.bankaccount')" />
                     @endif
                     <!-- NAV ITEM - CUSTOM MODULES  -->
                     @foreach ($worksuitePlugins as $item)
@@ -279,7 +279,7 @@
     {{-- [MODULE RETIRE] Produits
     @if (!in_array('purchase', user_modules()) && in_array('products', user_modules()) && $sidebarUserPermissions['view_product'] != 5 && $sidebarUserPermissions['view_product'] != 'none')
         @if(!in_array('apporteurs', user_roles()))    
-            <x-menu-item icon="basket" :text="__('app.menu.products')" :link="route('products.index')">
+            <x-menu-item icon="basket" :text="__('app.menu.products')" :link="(Route::has('products.index') ? route('products.index') : null)">
                 <x-slot name="iconPath">
                     <path
                         d="M5.757 1.071a.5.5 0 0 1 .172.686L3.383 6h9.234L10.07 1.757a.5.5 0 1 1 .858-.514L13.783 6H15a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1v4.5a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 1 13.5V9a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h1.217L5.07 1.243a.5.5 0 0 1 .686-.172zM2 9v4.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V9H2zM1 7v1h14V7H1zm3 3a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0v-3A.5.5 0 0 1 4 10zm2 0a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0v-3A.5.5 0 0 1 6 10zm2 0a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0v-3A.5.5 0 0 1 8 10zm2 0a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0v-3a.5.5 0 0 1 .5-.5zm2 0a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0v-3a.5.5 0 0 1 .5-.5z" />
@@ -292,7 +292,7 @@
     <!-- NAV ITEM - PRODUCTS -->
     {{-- [MODULE RETIRE] Commandes
     @if (in_array('orders', user_modules()) && $sidebarUserPermissions['view_order'] != 5 && $sidebarUserPermissions['view_order'] != 'none')
-        <x-menu-item icon="cart3" :text="__('app.menu.orders')" :link="route('orders.index')">
+        <x-menu-item icon="cart3" :text="__('app.menu.orders')" :link="(Route::has('orders.index') ? route('orders.index') : null)">
             <x-slot name="iconPath">
                 <path
                     d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .49.598l-1 5a.5.5 0 0 1-.465.401l-9.397.472L4.415 11H13a.5.5 0 0 1 0 1H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM3.102 4l.84 4.479 9.144-.459L13.89 4H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
@@ -304,7 +304,7 @@
     <!-- NAV ITEM - TICKETS -->
     {{-- [MODULE RETIRE] Tickets
     @if (in_array('tickets', user_modules()) && $sidebarUserPermissions['view_tickets'] != 5 && $sidebarUserPermissions['view_tickets'] != 'none')
-        <x-menu-item icon="headset" :text="__('app.menu.tickets')" :link="route('tickets.index')">
+        <x-menu-item icon="headset" :text="__('app.menu.tickets')" :link="(Route::has('tickets.index') ? route('tickets.index') : null)">
             <x-slot name="iconPath">
                 <path
                     d="M8 1a5 5 0 0 0-5 5v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a6 6 0 1 1 12 0v6a2.5 2.5 0 0 1-2.5 2.5H9.366a1 1 0 0 1-.866.5h-1a1 1 0 1 1 0-2h1a1 1 0 0 1 .866.5H11.5A1.5 1.5 0 0 0 13 12h-1a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h1V6a5 5 0 0 0-5-5z" />
@@ -316,7 +316,7 @@
     <!-- NAV ITEM - EVENTS -->
         {{-- [MODULE RETIRE] Evenements
         @if (in_array('events', user_modules()) && $sidebarUserPermissions['view_events'] != 5 && $sidebarUserPermissions['view_events'] != 'none')
-            <x-menu-item icon="calendar-event" :text="__('app.menu.events')" :link="route('events.index')">
+            <x-menu-item icon="calendar-event" :text="__('app.menu.events')" :link="(Route::has('events.index') ? route('events.index') : null)">
                 <x-slot name="iconPath">
                     <path
                         d="M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
@@ -332,7 +332,7 @@
         @if (in_array('messages', user_modules()))
             @if ((message_setting()->allow_client_admin == 'yes' || message_setting()->allow_client_employee == 'yes') && in_array('client', user_roles()))
                 <x-menu-item class="message-menu" icon="chat-left-text" :text="__('app.menu.messages')"
-                            :count="$unreadMessagesCount" :link="route('messages.index')">
+                            :count="$unreadMessagesCount" :link="(Route::has('messages.index') ? route('messages.index') : null)">
                     <x-slot name="iconPath">
                         <path
                             d="M14 1a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H4.414A2 2 0 0 0 3 11.586l-2 2V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12.793a.5.5 0 0 0 .854.353l2.853-2.853A1 1 0 0 1 4.414 12H14a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z" />
@@ -342,7 +342,7 @@
                 </x-menu-item>
             @elseif (in_array('employee', user_roles()))
                 <x-menu-item class="message-menu" icon="chat-left-text" :text="__('app.menu.messages')"
-                            :link="route('messages.index')" :count="$unreadMessagesCount">
+                            :link="(Route::has('messages.index') ? route('messages.index') : null)" :count="$unreadMessagesCount">
                     <x-slot name="iconPath">
                         <path
                             d="M14 1a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H4.414A2 2 0 0 0 3 11.586l-2 2V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12.793a.5.5 0 0 0 .854.353l2.853-2.853A1 1 0 0 1 4.414 12H14a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z" />
@@ -357,7 +357,7 @@
     <!-- NAV ITEM - GDPR -->
     {{-- [MODULE RETIRE] RGPD
     @if (in_array('client', user_roles()) && $gdpr->enable_gdpr)
-        <x-menu-item icon="lock" :text="__('app.menu.gdpr')" :link="route('gdpr.index')">
+        <x-menu-item icon="lock" :text="__('app.menu.gdpr')" :link="(Route::has('gdpr.index') ? route('gdpr.index') : null)">
             <x-slot name="iconPath">
                 <path
                     d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zM5 8h6a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z" />
@@ -370,7 +370,7 @@
         @if(!in_array('apporteurs', user_roles()))
             {{-- [MODULE RETIRE] Tableau d affichage
             @if (in_array('notices', user_modules()) && $sidebarUserPermissions['view_notice'] != 5 && $sidebarUserPermissions['view_notice'] != 'none')
-                <x-menu-item icon="clipboard" :text="__('app.menu.noticeBoard')" :link="route('notices.index')">
+                <x-menu-item icon="clipboard" :text="__('app.menu.noticeBoard')" :link="(Route::has('notices.index') ? route('notices.index') : null)">
                     <x-slot name="iconPath">
                         <path
                             d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z" />
@@ -384,7 +384,7 @@
             <!-- Knowledge base -->
             {{-- [MODULE RETIRE] Base de connaissances
             @if (in_array('knowledgebase', user_modules()) && isset($sidebarUserPermissions['view_knowledgebase']) && $sidebarUserPermissions['view_knowledgebase'] != 5)
-            <x-menu-item icon="note" :text="__('app.menu.knowledgebase')" :link="route('knowledgebase.index')">
+            <x-menu-item icon="note" :text="__('app.menu.knowledgebase')" :link="(Route::has('knowledgebase.index') ? route('knowledgebase.index') : null)">
                 <x-slot name="iconPath">
                     <g xmlns="http://www.w3.org/2000/svg" id="surface1">
                         <path
@@ -442,39 +442,39 @@
 
                 {{-- [MODULE RETIRE] Rapports hors taches (temps, finance, revenus/depenses, conges, presences, depenses, leads, ventes)
                 @if ($sidebarUserPermissions['view_time_log_report'] == 4 && $sidebarUserPermissions['view_time_log_report'] != 'none' && in_array('timelogs', user_modules()))
-                    <x-sub-menu-item :link="route('time-log-report.index')"
+                    <x-sub-menu-item :link="(Route::has('time-log-report.index') ? route('time-log-report.index') : null)"
                                      :text="__('app.menu.timeLogReport')" />
                 @endif
 
                 @if ($sidebarUserPermissions['view_finance_report'] != 5 && $sidebarUserPermissions['view_finance_report'] != 'none' && in_array('payments', user_modules()))
-                    <x-sub-menu-item :link="route('finance-report.index')"
+                    <x-sub-menu-item :link="(Route::has('finance-report.index') ? route('finance-report.index') : null)"
                                      :text="__('app.menu.financeReport')" />
                 @endif
 
                 @if ($sidebarUserPermissions['view_income_expense_report'] == 4 && $sidebarUserPermissions['view_income_expense_report'] != 'none' && in_array('expenses', user_modules()))
-                    <x-sub-menu-item :link="route('income-expense-report.index')"
+                    <x-sub-menu-item :link="(Route::has('income-expense-report.index') ? route('income-expense-report.index') : null)"
                                      :text="__('app.menu.incomeVsExpenseReport')" />
                 @endif
 
                 @if ($sidebarUserPermissions['view_leave_report'] != 5 && $sidebarUserPermissions['view_leave_report'] != 'none' && in_array('leaves', user_modules()))
-                    <x-sub-menu-item :link="route('leave-report.index')"
+                    <x-sub-menu-item :link="(Route::has('leave-report.index') ? route('leave-report.index') : null)"
                                      :text="__('app.menu.leaveReport')" />
                 @endif
 
                 @if ($sidebarUserPermissions['view_attendance_report'] == 4 && $sidebarUserPermissions['view_attendance_report'] != 'none' && in_array('attendance', user_modules()))
-                    <x-sub-menu-item :link="route('attendance-report.index')"
+                    <x-sub-menu-item :link="(Route::has('attendance-report.index') ? route('attendance-report.index') : null)"
                                      :text="__('app.menu.attendanceReport')" />
                 @endif
                 @if (isset($sidebarUserPermissions['view_expense_report']) && $sidebarUserPermissions['view_expense_report'] == 4 && $sidebarUserPermissions['view_expense_report'] != 'none' && in_array('expenses', user_modules()))
-                    <x-sub-menu-item :link="route('expense-report.index')"
+                    <x-sub-menu-item :link="(Route::has('expense-report.index') ? route('expense-report.index') : null)"
                                      :text="__('app.menu.expenseReport')" />
                 @endif
                 @if (isset($sidebarUserPermissions['view_lead_report']) && $sidebarUserPermissions['view_lead_report'] == 4 && $sidebarUserPermissions['view_lead_report'] != 'none' && in_array('leads', user_modules()))
-                    <x-sub-menu-item :link="route('lead-report.index')"
+                    <x-sub-menu-item :link="(Route::has('lead-report.index') ? route('lead-report.index') : null)"
                                      :text="__('app.menu.dealReport')" />
                 @endif
                 @if (isset($sidebarUserPermissions['view_sales_report']) && $sidebarUserPermissions['view_sales_report'] == 4 && $sidebarUserPermissions['view_sales_report'] != 'none' && in_array('invoices', user_modules()))
-                    <x-sub-menu-item :link="route('sales-report.index')"
+                    <x-sub-menu-item :link="(Route::has('sales-report.index') ? route('sales-report.index') : null)"
                                      :text="__('app.menu.salesReport')" />
                 @endif
                 --}}
