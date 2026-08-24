@@ -132,7 +132,9 @@
 
     <script src="{{ asset('vendor/jquery/jquery.min.js') }}"></script>
     <script src="{{ asset('vendor/jquery/modernizr.min.js') }}"></script>
-    <script src="{{ asset('vendor/jquery/bootstrap-colorpicker.js') }}"></script>
+    {{-- 166 Ko non minifies, utilises uniquement par quelques ecrans de
+         parametrage : differe pour ne plus bloquer le rendu de chaque page. --}}
+    <script src="{{ asset('vendor/jquery/bootstrap-colorpicker.js') }}" defer="defer"></script>
 
     {{-- Timepicker --}}
     <script src="{{ asset('vendor/jquery/bootstrap-timepicker.min.js') }}" defer="defer"></script>
@@ -188,6 +190,10 @@
 
 <!-- Global Required Javascript -->
 <script src="{{ asset('js/main.js') }}"></script>
+
+{{-- Fluidite percue : squelettes, barre de navigation, retour immediat
+     sur les boutons. Charge apres main.js, qu il complete sans le modifier. --}}
+<script src="{{ asset('js/dck-fluidite.js') }}"></script>
 <script>
     // Translation of default values for the select picker box.
     $.fn.selectpicker.Constructor.DEFAULTS.noneSelectedText = "@lang('placeholders.noneSelectedText')";

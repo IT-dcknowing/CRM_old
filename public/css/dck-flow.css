@@ -1084,3 +1084,61 @@ button {
 .dck-chrome .menu-item-count {
   font-family:"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   FLUIDITE PERCUE — squelettes et retours immediats
+   Styles associes a public/js/dck-fluidite.js.
+   Non scopes : ils s appliquent au panneau lateral et aux tableaux,
+   qui vivent hors des conteneurs .dck-front.
+   ══════════════════════════════════════════════════════════════ */
+
+.dck-skel { padding:22px; display:flex; flex-direction:column; gap:11px; }
+.dck-skel__line {
+  height:13px;
+  border-radius:6px;
+  background:#f3f4f6;
+  animation:dckPulse 1.5s ease-in-out infinite;
+}
+.dck-skel__sep { height:1px; background:#e5e7eb; margin:7px 0; }
+.dck-skel__row { display:flex; align-items:center; gap:12px; }
+.dck-skel__col { flex:1; display:flex; flex-direction:column; gap:8px; }
+.dck-skel__box {
+  width:42px; height:42px; flex:0 0 auto; border-radius:50%;
+  background:#f3f4f6; animation:dckPulse 1.5s ease-in-out infinite;
+}
+.dck-skel__grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.dck-skel__card {
+  height:88px; border-radius:12px; background:#f3f4f6;
+  animation:dckPulse 1.5s ease-in-out infinite;
+}
+.dck-skel-row td { padding:13px 16px !important; border-bottom:1px solid #e5e7eb; }
+
+@keyframes dckPulse { 0%,100% { opacity:1; } 50% { opacity:.45; } }
+
+/* Barre de progression de navigation */
+.dck-nav-bar {
+  position:fixed; top:0; left:0; z-index:9999;
+  height:2px; width:0;
+  background:#000;
+  transition:width 2.2s cubic-bezier(.1,.7,.2,1);
+  pointer-events:none;
+}
+
+/* Bouton en attente : le libelle cede la place a un indicateur */
+.dck-busy { position:relative; color:transparent !important; pointer-events:none; }
+.dck-busy::after {
+  content:"";
+  position:absolute; top:50%; left:50%;
+  width:14px; height:14px; margin:-7px 0 0 -7px;
+  border:2px solid currentColor; border-top-color:transparent;
+  border-radius:50%;
+  animation:dckSpin .6s linear infinite;
+  color:#fff;
+}
+.btn-secondary.dck-busy::after, .btn-outline-secondary.dck-busy::after { color:#111827; }
+@keyframes dckSpin { to { transform:rotate(360deg); } }
+
+@media (prefers-reduced-motion:reduce) {
+  .dck-skel__line, .dck-skel__box, .dck-skel__card { animation:none; }
+  .dck-nav-bar { transition:none; }
+}
