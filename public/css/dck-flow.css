@@ -766,6 +766,31 @@
   color:var(--tx-2);
 }
 
+/* ── Libelles de section du menu ────────────────────────────── */
+.dck-chrome .dck-sect {
+  list-style:none;
+  margin:18px 10px 6px;
+  padding:0 10px;
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--tx-4);
+  user-select:none;
+}
+.dck-chrome .dck-sect:first-child { margin-top:6px; }
+
+/* Barre laterale repliee : les libelles cedent la place a un filet */
+body.sidebar-toggled .dck-chrome .dck-sect,
+.mini-sidebar .dck-chrome .dck-sect {
+  height:1px;
+  margin:12px 14px;
+  padding:0;
+  overflow:hidden;
+  text-indent:-999px;
+  background:var(--line);
+}
+
 /* ══════════════════════════════════════════════════════════════
    PHASE 3 — BARRE LATERALE ET EN-TETE
    ──────────────────────────────────────────────────────────────

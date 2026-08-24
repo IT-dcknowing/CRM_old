@@ -1,4 +1,5 @@
 <ul>
+    <li class="dck-sect" aria-hidden="true">Pilotage</li>
     <!-- NAV ITEM - DASHBOARD COLLAPSE MENU-->
     @if (in_array('admin', user_roles())
     || $sidebarUserPermissions['view_overview_dashboard'] == 4
@@ -43,6 +44,7 @@
     </x-menu-item>
     --}}
 
+    <li class="dck-sect" aria-hidden="true">Relations</li>
     <!-- NAV ITEM - HR COLLAPASE MENU -->
     
     {{-- [MODULE RETIRE] Leads / Deals
@@ -195,6 +197,7 @@
     </x-menu-item>
     @endif
     @if (!in_array('client', user_roles()) && !in_array('apporteurs', user_roles()))
+    <li class="dck-sect" aria-hidden="true">Travail</li>
     <!-- NAV ITEM - WORK COLLAPSE MENU -->
         @if ((in_array('contracts', user_modules()) || in_array('projects', user_modules()) || in_array('tasks', user_modules()) || in_array('timelogs', user_modules())) && ($sidebarUserPermissions['view_contract'] != 5 || $sidebarUserPermissions['view_projects'] != 5 || $sidebarUserPermissions['view_tasks'] != 5 || $sidebarUserPermissions['view_timelogs'] != 5) && ($sidebarUserPermissions['view_contract'] != 'none' || $sidebarUserPermissions['view_projects'] != 'none' || $sidebarUserPermissions['view_tasks'] != 'none' || $sidebarUserPermissions['view_timelogs'] != 'none'))
             <x-menu-item icon="briefcase" :text="__('app.menu.work')">
@@ -231,6 +234,7 @@
             </x-menu-item>
         @endif
 
+    <li class="dck-sect" aria-hidden="true">Gestion</li>
     <!-- NAV ITEM - FINANCE COLLAPASE MENU -->
         @if (false) {{-- [MODULE RETIRE] Finance (propositions, devis, factures, paiements, avoirs, depenses, comptes bancaires) --}}
         @if ((in_array('estimates', user_modules()) || in_array('invoices', user_modules()) || in_array('payments', user_modules()) || in_array('expenses', user_modules()) || in_array('bankaccount', user_modules())) && ($sidebarUserPermissions['view_estimates'] != 5 || $sidebarUserPermissions['view_invoices'] != 5 || $sidebarUserPermissions['view_payments'] != 5 || $sidebarUserPermissions['view_expenses'] != 5 || $sidebarUserPermissions['view_lead_proposals'] != 5 || $sidebarUserPermissions['view_bankaccount'] != 5) && ($sidebarUserPermissions['view_estimates'] != 'none' || $sidebarUserPermissions['view_invoices'] != 'none' || $sidebarUserPermissions['view_payments'] != 'none' || $sidebarUserPermissions['view_expenses'] != 'none' || $sidebarUserPermissions['view_lead_proposals'] != 'none' || $sidebarUserPermissions['view_bankaccount'] != 'none'))
@@ -503,6 +507,7 @@
             </li>
         @endif
     @endforeach
+    <li class="dck-sect" aria-hidden="true">Système</li>
 <!-- NAV ITEM - REPORTS COLLAPASE MENU -->
     <!-- NAV ITEM - SETTINGS -->
     <x-menu-item icon="gear" :text="__('app.menu.settings')"
@@ -515,4 +520,35 @@
         </x-slot>
     </x-menu-item>
 </ul>
- 
+
+{{-- Masque les sections du menu qui ne contiennent aucune entree visible
+     pour le role courant. Aucune condition de permission n'est evaluee
+     ici : on observe simplement ce que Blade a effectivement rendu. --}}
+<script>
+    (function () {
+        function nettoyerSections() {
+            var items = document.querySelectorAll('#sideMenuScroll ul > li');
+            var section = null;
+            var vide = true;
+
+            items.forEach(function (li) {
+                if (li.classList.contains('dck-sect')) {
+                    if (section && vide) { section.style.display = 'none'; }
+                    section = li;
+                    vide = true;
+                    return;
+                }
+                // une entree reellement affichee rend la section utile
+                if (li.offsetParent !== null || li.getClientRects().length) { vide = false; }
+            });
+
+            if (section && vide) { section.style.display = 'none'; }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', nettoyerSections);
+        } else {
+            nettoyerSections();
+        }
+    })();
+</script>
