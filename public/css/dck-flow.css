@@ -1,0 +1,385 @@
+/* ══════════════════════════════════════════════════════════════
+   DCK FLOW TASK — refonte du front, phase 1 : module Contrats
+   ──────────────────────────────────────────────────────────────
+   Toutes les regles sont scopees sous .dck-front : aucun ecran
+   depourvu de cette classe n'est affecte. Retirer la classe suffit
+   a revenir a l'ancien rendu, sans toucher au reste du projet.
+
+   Aucun attribut name= n'est modifie par cette feuille : elle ne
+   fait que redefinir l'apparence des primitives Bootstrap deja
+   utilisees par les vues Blade existantes.
+
+   Herite de la direction artistique de la page de connexion :
+   noir primaire, gris froids, rayon 12px, bordures fines.
+   ══════════════════════════════════════════════════════════════ */
+
+.dck-front {
+  /* Neutres */
+  --n0:#ffffff; --n50:#f9fafb; --n100:#f3f4f6; --n200:#e5e7eb;
+  --n300:#d1d5db; --n400:#9ca3af; --n500:#6b7280; --n600:#4b5563;
+  --n700:#374151; --n800:#1f2937; --n900:#111827;
+
+  --surface:var(--n0);
+  --surface-2:var(--n50);
+  --surface-3:var(--n100);
+  --line:var(--n200);
+  --line-strong:var(--n300);
+
+  --tx:var(--n900);
+  --tx-2:var(--n700);
+  --tx-3:var(--n500);
+  --tx-4:var(--n400);
+
+  --act:#000000;
+  --act-hover:#1f2937;
+  --act-tx:#ffffff;
+
+  --ok:#3f6212;   --ok-bg:#f2f8e9;   --ok-line:#cbe0a8;
+  --warn:#a16207; --warn-bg:#fef9e7; --warn-line:#f3dfa2;
+  --err:#b42318;  --err-bg:#fdf1f0;  --err-line:#f2c9c6;
+  --info:#0369a1; --info-bg:#eff8ff; --info-line:#b3ddf7;
+
+  --r-sm:8px; --r:12px; --r-full:999px;
+  --f-num:"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  color:var(--tx);
+}
+
+/* ── Conteneur de page ──────────────────────────────────────── */
+.dck-front.content-wrapper,
+.dck-front .content-wrapper { background:transparent; }
+
+/* Cartes : la surface blanche arrondie deja utilisee par les vues */
+.dck-front .bg-white.rounded,
+.dck-front .add-client.bg-white {
+  background:var(--surface) !important;
+  border:1px solid var(--line);
+  border-radius:var(--r) !important;
+  box-shadow:none;
+}
+
+/* En-tete de carte */
+.dck-front .border-bottom-grey {
+  border-bottom:1px solid var(--line) !important;
+}
+.dck-front h4.f-21 {
+  font-size:16px !important;
+  font-weight:600 !important;
+  letter-spacing:-.02em;
+  color:var(--tx);
+  padding:16px 20px !important;
+}
+
+/* ── Libelles ───────────────────────────────────────────────── */
+.dck-front label,
+.dck-front .form-group > label {
+  font-size:13px;
+  font-weight:600;
+  color:var(--tx-2);
+  margin-bottom:7px;
+}
+.dck-front .text-dark-grey { color:var(--tx-2) !important; }
+.dck-front .text-lightest  { color:var(--tx-3) !important; }
+
+/* ── Champs de saisie ───────────────────────────────────────── */
+.dck-front .form-control,
+.dck-front .bootstrap-select > .dropdown-toggle,
+.dck-front .select2-container--default .select2-selection--single {
+  height:auto !important;
+  min-height:40px;
+  padding:9px 12px;
+  font-size:14px;
+  color:var(--tx);
+  background-color:var(--surface);
+  border:1px solid var(--line-strong);
+  border-radius:var(--r-sm);
+  box-shadow:none;
+  transition:border-color .15s ease, box-shadow .15s ease;
+}
+.dck-front .form-control.height-35 { height:auto !important; }
+
+.dck-front .form-control::placeholder { color:var(--tx-4); }
+
+.dck-front .form-control:focus,
+.dck-front .bootstrap-select.show > .dropdown-toggle,
+.dck-front .select2-container--default.select2-container--focus .select2-selection--single {
+  outline:none;
+  border-color:var(--act);
+  box-shadow:0 0 0 2px rgba(0,0,0,.9);
+}
+
+.dck-front .form-control:disabled,
+.dck-front .form-control[readonly],
+.dck-front .readonly-background {
+  background-color:var(--surface-3) !important;
+  color:var(--tx-4);
+  cursor:not-allowed;
+}
+
+.dck-front textarea.form-control { min-height:96px; }
+
+/* Champ en erreur signale par la validation ajax */
+.dck-front .form-control.is-invalid,
+.dck-front .form-control.error {
+  border-color:var(--err);
+}
+.dck-front .form-control.is-invalid:focus {
+  box-shadow:0 0 0 2px rgba(180,35,24,.32);
+}
+.dck-front .invalid-feedback,
+.dck-front .error-message,
+.dck-front label.error {
+  display:block;
+  margin-top:6px;
+  font-size:12.5px;
+  font-weight:500;
+  color:var(--err);
+}
+
+/* ── Groupes avec prefixe (numero de contrat) ───────────────── */
+.dck-front .input-group-text {
+  padding:9px 12px;
+  font-family:var(--f-num);
+  font-size:13px;
+  color:var(--tx-3);
+  background-color:var(--surface-3);
+  border:1px solid var(--line-strong);
+  border-radius:var(--r-sm) 0 0 var(--r-sm);
+}
+.dck-front .input-group > .form-control:not(:first-child) {
+  border-top-left-radius:0;
+  border-bottom-left-radius:0;
+}
+.dck-front .input-group > .form-control:not(:last-child) {
+  border-top-right-radius:0;
+  border-bottom-right-radius:0;
+}
+.dck-front .input-group-append .btn {
+  border-radius:0 var(--r-sm) var(--r-sm) 0;
+}
+
+/* ── Selecteurs bootstrap-select ────────────────────────────── */
+.dck-front .bootstrap-select > .dropdown-toggle::after {
+  border-top-color:var(--tx-4);
+}
+.dck-front .bootstrap-select .dropdown-menu {
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  box-shadow:0 4px 16px rgba(16,24,40,.10), 0 1px 3px rgba(16,24,40,.06);
+  padding:6px;
+}
+.dck-front .bootstrap-select .dropdown-menu li a {
+  border-radius:var(--r-sm);
+  padding:8px 10px;
+  font-size:13.5px;
+}
+.dck-front .bootstrap-select .dropdown-menu li a:hover {
+  background:var(--surface-3);
+}
+.dck-front .bootstrap-select .dropdown-menu li.selected a {
+  background:var(--act);
+  color:var(--act-tx);
+}
+
+/* ── Selecteur de date ──────────────────────────────────────── */
+.dck-front .datepicker {
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  box-shadow:0 4px 16px rgba(16,24,40,.10);
+  padding:8px;
+}
+.dck-front .datepicker td.active,
+.dck-front .datepicker td.active:hover {
+  background:var(--act) !important;
+  color:var(--act-tx) !important;
+  border-radius:var(--r-sm);
+}
+
+/* ── Cases a cocher ─────────────────────────────────────────── */
+.dck-front .form-check-input,
+.dck-front input[type="checkbox"],
+.dck-front input[type="radio"] {
+  accent-color:var(--act);
+  width:16px;
+  height:16px;
+  cursor:pointer;
+}
+.dck-front .form-check-label { font-weight:500; color:var(--tx-2); cursor:pointer; }
+
+/* ── Boutons ────────────────────────────────────────────────── */
+.dck-front .btn {
+  padding:9px 16px;
+  border-radius:var(--r-sm);
+  font-size:13.5px;
+  font-weight:600;
+  text-transform:none;
+  letter-spacing:0;
+  border:1px solid transparent;
+  transition:background-color .15s ease, border-color .15s ease, color .15s ease;
+}
+
+.dck-front .btn-primary,
+.dck-front .btn-primary:not(:disabled):not(.disabled) {
+  background-color:var(--act);
+  border-color:var(--act);
+  color:var(--act-tx);
+}
+.dck-front .btn-primary:hover,
+.dck-front .btn-primary:focus,
+.dck-front .btn-primary:not(:disabled):not(.disabled):active {
+  background-color:var(--act-hover);
+  border-color:var(--act-hover);
+  color:var(--act-tx);
+  box-shadow:none;
+}
+
+.dck-front .btn-secondary,
+.dck-front .btn-outline-secondary {
+  background-color:var(--surface);
+  border-color:var(--line-strong);
+  color:var(--tx);
+}
+.dck-front .btn-secondary:hover,
+.dck-front .btn-outline-secondary:hover {
+  background-color:var(--surface-2);
+  border-color:var(--tx-4);
+  color:var(--tx);
+}
+
+.dck-front .btn-danger {
+  background-color:var(--err);
+  border-color:var(--err);
+  color:#fff;
+}
+.dck-front .btn-danger:hover { filter:brightness(.92); }
+
+.dck-front .btn-link { color:var(--tx-2); font-weight:500; }
+.dck-front .btn-link:hover { color:var(--tx); }
+
+.dck-front .btn:focus-visible {
+  outline:2px solid var(--act);
+  outline-offset:2px;
+}
+
+/* ── Barre d'actions et filtres ─────────────────────────────── */
+.dck-front .action-bar { padding-bottom:14px; }
+.dck-front .filter-box,
+.dck-front .select-box {
+  border-color:var(--line) !important;
+}
+.dck-front .border-right-grey { border-right:1px solid var(--line) !important; }
+.dck-front .border-additional-grey { border-color:var(--line) !important; }
+
+/* ── Tableaux ───────────────────────────────────────────────── */
+.dck-front table.dataTable thead th,
+.dck-front .table thead th {
+  padding:11px 16px;
+  background:var(--surface-2);
+  border-bottom:1px solid var(--line) !important;
+  border-top:0 !important;
+  font-size:11.5px;
+  font-weight:600;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  color:var(--tx-3);
+  white-space:nowrap;
+}
+.dck-front table.dataTable tbody td,
+.dck-front .table tbody td {
+  padding:13px 16px;
+  border-top:0;
+  border-bottom:1px solid var(--line);
+  vertical-align:middle;
+  font-size:13.5px;
+  color:var(--tx-2);
+}
+.dck-front table.dataTable tbody tr:hover,
+.dck-front .table tbody tr:hover { background:var(--surface-2); }
+.dck-front table.dataTable tbody tr:last-child td { border-bottom:0; }
+
+/* Chiffres et references alignes */
+.dck-front .table td .f-monospace,
+.dck-front table.dataTable td:first-child {
+  font-variant-numeric:tabular-nums;
+}
+
+/* Pagination DataTables */
+.dck-front .dataTables_paginate .paginate_button {
+  min-width:31px;
+  height:31px;
+  margin:0 2px;
+  padding:0 8px !important;
+  border:1px solid var(--line) !important;
+  border-radius:7px !important;
+  background:var(--surface) !important;
+  color:var(--tx-2) !important;
+  font-size:12.5px;
+}
+.dck-front .dataTables_paginate .paginate_button:hover {
+  background:var(--surface-3) !important;
+  color:var(--tx) !important;
+}
+.dck-front .dataTables_paginate .paginate_button.current {
+  background:var(--act) !important;
+  border-color:var(--act) !important;
+  color:var(--act-tx) !important;
+  font-weight:600;
+}
+.dck-front .dataTables_info { font-size:13px; color:var(--tx-3); }
+
+/* ── Pastilles de statut ────────────────────────────────────── */
+.dck-front .badge {
+  padding:3px 9px;
+  border-radius:var(--r-full);
+  border:1px solid var(--line);
+  background:var(--surface-2);
+  color:var(--tx-2);
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:0;
+  text-transform:none;
+}
+.dck-front .badge-success,
+.dck-front .badge-primary { background:var(--ok-bg); border-color:var(--ok-line); color:var(--ok); }
+.dck-front .badge-warning { background:var(--warn-bg); border-color:var(--warn-line); color:var(--warn); }
+.dck-front .badge-danger  { background:var(--err-bg); border-color:var(--err-line); color:var(--err); }
+.dck-front .badge-info    { background:var(--info-bg); border-color:var(--info-line); color:var(--info); }
+
+/* ── Editeur de texte enrichi ───────────────────────────────── */
+.dck-front .ql-toolbar.ql-snow,
+.dck-front trix-toolbar {
+  border:1px solid var(--line-strong) !important;
+  border-bottom:0 !important;
+  border-radius:var(--r-sm) var(--r-sm) 0 0;
+  background:var(--surface-2);
+}
+.dck-front .ql-container.ql-snow,
+.dck-front trix-editor {
+  border:1px solid var(--line-strong) !important;
+  border-radius:0 0 var(--r-sm) var(--r-sm);
+  min-height:120px;
+  font-size:14px;
+}
+
+/* ── Modale laterale (creation et edition) ──────────────────── */
+.dck-front .modal-header,
+.modal .dck-front .modal-header {
+  border-bottom:1px solid var(--line);
+  padding:18px 22px;
+}
+.dck-front .modal-title { font-size:17px; font-weight:700; letter-spacing:-.02em; }
+.dck-front .modal-body { padding:20px 22px; }
+.dck-front .modal-footer {
+  border-top:1px solid var(--line);
+  background:var(--surface-2);
+  padding:14px 22px;
+}
+
+/* ── Espacements ────────────────────────────────────────────── */
+.dck-front .form-group { margin-bottom:18px; }
+.dck-front .p-20 { padding:20px !important; }
+
+/* ── Accessibilite et mouvement ─────────────────────────────── */
+@media (prefers-reduced-motion:reduce) {
+  .dck-front * { transition-duration:.01ms !important; animation-duration:.01ms !important; }
+}

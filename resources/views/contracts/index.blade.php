@@ -87,7 +87,7 @@
 
 @section('content')
     <!-- CONTENT WRAPPER START -->
-    <div class="content-wrapper">
+    <div class="content-wrapper dck-front">
         <!-- Add Task Export Buttons Start -->
         <div class="d-flex justify-content-between action-bar">
 

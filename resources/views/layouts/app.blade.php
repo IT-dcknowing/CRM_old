@@ -32,6 +32,11 @@
     <!-- Template CSS -->
     <link type="text/css" rel="stylesheet" media="all" href="{{ asset('css/main.css') }}">
 
+    {{-- Refonte du front — phase 1 : module Contrats.
+         Toutes les regles sont scopees sous .dck-front : les ecrans
+         qui ne portent pas cette classe conservent l'ancien rendu. --}}
+    <link type="text/css" rel="stylesheet" media="all" href="{{ asset('css/dck-flow.css') }}">
+
     <title>{{ is_array(__($pageTitle)) ? $pageTitle : __($pageTitle) }}</title>
     <meta name="msapplication-TileColor" content="#ffffff">
     <meta name="msapplication-TileImage" content="{{ companyOrGlobalSetting()->favicon_url }}">

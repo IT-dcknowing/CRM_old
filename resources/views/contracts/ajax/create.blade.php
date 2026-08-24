@@ -2,7 +2,7 @@
     $manageContractTypePermission = user()->permission('manage_contract_type');
 @endphp
 
-<div class="row">
+<div class="row dck-front">
     <div class="col-sm-12">
 
         <x-form id="save-contract-data-form">
