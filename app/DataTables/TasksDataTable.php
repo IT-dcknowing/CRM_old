@@ -165,7 +165,8 @@ class TasksDataTable extends BaseDataTable
                 return ' -- ';
             }
 
-            return '<a href="' . route('tasks.show', [$row->id]) . $this->tabUrl . '" class="text-darkest-grey openRightModal">' . $row->task_short_code . '</a>';
+            return '<a href="' . route('tasks.show', [$row->id]) . $this->tabUrl . '" class="dck-ref openRightModal">'
+                . $row->task_short_code . '</a>';
         });
 
         $datatables->addColumn('name', function ($row) {

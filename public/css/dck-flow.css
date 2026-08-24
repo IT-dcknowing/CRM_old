@@ -691,6 +691,81 @@
 .dck-front .task_view_more:hover { background:var(--surface-3); color:var(--tx); }
 .dck-front .task_view_more::after { display:none; }
 
+/* ── Selecteur de vue (liste / kanban / calendrier) ─────────── */
+.dck-front .dck-seg {
+  display:inline-flex;
+  padding:3px;
+  background:var(--surface-3);
+  border-radius:var(--r-sm);
+  gap:2px;
+}
+.dck-front .dck-seg .btn,
+.dck-front .dck-seg .btn-secondary {
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:34px;
+  height:30px;
+  padding:0 10px !important;
+  border:0 !important;
+  border-radius:6px !important;
+  background:transparent !important;
+  color:var(--tx-3) !important;
+  box-shadow:none !important;
+}
+.dck-front .dck-seg .btn:hover { background:var(--surface) !important; color:var(--tx) !important; }
+.dck-front .dck-seg .btn-active,
+.dck-front .dck-seg .btn.btn-active {
+  background:var(--surface) !important;
+  color:var(--tx) !important;
+  font-weight:600;
+  box-shadow:0 1px 2px rgba(16,24,40,.08) !important;
+}
+.dck-front .dck-seg .badge-danger {
+  top:-2px;
+  right:-2px;
+  padding:1px 5px;
+  font-family:var(--f-num);
+  font-size:9.5px;
+  border:2px solid var(--surface-3);
+}
+.dck-front .dck-seg i { font-size:15px; }
+
+/* ── Barre d'avancement des diligences ─────────────────────── */
+.dck-front .dck-progress {
+  display:flex;
+  align-items:center;
+  gap:9px;
+  min-width:130px;
+}
+.dck-front .dck-progress__track {
+  flex:1 1 auto;
+  height:6px;
+  border-radius:var(--r-full);
+  background:var(--surface-3);
+  overflow:hidden;
+}
+.dck-front .dck-progress__bar {
+  height:100%;
+  border-radius:var(--r-full);
+  background:var(--tx);
+  transition:width .6s cubic-bezier(.2,.7,.3,1);
+}
+.dck-front .dck-progress__bar.is-ok   { background:var(--ok); }
+.dck-front .dck-progress__bar.is-warn { background:var(--warn); }
+.dck-front .dck-progress__bar.is-err  { background:var(--err); }
+.dck-front .dck-progress__val {
+  flex:0 0 auto;
+  width:34px;
+  text-align:right;
+  font-family:var(--f-num);
+  font-variant-numeric:tabular-nums;
+  font-size:12px;
+  font-weight:600;
+  color:var(--tx-2);
+}
+
 /* ══════════════════════════════════════════════════════════════
    PHASE 3 — BARRE LATERALE ET EN-TETE
    ──────────────────────────────────────────────────────────────
