@@ -1142,3 +1142,138 @@ button {
   .dck-skel__line, .dck-skel__box, .dck-skel__card { animation:none; }
   .dck-nav-bar { transition:none; }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   PAGES DE DETAIL — tache et diligence
+   ──────────────────────────────────────────────────────────────
+   Ces deux vues font 1184 et 301 lignes, truffees de conditions de
+   permission. Elles sont traitees en CSS seul : aucune ligne de
+   balisage n est deplacee, donc aucun risque sur les droits.
+
+   Le motif libelle/valeur du projet
+     <div class="col-12 px-0 pb-3 d-lg-flex">
+       <p class="text-lightest w-30">Libelle</p>
+       <p class="text-dark-grey w-70">Valeur</p>
+     </div>
+   est rendu comme la liste de definitions de la maquette.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Cartes de detail ───────────────────────────────────────── */
+.dck-front .card.b-shadow-4,
+.dck-front .card.bg-white.border-0 {
+  border:1px solid var(--line) !important;
+  border-radius:var(--r);
+  box-shadow:none !important;
+}
+
+.dck-front .card-header.p-20 { padding:16px 18px !important; }
+.dck-front .card-header h4,
+.dck-front .card-header .f-18,
+.dck-front .card-header .f-21 {
+  font-size:17px !important;
+  font-weight:700 !important;
+  letter-spacing:-.02em;
+  color:var(--tx);
+}
+.dck-front .card-body { padding:18px !important; }
+
+/* ── Paires libelle / valeur ────────────────────────────────── */
+.dck-front .card-body > .col-12.px-0.pb-3,
+.dck-front .card > .col-12.px-0.pb-3 {
+  display:flex;
+  align-items:flex-start;
+  gap:14px;
+  padding:11px 0 !important;
+  margin:0;
+  border-bottom:1px solid var(--line);
+}
+.dck-front .card-body > .col-12.px-0.pb-3:last-child { border-bottom:0; }
+
+.dck-front .card-body > .col-12.px-0.pb-3 > p.text-lightest,
+.dck-front .card > .col-12.px-0.pb-3 > p.text-lightest {
+  flex:0 0 auto;
+  width:34%;
+  font-size:12.5px !important;
+  font-weight:500;
+  color:var(--tx-3) !important;
+  line-height:1.5;
+}
+.dck-front .card-body > .col-12.px-0.pb-3 > p.text-dark-grey,
+.dck-front .card > .col-12.px-0.pb-3 > p.text-dark-grey {
+  flex:1 1 auto;
+  width:auto !important;
+  font-size:13.5px !important;
+  font-weight:500;
+  color:var(--tx) !important;
+  line-height:1.5;
+}
+
+/* Pastille de statut devant une valeur */
+.dck-front .fa-circle.f-10 { font-size:7px !important; vertical-align:middle; }
+
+/* ── Colonne laterale collante ──────────────────────────────── */
+@media (min-width:992px) {
+  .dck-front .row > .col-sm-3 {
+    position:sticky;
+    top:78px;
+    align-self:flex-start;
+  }
+}
+
+/* ── Onglets de la fiche tache ──────────────────────────────── */
+.dck-front .task-tabs .nav-link,
+.dck-front .nav-link.f-15 {
+  padding:10px 14px !important;
+  border:0 !important;
+  border-bottom:2px solid transparent !important;
+  margin-bottom:-1px;
+  border-radius:0 !important;
+  font-size:13.5px !important;
+  font-weight:500;
+  color:var(--tx-3) !important;
+  background:transparent !important;
+}
+.dck-front .task-tabs .nav-link:hover,
+.dck-front .nav-link.f-15:hover { color:var(--tx) !important; }
+.dck-front .task-tabs .nav-link.active,
+.dck-front .nav-link.f-15.active {
+  color:var(--tx) !important;
+  font-weight:600;
+  border-bottom-color:var(--act) !important;
+}
+
+/* ── Onglets de la fiche diligence ──────────────────────────── */
+.dck-front .p-sub-menu,
+.p-sub-menu {
+  padding:11px 15px !important;
+  border:0 !important;
+  border-bottom:2px solid transparent !important;
+  font-size:13.5px !important;
+  font-weight:500;
+  color:var(--tx-3) !important;
+  text-decoration:none;
+}
+.p-sub-menu:hover { color:var(--tx) !important; }
+.p-sub-menu.active,
+.p-sub-menu.btn-active {
+  color:var(--tx) !important;
+  font-weight:600;
+  border-bottom-color:#000 !important;
+}
+
+/* ── Fils de discussion et commentaires ─────────────────────── */
+.dck-front .taskEmployeeImg,
+.dck-front .rounded-circle.taskEmployeeImg {
+  width:30px;
+  height:30px;
+  object-fit:cover;
+  border:1px solid var(--line);
+}
+
+/* ── Fichiers joints ────────────────────────────────────────── */
+.dck-front .file-card,
+.dck-front .attachment-box {
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:var(--surface);
+}

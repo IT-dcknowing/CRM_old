@@ -24,7 +24,7 @@ $projectArchived = $project->trashed();
     <!-- FILTER START -->
     <!-- PROJECT HEADER START -->
 
-    <div class="d-flex d-lg-block filter-box project-header bg-white">
+    <div class="d-flex d-lg-block filter-box project-header bg-white dck-front">
         <div class="mobile-close-overlay w-100 h-100" id="close-client-overlay"></div>
 
         <div class="project-menu" id="mob-client-detail">
