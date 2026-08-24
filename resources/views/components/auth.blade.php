@@ -30,6 +30,19 @@
             background-color: #fff      !important;
         }
 
+        /* Pages d'authentification : aucun debordement lateral possible. */
+        html, body {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        /* Centrage sans troncature : si le formulaire depasse la hauteur de
+           l'ecran, les marges auto le laissent defiler normalement. */
+        .login_section > .container {
+            margin: auto;
+            width: 100%;
+        }
+
     </style>
     @include('sections.theme_css')
     @if(file_exists(public_path().'/css/login-custom.css'))
@@ -57,13 +70,14 @@
 </header>
 
 
-<section class="py-5 bg-grey login_section"
+<section class="py-4 bg-grey login_section"
         @if ($globalSetting->login_background_url) style="background: url('{{ $globalSetting->login_background_url }}') center center/cover no-repeat;" @endif>
     <div class="container">
-        <div class="row">
-            <div class="text-center col-md-8">
+        <div class="row justify-content-center justify-content-lg-end w-100 mx-0">
+            {{-- Colonne vide : ne sert qu'a decaler le formulaire sur grand ecran --}}
+            <div class="d-none d-lg-block col-lg-7 col-xl-8">
             </div>
-            <div class="text-center col-md-4" align="center">
+            <div class="text-center col-12 col-sm-10 col-md-8 col-lg-5 col-xl-4 px-0 px-sm-3" align="center">
                 <div class="mx-auto text-center bg-white rounded login_box">
                     {{ $slot }}
                 </div>
