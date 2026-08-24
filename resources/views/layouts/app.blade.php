@@ -35,6 +35,12 @@
     {{-- Refonte du front — phase 1 : module Contrats.
          Toutes les regles sont scopees sous .dck-front : les ecrans
          qui ne portent pas cette classe conservent l'ancien rendu. --}}
+    {{-- Typographie de la refonte : IBM Plex Sans pour l'interface,
+         IBM Plex Mono pour les chiffres, references et colonnes numeriques. --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+
     <link type="text/css" rel="stylesheet" media="all" href="{{ asset('css/dck-flow.css') }}">
 
     <title>{{ is_array(__($pageTitle)) ? $pageTitle : __($pageTitle) }}</title>
