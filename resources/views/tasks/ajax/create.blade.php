@@ -11,7 +11,7 @@
 
 <link rel="stylesheet" href="{{ asset('vendor/css/dropzone.min.css') }}">
 
-<div class="row">
+<div class="row dck-front">
     <div class="col-sm-12">
         <x-form id="save-task-data-form">
             <input type="hidden" id="taskID" name="taskID">

@@ -379,6 +379,111 @@
 .dck-front .form-group { margin-bottom:18px; }
 .dck-front .p-20 { padding:20px !important; }
 
+/* ══════════════════════════════════════════════════════════════
+   TABLEAU KANBAN (module Taches)
+   La vue taskboard_data est chargee en ajax a l'interieur de
+   taskboard, qui porte .dck-front : la portee est donc heritee.
+   ══════════════════════════════════════════════════════════════ */
+.dck-front.w-task-board-box,
+.dck-front .w-task-board-box {
+  background:transparent !important;
+  padding:0 !important;
+}
+
+.dck-front .w-task-board-panel { gap:14px; }
+
+/* Colonne */
+.dck-front .b-p-header {
+  margin:0 0 11px !important;
+  padding:12px 14px;
+  background:var(--surface-2);
+  border:1px solid var(--line);
+  border-radius:var(--r) var(--r) 0 0;
+  border-bottom:0;
+}
+.dck-front .b-p-body {
+  background:var(--surface-2);
+  border:1px solid var(--line);
+  border-top:0;
+  border-radius:0 0 var(--r) var(--r);
+  padding:11px;
+}
+.dck-front .b-p-tasks { display:flex; flex-direction:column; gap:9px; }
+
+/* Compteur de la colonne */
+.dck-front .b-p-badge {
+  padding:1px 8px !important;
+  background:var(--surface-3) !important;
+  color:var(--tx-3) !important;
+  border-radius:var(--r-full) !important;
+  font-family:var(--f-num);
+  font-size:11.5px !important;
+  font-weight:600;
+}
+
+/* Carte de tache */
+.dck-front .b-p-tasks .card,
+.dck-front .no-task-card {
+  margin:0 !important;
+  background:var(--surface) !important;
+  border:1px solid var(--line) !important;
+  border-radius:10px !important;
+  box-shadow:none !important;
+  transition:border-color .14s ease, transform .14s ease;
+}
+.dck-front .b-p-tasks .card:hover {
+  border-color:var(--line-strong) !important;
+  transform:translateY(-1px);
+}
+.dck-front .b-p-tasks .card-body { padding:12px !important; }
+.dck-front .b-shadow-4 { box-shadow:none !important; }
+.dck-front .border-grey { border-color:var(--line) !important; }
+.dck-front .bg-additional-grey { background:var(--surface-2) !important; }
+.dck-front .bg-grey { background:var(--surface-3) !important; }
+
+/* Carte saisie pendant le glisser-deposer */
+.dck-front .gu-mirror {
+  border:1px solid var(--line-strong) !important;
+  border-radius:10px !important;
+  box-shadow:0 8px 24px rgba(16,24,40,.16) !important;
+  opacity:.96;
+}
+.dck-front .gu-transit { opacity:.35; }
+
+/* ── Cartes generiques hors kanban ──────────────────────────── */
+.dck-front .card {
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  box-shadow:none;
+}
+.dck-front .card-header {
+  padding:15px 18px;
+  background:var(--surface);
+  border-bottom:1px solid var(--line);
+  font-size:14.5px;
+  font-weight:600;
+}
+
+/* ── Onglets (fiche contrat, fiche diligence) ───────────────── */
+.dck-front .nav-tabs { border-bottom:1px solid var(--line); }
+.dck-front .nav-tabs .nav-link {
+  padding:10px 14px;
+  border:0;
+  border-bottom:2px solid transparent;
+  margin-bottom:-1px;
+  font-size:13.5px;
+  font-weight:500;
+  color:var(--tx-3);
+  border-radius:0;
+}
+.dck-front .nav-tabs .nav-link:hover { color:var(--tx); border-color:transparent; }
+.dck-front .nav-tabs .nav-link.active {
+  color:var(--tx);
+  font-weight:600;
+  background:transparent;
+  border-bottom-color:var(--act);
+}
+
 /* ── Accessibilite et mouvement ─────────────────────────────── */
 @media (prefers-reduced-motion:reduce) {
   .dck-front * { transition-duration:.01ms !important; animation-duration:.01ms !important; }

@@ -27,7 +27,7 @@
 @endphp
 
 <link rel="stylesheet" href="{{ asset('vendor/css/dropzone.min.css') }}">    
-<div class="row">
+<div class="row dck-front">
     <div class="col-sm-12">
         <input type="hidden" name="code_id" id="code_id" value="{{$newNumber1}}">
         <x-form id="save-project-data-form">

@@ -10,7 +10,7 @@
 
 
     <h3 class="heading-h1 mb-3">{{ $task->heading }}</h3>
-    <div class="row">
+    <div class="row dck-front">
         <div class="col-sm-9">
             <div class="card bg-white border-0 b-shadow-4">
                 <div class="card-header bg-white  border-bottom-grey  justify-content-between p-20">
