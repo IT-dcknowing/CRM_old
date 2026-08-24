@@ -72,7 +72,6 @@
         <div class="auth-visual__veil"></div>
 
         <div class="auth-visual__body">
-            <span class="auth-badge">Nouveauté : {{ $globalSetting->global_app_name ?? 'DCK FLOW TASK' }} v2.0</span>
             <h1>Optimisez votre flux de travail quotidien.</h1>
             <p>Rejoignez les professionnels qui gèrent leurs diligences et leurs tâches avec DC-KNOWING.</p>
         </div>

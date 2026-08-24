@@ -145,7 +145,7 @@
 }
 
 @media (min-width: 1024px) {
-    .auth-visual { display: flex; }
+    .auth-visual { display: flex; width: 55%; }
 }
 
 .auth-visual__img {
@@ -215,7 +215,7 @@
 }
 
 @media (min-width: 1024px) {
-    .auth-panel { width: 50%; }
+    .auth-panel { width: 45%; }
 }
 
 @media (max-width: 575.98px) {
@@ -224,7 +224,7 @@
 
 .auth-box {
     width: 100%;
-    max-width: 448px;
+    max-width: 384px;
 }
 
 /* ── Marque ────────────────────────────────────────────────── */
