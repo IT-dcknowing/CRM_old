@@ -791,6 +791,18 @@ body.sidebar-toggled .dck-chrome .dck-sect,
   background:var(--line);
 }
 
+/* ── Icones du menu (jeu en trait fin) ──────────────────────── */
+.dck-chrome .dck-ico {
+  width:18px;
+  height:18px;
+  flex:0 0 auto;
+  opacity:.9;
+  stroke-width:1.7;
+}
+.dck-chrome .nav-item.active .dck-ico,
+.dck-chrome .accordionItem.active .dck-ico { opacity:1; }
+.dck-chrome .nav-item .pl-3 { padding-left:11px !important; }
+
 /* ══════════════════════════════════════════════════════════════
    PHASE 3 — BARRE LATERALE ET EN-TETE
    ──────────────────────────────────────────────────────────────
@@ -1028,4 +1040,47 @@ body.sidebar-toggled .dck-chrome .dck-sect,
 /* ── Accessibilite et mouvement ─────────────────────────────── */
 @media (prefers-reduced-motion:reduce) {
   .dck-front * { transition-duration:.01ms !important; animation-duration:.01ms !important; }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TYPOGRAPHIE GLOBALE
+   ──────────────────────────────────────────────────────────────
+   Seul bloc volontairement NON scope de cette feuille.
+   main.css impose au corps la pile systeme (-apple-system,
+   BlinkMacSystemFont, Segoe UI...). Pour que l application porte la
+   meme typographie que la maquette, la famille doit etre redefinie
+   globalement — un selecteur scope ne peut pas atteindre <body>.
+
+   Seule la FAMILLE change : ni les tailles, ni les graisses, ni les
+   interlignages existants ne sont touches.
+   ══════════════════════════════════════════════════════════════ */
+
+body,
+.content-wrapper,
+.main-header,
+.main-sidebar,
+.sidebar-menu,
+.modal,
+.modal-content,
+.dropdown-menu,
+.table,
+table.dataTable,
+.card,
+.form-control,
+.btn,
+input,
+select,
+textarea,
+button {
+  font-family:"IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Les chiffres alignes gardent la fonte a chasse fixe */
+.dck-front .dck-ref,
+.dck-front .dck-date,
+.dck-front .dck-amount,
+.dck-front .dck-kpi__val,
+.dck-front .dck-progress__val,
+.dck-chrome .menu-item-count {
+  font-family:"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 }

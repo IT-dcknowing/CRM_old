@@ -9,7 +9,7 @@
     || $sidebarUserPermissions['view_ticket_dashboard'] == 4
     || $sidebarUserPermissions['view_finance_dashboard'] == 4
     )
-        <x-menu-item icon="house" :text="__('app.menu.dashboard')">
+        <x-menu-item dck="grid" icon="house" :text="__('app.menu.dashboard')">
             <x-slot name="iconPath">
                 <path fill-rule="evenodd"
                       d="M2 13.5V7h1v6.5a.5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5V7h1v6.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 13.5zm11-11V6l-2-2V2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5z" />
@@ -24,7 +24,7 @@
             </div>
         </x-menu-item> 
     @else
-        <x-menu-item icon="house" :text="__('app.menu.dashboard')" :link="route('dashboard')">
+        <x-menu-item dck="grid" icon="house" :text="__('app.menu.dashboard')" :link="route('dashboard')">
             <x-slot name="iconPath">
                 <path fill-rule="evenodd"
                       d="M2 13.5V7h1v6.5a.5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5V7h1v6.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 13.5zm11-11V6l-2-2V2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5z" />
@@ -35,7 +35,7 @@
     @endif
 
     {{-- [MODULE RETIRE] Notes
-    <x-menu-item icon="journal-text" :text="__('Notes')" :link="route('notes.index')">
+    <x-menu-item dck="file" icon="journal-text" :text="__('Notes')" :link="route('notes.index')">
         <x-slot name="iconPath">
             <path d="M5 10.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5zm0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z" />
             <path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2z" />
@@ -49,7 +49,7 @@
     
     {{-- [MODULE RETIRE] Leads / Deals
     @if (!in_array('client', user_roles()) && (in_array('leads', user_modules())) && (($sidebarUserPermissions['view_lead'] != 5 && $sidebarUserPermissions['view_lead'] != 'none') || ($sidebarUserPermissions['view_deals'] != 5 && $sidebarUserPermissions['view_deals'] != 'none')))
-        <x-menu-item icon="person" :text="__('app.menu.lead')">
+        <x-menu-item dck="users" icon="person" :text="__('app.menu.lead')">
             <x-slot name="iconPath">
                 <path d="M8 9.05a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/>
                 <path d="M1 1a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h.5a.5.5 0 0 0 .5-.5.5.5 0 0 1 1 0 .5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5.5.5 0 0 1 1 0 .5.5 0 0 0 .5.5h.5a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H6.707L6 1.293A1 1 0 0 0 5.293 1zm0 1h4.293L6 2.707A1 1 0 0 0 6.707 3H15v10h-.085a1.5 1.5 0 0 0-2.4-.63C11.885 11.223 10.554 10 8 10c-2.555 0-3.886 1.224-4.514 2.37a1.5 1.5 0 0 0-2.4.63H1z"/>
@@ -70,7 +70,7 @@
     
     @if (!in_array('client', user_roles()) && in_array('clients', user_modules()) && $sidebarUserPermissions['view_clients'] != 5 && $sidebarUserPermissions['view_clients'] != 'none')
         @if (!in_array('apporteurs', user_roles()))
-            <x-menu-item icon="building" :text="__('app.menu.clients')">
+            <x-menu-item dck="building" icon="building" :text="__('app.menu.clients')">
                 <x-slot name="iconPath">
                     <path
                         d="M6.5 1A1.5 1.5 0 0 0 5 2.5V3H1.5A1.5 1.5 0 0 0 0 4.5v8A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-8A1.5 1.5 0 0 0 14.5 3H11v-.5A1.5 1.5 0 0 0 9.5 1h-3zm0 1h3a.5.5 0 0 1 .5.5V3H6v-.5a.5.5 0 0 1 .5-.5zm1.886 6.914L15 7.151V12.5a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5V7.15l6.614 1.764a1.5 1.5 0 0 0 .772 0zM1.5 4h13a.5.5 0 0 1 .5.5v1.616L8.129 7.948a.5.5 0 0 1-.258 0L1 6.116V4.5a.5.5 0 0 1 .5-.5z" />
@@ -97,7 +97,7 @@
     @if (false) {{-- [MODULE RETIRE] Ressources humaines (employes, conges, presences, jours feries, services, departements, appreciations) --}}
     @if(!in_array('apporteurs', user_roles()))
         @if (!in_array('client', user_roles()) && (in_array('employees', user_modules()) || in_array('leaves', user_modules()) || in_array('attendance', user_modules()) || in_array('holidays', user_modules())) && ($sidebarUserPermissions['view_employees'] != 5 || $sidebarUserPermissions['view_leave'] != 5 || $sidebarUserPermissions['view_attendance'] != 5 || $sidebarUserPermissions['view_holiday'] != 5) && ($sidebarUserPermissions['view_employees'] != 'none' || $sidebarUserPermissions['view_leave'] != 'none' || $sidebarUserPermissions['view_attendance'] != 'none' || $sidebarUserPermissions['view_holiday'] != 'none' || $sidebarUserPermissions['view_shift_roster'] != 'none'))
-            <x-menu-item icon="people" :text="__('app.menu.hr')">
+            <x-menu-item dck="users" icon="people" :text="__('app.menu.hr')">
                 <x-slot name="iconPath">
                     <path
                         d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1h8zm-7.978-1A.261.261 0 0 1 7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002a.274.274 0 0 1-.014.002H7.022zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM6.936 9.28a5.88 5.88 0 0 0-1.23-.247A7.35 7.35 0 0 0 5 9c-4 0-5 3-5 4 0 .667.333 1 1 1h4.216A2.238 2.238 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816zM4.92 10A5.493 5.493 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275zM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0zm3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4z" />
@@ -145,33 +145,33 @@
     <!-- MENU CLIENT -->
     @if (in_array('client', user_roles()))
     
-        <x-menu-item class="message-menu" icon="chat-left-text" :link="route('projects.index')" :text="__('Diligences administratives')">
+        <x-menu-item dck="folder" class="message-menu" icon="chat-left-text" :link="route('projects.index')" :text="__('Diligences administratives')">
             <x-slot name="iconPath">
                 <path d="M6.5 1A1.5 1.5 0 0 0 5 2.5V3H1.5A1.5 1.5 0 0 0 0 4.5v8A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-8A1.5 1.5 0 0 0 14.5 3H11v-.5A1.5 1.5 0 0 0 9.5 1h-3zm0 1h3a.5.5 0 0 1 .5.5V3H6v-.5a.5.5 0 0 1 .5-.5zm1.886 6.914L15 7.151V12.5a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5V7.15l6.614 1.764a1.5 1.5 0 0 0 .772 0zM1.5 4h13a.5.5 0 0 1 .5.5v1.616L8.129 7.948a.5.5 0 0 1-.258 0L1 6.116V4.5a.5.5 0 0 1 .5-.5z"/>
             </x-slot>
         </x-menu-item>
         {{-- [MODULE RETIRE] Espace client : Comptabilite et Gestion, Formation, Fiscalite, Autres services, Factures
-        <x-menu-item class="message-menu" icon="chat-left-text" :link="(Route::has('projects.comptaGestion') ? route('projects.comptaGestion') : null)" :text="__('Comptabilité et Gestion')">
+        <x-menu-item dck="chart" class="message-menu" icon="chat-left-text" :link="(Route::has('projects.comptaGestion') ? route('projects.comptaGestion') : null)" :text="__('Comptabilité et Gestion')">
             <x-slot name="iconPath">
                 <path d="M5.757 1.071a.5.5 0 0 1 .172.686L3.383 6h9.234L10.07 1.757a.5.5 0 1 1 .858-.514L13.783 6H15a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1v4.5a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 1 13.5V9a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h1.217L5.07 1.243a.5.5 0 0 1 .686-.172zM2 9v4.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V9H2zM1 7v1h14V7H1zm3 3a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0v-3A.5.5 0 0 1 4 10zm2 0a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0v-3A.5.5 0 0 1 6 10zm2 0a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0v-3A.5.5 0 0 1 8 10zm2 0a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0v-3a.5.5 0 0 1 .5-.5zm2 0a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0v-3a.5.5 0 0 1 .5-.5z" />
             </x-slot>
         </x-menu-item>
-        <x-menu-item class="message-menu" icon="chat-left-text" :link="(Route::has('projects.formation') ? route('projects.formation') : null)" :text="__('Formation et information')">
+        <x-menu-item dck="book" class="message-menu" icon="chat-left-text" :link="(Route::has('projects.formation') ? route('projects.formation') : null)" :text="__('Formation et information')">
             <x-slot name="iconPath">
                 <path d="M8 1a5 5 0 0 0-5 5v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a6 6 0 1 1 12 0v6a2.5 2.5 0 0 1-2.5 2.5H9.366a1 1 0 0 1-.866.5h-1a1 1 0 1 1 0-2h1a1 1 0 0 1 .866.5H11.5A1.5 1.5 0 0 0 13 12h-1a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h1V6a5 5 0 0 0-5-5z" />
             </x-slot>
         </x-menu-item>
-        <x-menu-item class="message-menu" icon="chat-left-text" :link="(Route::has('projects.fiscalite') ? route('projects.fiscalite') : null)" :text="__('Fiscalité')">
+        <x-menu-item dck="scale" class="message-menu" icon="chat-left-text" :link="(Route::has('projects.fiscalite') ? route('projects.fiscalite') : null)" :text="__('Fiscalité')">
             <x-slot name="iconPath">
                 <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zM5 8h6a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z" />
             </x-slot>
         </x-menu-item>
-        <x-menu-item class="message-menu" icon="chat-left-text" :link="(Route::has('projects.autresServices') ? route('projects.autresServices') : null)" :text="__('Autres services')">
+        <x-menu-item dck="box" class="message-menu" icon="chat-left-text" :link="(Route::has('projects.autresServices') ? route('projects.autresServices') : null)" :text="__('Autres services')">
             <x-slot name="iconPath">
                 <path d="M7.5 1.018a7 7 0 0 0-4.79 11.566L7.5 7.793V1.018zm1 0V7.5h6.482A7.001 7.001 0 0 0 8.5 1.018zM14.982 8.5H8.207l-4.79 4.79A7 7 0 0 0 14.982 8.5zM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8z" />
             </x-slot>
         </x-menu-item>
-        <x-menu-item class="message-menu" icon="chat-left-text" :link="(Route::has('invoices.index') ? route('invoices.index') : null)" :text="__('app.menu.invoices')">
+        <x-menu-item dck="file" class="message-menu" icon="chat-left-text" :link="(Route::has('invoices.index') ? route('invoices.index') : null)" :text="__('app.menu.invoices')">
             <x-slot name="iconPath">
                 <path d="M4 10.781c.148 1.667 1.513 2.85 3.591 3.003V15h1.043v-1.216c2.27-.179 3.678-1.438 3.678-3.3 0-1.59-.947-2.51-2.956-3.028l-.722-.187V3.467c1.122.11 1.879.714 2.07 1.616h1.47c-.166-1.6-1.54-2.748-3.54-2.875V1H7.591v1.233c-1.939.23-3.27 1.472-3.27 3.156 0 1.454.966 2.483 2.661 2.917l.61.162v4.031c-1.149-.17-1.94-.8-2.131-1.718H4zm3.391-3.836c-1.043-.263-1.6-.825-1.6-1.616 0-.944.704-1.641 1.8-1.828v3.495l-.2-.05zm1.591 1.872c1.287.323 1.852.859 1.852 1.769 0 1.097-.826 1.828-2.2 1.939V8.73l.348.086z" />
             </x-slot>
@@ -181,7 +181,7 @@
 
     <!-- MENU APPORTEURS -->
     @if(in_array('apporteurs', user_roles()))
-    <x-menu-item icon="building" :text="__('app.menu.clients')" :link="route('clients.index')">
+    <x-menu-item dck="building" icon="building" :text="__('app.menu.clients')" :link="route('clients.index')">
         <x-slot name="iconPath">
             <path fill-rule="evenodd"
                 d="M14.763.075A.5.5 0 0 1 15 .5v15a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5V14h-1v1.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V10a.5.5 0 0 1 .342-.474L6 7.64V4.5a.5.5 0 0 1 .276-.447l8-4a.5.5 0 0 1 .487.022zM6 8.694 1 10.36V15h5V8.694zM7 15h2v-1.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5V15h2V1.309l-7 3.5V15z" />
@@ -189,7 +189,7 @@
                 d="M2 11h1v1H2v-1zm2 0h1v1H4v-1zm-2 2h1v1H2v-1zm2 0h1v1H4v-1zm4-4h1v1H8V9zm2 0h1v1h-1V9zm-2 2h1v1H8v-1zm2 0h1v1h-1v-1zm2-2h1v1h-1V9zm0 2h1v1h-1v-1zM8 7h1v1H8V7zm2 0h1v1h-1V7zm2 0h1v1h-1V7zM8 5h1v1H8V5zm2 0h1v1h-1V5zm2 0h1v1h-1V5zm0-2h1v1h-1V3z" />
         </x-slot>
     </x-menu-item>
-    <x-menu-item icon="briefcase" :text="__('app.menu.contracts')" :link="route('contracts.index')">
+    <x-menu-item dck="file" icon="briefcase" :text="__('app.menu.contracts')" :link="route('contracts.index')">
         <x-slot name="iconPath">
             <path
                 d="M6.5 1A1.5 1.5 0 0 0 5 2.5V3H1.5A1.5 1.5 0 0 0 0 4.5v8A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-8A1.5 1.5 0 0 0 14.5 3H11v-.5A1.5 1.5 0 0 0 9.5 1h-3zm0 1h3a.5.5 0 0 1 .5.5V3H6v-.5a.5.5 0 0 1 .5-.5zm1.886 6.914L15 7.151V12.5a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5V7.15l6.614 1.764a1.5 1.5 0 0 0 .772 0zM1.5 4h13a.5.5 0 0 1 .5.5v1.616L8.129 7.948a.5.5 0 0 1-.258 0L1 6.116V4.5a.5.5 0 0 1 .5-.5z" />
@@ -200,7 +200,7 @@
     <li class="dck-sect" aria-hidden="true">Travail</li>
     <!-- NAV ITEM - WORK COLLAPSE MENU -->
         @if ((in_array('contracts', user_modules()) || in_array('projects', user_modules()) || in_array('tasks', user_modules()) || in_array('timelogs', user_modules())) && ($sidebarUserPermissions['view_contract'] != 5 || $sidebarUserPermissions['view_projects'] != 5 || $sidebarUserPermissions['view_tasks'] != 5 || $sidebarUserPermissions['view_timelogs'] != 5) && ($sidebarUserPermissions['view_contract'] != 'none' || $sidebarUserPermissions['view_projects'] != 'none' || $sidebarUserPermissions['view_tasks'] != 'none' || $sidebarUserPermissions['view_timelogs'] != 'none'))
-            <x-menu-item icon="briefcase" :text="__('app.menu.work')">
+            <x-menu-item dck="task" icon="briefcase" :text="__('app.menu.work')">
                 <x-slot name="iconPath">
                     <path
                         d="M6.5 1A1.5 1.5 0 0 0 5 2.5V3H1.5A1.5 1.5 0 0 0 0 4.5v8A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-8A1.5 1.5 0 0 0 14.5 3H11v-.5A1.5 1.5 0 0 0 9.5 1h-3zm0 1h3a.5.5 0 0 1 .5.5V3H6v-.5a.5.5 0 0 1 .5-.5zm1.886 6.914L15 7.151V12.5a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5V7.15l6.614 1.764a1.5 1.5 0 0 0 .772 0zM1.5 4h13a.5.5 0 0 1 .5.5v1.616L8.129 7.948a.5.5 0 0 1-.258 0L1 6.116V4.5a.5.5 0 0 1 .5-.5z" />
@@ -238,7 +238,7 @@
     <!-- NAV ITEM - FINANCE COLLAPASE MENU -->
         @if (false) {{-- [MODULE RETIRE] Finance (propositions, devis, factures, paiements, avoirs, depenses, comptes bancaires) --}}
         @if ((in_array('estimates', user_modules()) || in_array('invoices', user_modules()) || in_array('payments', user_modules()) || in_array('expenses', user_modules()) || in_array('bankaccount', user_modules())) && ($sidebarUserPermissions['view_estimates'] != 5 || $sidebarUserPermissions['view_invoices'] != 5 || $sidebarUserPermissions['view_payments'] != 5 || $sidebarUserPermissions['view_expenses'] != 5 || $sidebarUserPermissions['view_lead_proposals'] != 5 || $sidebarUserPermissions['view_bankaccount'] != 5) && ($sidebarUserPermissions['view_estimates'] != 'none' || $sidebarUserPermissions['view_invoices'] != 'none' || $sidebarUserPermissions['view_payments'] != 'none' || $sidebarUserPermissions['view_expenses'] != 'none' || $sidebarUserPermissions['view_lead_proposals'] != 'none' || $sidebarUserPermissions['view_bankaccount'] != 'none'))
-            <x-menu-item icon="cash-coin" :active="($currentRouteName === 'payments.index')"
+            <x-menu-item dck="chart" icon="cash-coin" :active="($currentRouteName === 'payments.index')"
                         :text="__('app.menu.finance')">
                 <x-slot name="iconPath">
                     <path
@@ -283,7 +283,7 @@
     {{-- [MODULE RETIRE] Produits
     @if (!in_array('purchase', user_modules()) && in_array('products', user_modules()) && $sidebarUserPermissions['view_product'] != 5 && $sidebarUserPermissions['view_product'] != 'none')
         @if(!in_array('apporteurs', user_roles()))    
-            <x-menu-item icon="basket" :text="__('app.menu.products')" :link="(Route::has('products.index') ? route('products.index') : null)">
+            <x-menu-item dck="box" icon="basket" :text="__('app.menu.products')" :link="(Route::has('products.index') ? route('products.index') : null)">
                 <x-slot name="iconPath">
                     <path
                         d="M5.757 1.071a.5.5 0 0 1 .172.686L3.383 6h9.234L10.07 1.757a.5.5 0 1 1 .858-.514L13.783 6H15a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1v4.5a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 1 13.5V9a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h1.217L5.07 1.243a.5.5 0 0 1 .686-.172zM2 9v4.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V9H2zM1 7v1h14V7H1zm3 3a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0v-3A.5.5 0 0 1 4 10zm2 0a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0v-3A.5.5 0 0 1 6 10zm2 0a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0v-3A.5.5 0 0 1 8 10zm2 0a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0v-3a.5.5 0 0 1 .5-.5zm2 0a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0v-3a.5.5 0 0 1 .5-.5z" />
@@ -296,7 +296,7 @@
     <!-- NAV ITEM - PRODUCTS -->
     {{-- [MODULE RETIRE] Commandes
     @if (in_array('orders', user_modules()) && $sidebarUserPermissions['view_order'] != 5 && $sidebarUserPermissions['view_order'] != 'none')
-        <x-menu-item icon="cart3" :text="__('app.menu.orders')" :link="(Route::has('orders.index') ? route('orders.index') : null)">
+        <x-menu-item dck="cart" icon="cart3" :text="__('app.menu.orders')" :link="(Route::has('orders.index') ? route('orders.index') : null)">
             <x-slot name="iconPath">
                 <path
                     d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .49.598l-1 5a.5.5 0 0 1-.465.401l-9.397.472L4.415 11H13a.5.5 0 0 1 0 1H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM3.102 4l.84 4.479 9.144-.459L13.89 4H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
@@ -308,7 +308,7 @@
     <!-- NAV ITEM - TICKETS -->
     {{-- [MODULE RETIRE] Tickets
     @if (in_array('tickets', user_modules()) && $sidebarUserPermissions['view_tickets'] != 5 && $sidebarUserPermissions['view_tickets'] != 'none')
-        <x-menu-item icon="headset" :text="__('app.menu.tickets')" :link="(Route::has('tickets.index') ? route('tickets.index') : null)">
+        <x-menu-item dck="inbox" icon="headset" :text="__('app.menu.tickets')" :link="(Route::has('tickets.index') ? route('tickets.index') : null)">
             <x-slot name="iconPath">
                 <path
                     d="M8 1a5 5 0 0 0-5 5v1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a6 6 0 1 1 12 0v6a2.5 2.5 0 0 1-2.5 2.5H9.366a1 1 0 0 1-.866.5h-1a1 1 0 1 1 0-2h1a1 1 0 0 1 .866.5H11.5A1.5 1.5 0 0 0 13 12h-1a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h1V6a5 5 0 0 0-5-5z" />
@@ -320,7 +320,7 @@
     <!-- NAV ITEM - EVENTS -->
         {{-- [MODULE RETIRE] Evenements
         @if (in_array('events', user_modules()) && $sidebarUserPermissions['view_events'] != 5 && $sidebarUserPermissions['view_events'] != 'none')
-            <x-menu-item icon="calendar-event" :text="__('app.menu.events')" :link="(Route::has('events.index') ? route('events.index') : null)">
+            <x-menu-item dck="calendar" icon="calendar-event" :text="__('app.menu.events')" :link="(Route::has('events.index') ? route('events.index') : null)">
                 <x-slot name="iconPath">
                     <path
                         d="M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
@@ -335,7 +335,7 @@
         {{-- [MODULE RETIRE] Messagerie
         @if (in_array('messages', user_modules()))
             @if ((message_setting()->allow_client_admin == 'yes' || message_setting()->allow_client_employee == 'yes') && in_array('client', user_roles()))
-                <x-menu-item class="message-menu" icon="chat-left-text" :text="__('app.menu.messages')"
+                <x-menu-item dck="mail" class="message-menu" icon="chat-left-text" :text="__('app.menu.messages')"
                             :count="$unreadMessagesCount" :link="(Route::has('messages.index') ? route('messages.index') : null)">
                     <x-slot name="iconPath">
                         <path
@@ -345,7 +345,7 @@
                     </x-slot>
                 </x-menu-item>
             @elseif (in_array('employee', user_roles()))
-                <x-menu-item class="message-menu" icon="chat-left-text" :text="__('app.menu.messages')"
+                <x-menu-item dck="mail" class="message-menu" icon="chat-left-text" :text="__('app.menu.messages')"
                             :link="(Route::has('messages.index') ? route('messages.index') : null)" :count="$unreadMessagesCount">
                     <x-slot name="iconPath">
                         <path
@@ -361,7 +361,7 @@
     <!-- NAV ITEM - GDPR -->
     {{-- [MODULE RETIRE] RGPD
     @if (in_array('client', user_roles()) && $gdpr->enable_gdpr)
-        <x-menu-item icon="lock" :text="__('app.menu.gdpr')" :link="(Route::has('gdpr.index') ? route('gdpr.index') : null)">
+        <x-menu-item dck="shield" icon="lock" :text="__('app.menu.gdpr')" :link="(Route::has('gdpr.index') ? route('gdpr.index') : null)">
             <x-slot name="iconPath">
                 <path
                     d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zM5 8h6a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z" />
@@ -374,7 +374,7 @@
         @if(!in_array('apporteurs', user_roles()))
             {{-- [MODULE RETIRE] Tableau d affichage
             @if (in_array('notices', user_modules()) && $sidebarUserPermissions['view_notice'] != 5 && $sidebarUserPermissions['view_notice'] != 'none')
-                <x-menu-item icon="clipboard" :text="__('app.menu.noticeBoard')" :link="(Route::has('notices.index') ? route('notices.index') : null)">
+                <x-menu-item dck="bell" icon="clipboard" :text="__('app.menu.noticeBoard')" :link="(Route::has('notices.index') ? route('notices.index') : null)">
                     <x-slot name="iconPath">
                         <path
                             d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z" />
@@ -388,7 +388,7 @@
             <!-- Knowledge base -->
             {{-- [MODULE RETIRE] Base de connaissances
             @if (in_array('knowledgebase', user_modules()) && isset($sidebarUserPermissions['view_knowledgebase']) && $sidebarUserPermissions['view_knowledgebase'] != 5)
-            <x-menu-item icon="note" :text="__('app.menu.knowledgebase')" :link="(Route::has('knowledgebase.index') ? route('knowledgebase.index') : null)">
+            <x-menu-item dck="book" icon="note" :text="__('app.menu.knowledgebase')" :link="(Route::has('knowledgebase.index') ? route('knowledgebase.index') : null)">
                 <x-slot name="iconPath">
                     <g xmlns="http://www.w3.org/2000/svg" id="surface1">
                         <path
@@ -413,7 +413,7 @@
     <!-- NAV ITEM - NOTES -->
     {{-- [MODULE RETIRE] Notes client
     @if (in_array('client', user_roles()) && $sidebarUserPermissions['view_client_note'] != 5)
-        <x-menu-item icon="journal-text" :text="__('app.menu.notes')" :link="route('client-notes.index')">
+        <x-menu-item dck="file" icon="journal-text" :text="__('app.menu.notes')" :link="route('client-notes.index')">
             <x-slot name="iconPath">
                 <path
                     d="M5 10.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5zm0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z" />
@@ -433,7 +433,7 @@
 
     <!-- NAV ITEM - NOTICES -->
     @if (in_array('reports', user_modules()) && ($sidebarUserPermissions['view_task_report'] == 4 || $sidebarUserPermissions['view_time_log_report'] == 4 || (isset($sidebarUserPermissions['view_expense_report']) && $sidebarUserPermissions['view_expense_report'] == 4) || $sidebarUserPermissions['view_finance_report'] != 5 || $sidebarUserPermissions['view_income_expense_report'] == 4 || $sidebarUserPermissions['view_leave_report'] != 5 || $sidebarUserPermissions['view_attendance_report'] == 4 || $sidebarUserPermissions['view_lead_report'] == 4 || $sidebarUserPermissions['view_sales_report'] == 4) && ($sidebarUserPermissions['view_task_report'] != 'none' || $sidebarUserPermissions['view_time_log_report'] != 'none' || $sidebarUserPermissions['view_finance_report'] != 'none' || $sidebarUserPermissions['view_income_expense_report'] != 'none' || $sidebarUserPermissions['view_leave_report'] != 'none' || $sidebarUserPermissions['view_attendance_report'] != 'none' || $sidebarUserPermissions['view_lead_report'] != 'none' || $sidebarUserPermissions['view_sales_report'] != 'none' || (isset($sidebarUserPermissions['view_expense_report']) && $sidebarUserPermissions['view_expense_report'] != 'none')))
-        <x-menu-item icon="graph-up" :text="__('app.menu.reports')">
+        <x-menu-item dck="chart" icon="graph-up" :text="__('app.menu.reports')">
             <x-slot name="iconPath">
                 <path
                     d="M7.5 1.018a7 7 0 0 0-4.79 11.566L7.5 7.793V1.018zm1 0V7.5h6.482A7.001 7.001 0 0 0 8.5 1.018zM14.982 8.5H8.207l-4.79 4.79A7 7 0 0 0 14.982 8.5zM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8z" />
@@ -510,7 +510,7 @@
     <li class="dck-sect" aria-hidden="true">Système</li>
 <!-- NAV ITEM - REPORTS COLLAPASE MENU -->
     <!-- NAV ITEM - SETTINGS -->
-    <x-menu-item icon="gear" :text="__('app.menu.settings')"
+    <x-menu-item dck="cog" icon="gear" :text="__('app.menu.settings')"
                  :link="($sidebarUserPermissions['manage_company_setting'] == 4 ? route('company-settings.index') : route('profile-settings.index'))">
         <x-slot name="iconPath">
             <path
