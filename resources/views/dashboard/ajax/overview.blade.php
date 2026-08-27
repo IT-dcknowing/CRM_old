@@ -1,5 +1,18 @@
 <script src="{{ asset('vendor/jquery/frappe-charts.min.iife.js') }}"></script>
 
+{{--
+    Indicateurs de tete, conformes a la maquette pilotage-dc-knowing.
+    Les quatre valeurs viennent de $diligenceKpis, calcule en une seule
+    requete par OverviewDashboard::calculerDiligenceKpis(). Aucune
+    requete n'est declenchee ici.
+
+    Le bloc n'apparait que sur l'onglet Vue d'ensemble : les autres
+    onglets reutilisent cette vue sans cette variable.
+--}}
+@isset($diligenceKpis)
+    @include('dashboard.ajax.pilotage')
+@endisset
+
 <div class="row">
     @if (in_array('clients', user_modules()) && in_array('total_clients', $activeWidgets))
         <div class="col-xl-3 col-lg-6 col-md-6 mb-3">

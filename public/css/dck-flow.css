@@ -1313,3 +1313,621 @@ button {
 @media (max-width:900px) {
   .dck-detail-head { padding:16px 15px 0; }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   TABLEAU DE BORD
+   ──────────────────────────────────────────────────────────────
+   Deux conteneurs portent .dck-front dans dashboard/admin.blade.php :
+   l'en-tete (.dashboard-header) et le corps (.admin-dashboard).
+   Le corps fait @include($view) : ces regles habillent donc aussi
+   bien l'onglet Vue d'ensemble que les onglets Diligences, Clients
+   et Tickets, qui reutilisent les memes composants de carte.
+
+   Aucune vue n'est restructuree. Trois points d'accroche inertes
+   ont ete ajoutes aux composants partages — .dck-widget,
+   .dck-card et .dck-card__head — sans effet hors de .dck-front.
+   ══════════════════════════════════════════════════════════════ */
+
+.dck-front.dck-front.admin-dashboard { background:var(--surface-2); }
+
+/* ── Indicateurs de tete ────────────────────────────────────────
+   Le composant place le libelle, la valeur et l'icone cote a cote.
+   On reprend la metrique des indicateurs de la liste des contrats :
+   libelle discret, nombre en chasse fixe, icone en pastille. */
+
+.dck-front.dck-front .dck-widget {
+  background:var(--surface) !important;
+  border:1px solid var(--line);
+  border-radius:var(--r) !important;
+  box-shadow:none !important;
+  padding:17px 19px !important;
+  align-items:flex-start !important;
+  transition:border-color .15s ease;
+  height:100%;
+}
+
+.dck-front.dck-front a:hover .dck-widget { border-color:var(--line-strong); }
+
+.dck-front.dck-front .dck-widget h5 {
+  font-size:12.5px !important;
+  font-weight:500 !important;
+  color:var(--tx-3) !important;
+  margin-bottom:11px !important;
+  line-height:1.35;
+}
+
+.dck-front.dck-front .dck-widget p {
+  font-family:var(--f-num);
+  font-variant-numeric:tabular-nums;
+  font-size:27px !important;
+  font-weight:600 !important;
+  letter-spacing:-.03em;
+  line-height:1 !important;
+  color:var(--tx) !important;
+}
+
+/* L'icone devient une pastille, alignee sur le libelle */
+.dck-front.dck-front .dck-widget > .d-block:last-child {
+  width:32px; height:32px; flex:0 0 32px;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--surface-3);
+  border-radius:var(--r-sm);
+}
+
+.dck-front.dck-front .dck-widget > .d-block:last-child i {
+  font-size:14px !important;
+  color:var(--tx-3) !important;
+}
+
+/* ── Cartes de contenu ──────────────────────────────────────── */
+
+.dck-front.dck-front .dck-card {
+  background:var(--surface) !important;
+  border:1px solid var(--line) !important;
+  border-radius:var(--r) !important;
+  box-shadow:none !important;
+  height:100%;
+}
+
+.dck-front.dck-front .dck-card__head {
+  padding:16px 19px 13px !important;
+  border-bottom:1px solid var(--line) !important;
+  align-items:center;
+  background:transparent !important;
+}
+
+.dck-front.dck-front .dck-card__head h4 {
+  font-size:14.5px !important;
+  font-weight:600 !important;
+  color:var(--tx) !important;
+  letter-spacing:-.005em;
+}
+
+.dck-front.dck-front .dck-card__head .fa-question-circle {
+  color:var(--tx-4);
+  font-size:12px;
+  margin-left:5px;
+}
+
+.dck-front.dck-front .dck-card > .card-body { padding:15px 19px; }
+.dck-front.dck-front .dck-card > .card-body.p-0 { padding:0 !important; }
+
+/* ── Lignes internes ────────────────────────────────────────────
+   Les fils d'activite et les listes de taches enveloppent CHAQUE
+   ligne dans une .card, ce qui produisait une carte dans la carte.
+   On les aplatit en lignes separees par un filet. */
+
+.dck-front.dck-front .dck-card .card-body .card {
+  background:transparent !important;
+  border:0 !important;
+  border-bottom:1px solid var(--line) !important;
+  border-radius:0 !important;
+  box-shadow:none !important;
+  padding:13px 19px !important;
+}
+
+.dck-front.dck-front .dck-card .card-body .card:last-child {
+  border-bottom:0 !important;
+}
+
+.dck-front.dck-front .dck-card .card-body .card:hover {
+  background:var(--surface-2) !important;
+}
+
+.dck-front.dck-front .dck-card .card-title {
+  font-size:13px !important;
+  font-weight:500 !important;
+  color:var(--tx) !important;
+  line-height:1.45;
+}
+
+.dck-front.dck-front .dck-card .card-text {
+  font-size:12px !important;
+  color:var(--tx-3) !important;
+  margin-top:3px;
+}
+
+.dck-front.dck-front .dck-card .card-text a { color:var(--tx-2) !important; }
+.dck-front.dck-front .dck-card .card-text a:hover { color:var(--tx) !important; }
+
+/* Zones defilantes : la barre reste discrete */
+.dck-front.dck-front .h-200 { scrollbar-width:thin; }
+.dck-front.dck-front .h-200::-webkit-scrollbar { width:7px; }
+.dck-front.dck-front .h-200::-webkit-scrollbar-thumb {
+  background:var(--n300); border-radius:var(--r-full);
+}
+
+/* ── En-tete : onglets et selecteur de periode ──────────────── */
+
+.dck-front.dck-front.dashboard-header {
+  background:var(--surface) !important;
+  border-bottom:1px solid var(--line);
+}
+
+.dck-front.dck-front.dashboard-header .form-control {
+  font-size:13px !important;
+  color:var(--tx-2) !important;
+}
+
+.dck-front.dck-front.dashboard-header .fa-calendar-alt,
+.dck-front.dck-front.dashboard-header .fa-cog {
+  color:var(--tx-3) !important;
+  font-size:13px !important;
+}
+
+/* ── Tableaux dans les cartes ───────────────────────────────── */
+
+.dck-front.dck-front .dck-card table { margin-bottom:0; }
+
+.dck-front.dck-front .dck-card table th {
+  font-size:11px;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  font-weight:600;
+  color:var(--tx-3) !important;
+  border-top:0 !important;
+  border-bottom:1px solid var(--line) !important;
+  padding:10px 19px !important;
+  background:var(--surface-2);
+}
+
+.dck-front.dck-front .dck-card table td {
+  font-size:13px;
+  color:var(--tx-2) !important;
+  border-top:0 !important;
+  border-bottom:1px solid var(--line) !important;
+  padding:11px 19px !important;
+  vertical-align:middle;
+}
+
+.dck-front.dck-front .dck-card table tr:last-child td { border-bottom:0 !important; }
+
+/* ── Bandeau d'indicateurs de tete ───────────────────────────────
+   Reutilise le composant x-dck.kpi de la liste des contrats : meme
+   metrique, meme grille. Le bandeau precede les widgets historiques,
+   qui restent pilotes par les reglages de widgets. */
+
+.dck-front.dck-front .dck-kpis { margin-bottom:4px; }
+
+.dck-front.dck-front .dck-kpis .dck-kpi { height:100%; }
+
+.dck-front.dck-front .dck-kpis a { text-decoration:none; display:block; height:100%; }
+
+/* ── En-tete : onglets ──────────────────────────────────────────
+   x-tab produit .p-sub-menu, deja habille pour la fiche diligence.
+   Il reste a retirer le filet vertical herite du theme, que la
+   maquette n'a pas, et a poser le rail horizontal sous la rangee. */
+
+.dck-front.dck-front.dashboard-header .p-sub-menu.border-right-grey {
+  border-right:0 !important;
+}
+
+.dck-front.dck-front.dashboard-header .project-menu {
+  gap:2px;
+}
+
+.dck-front.dck-front.dashboard-header .select-status .form-control {
+  background:transparent !important;
+  padding-left:0 !important;
+}
+
+/* Le panneau de reglage des widgets suit la meme facture que les cartes */
+.dck-front.dck-front.dashboard-header .dropdown-menu {
+  border:1px solid var(--line) !important;
+  border-radius:var(--r) !important;
+  box-shadow:0 8px 28px rgba(15,20,25,.10) !important;
+}
+
+.dck-front.dck-front.dashboard-header .dropdown-menu .heading-h3 {
+  font-size:14px !important;
+  font-weight:600 !important;
+  color:var(--tx) !important;
+}
+
+.dck-front.dck-front.dashboard-header .dropdown-menu label {
+  font-size:13px !important;
+  color:var(--tx-2) !important;
+}
+
+/* ── Graphiques ─────────────────────────────────────────────────
+   frappe-charts dessine en SVG dans .chart-container. Les couleurs
+   des series viennent des donnees (couleurs de statut en base pour
+   l'onglet Diligences, couleur du theme pour la Vue d'ensemble) :
+   on n'habille donc ici que le cadre, la grille et les etiquettes.
+
+   Note d'accessibilite : la paire terminee / annulee est a une
+   distance perceptive faible en deuteranopie. Les etiquettes de
+   frappe-charts sont conservees pour que la couleur ne porte
+   jamais l'information seule. */
+
+.dck-front.dck-front .chart-container { padding:4px 0; }
+
+.dck-front.dck-front .chart-container .chart-label,
+.dck-front.dck-front .chart-container text {
+  font-size:11px !important;
+  fill:var(--tx-3) !important;
+}
+
+.dck-front.dck-front .chart-container .y-axis-guide,
+.dck-front.dck-front .chart-container line.y-line,
+.dck-front.dck-front .chart-container .axis line {
+  stroke:var(--line) !important;
+}
+
+.dck-front.dck-front .chart-container .axis text { fill:var(--tx-3) !important; }
+
+/* Infobulle du graphique : meme facture que les cartes */
+.dck-front.dck-front .graph-svg-tip {
+  background:var(--n900) !important;
+  border-radius:var(--r-sm) !important;
+  font-size:12px !important;
+}
+
+.dck-front.dck-front .graph-svg-tip .title { color:var(--n300) !important; }
+.dck-front.dck-front .graph-svg-tip ul li { color:var(--n0) !important; }
+
+/* ── Legendes de statut ─────────────────────────────────────────
+   Les pastilles de couleur des statuts sont toujours accompagnees
+   de leur libelle : jamais de couleur seule. */
+
+.dck-front.dck-front .status-label,
+.dck-front.dck-front .legend-dot {
+  width:9px; height:9px; border-radius:var(--r-full);
+  display:inline-block; margin-right:6px; flex:0 0 auto;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BLOC DE PILOTAGE — conforme a pilotage-dc-knowing
+   ──────────────────────────────────────────────────────────────
+   Transposition des regles de la maquette sur les jetons de cette
+   feuille. Les classes sont prefixees dck- : les noms de la maquette
+   (.card, .kpi, .stack, .legend) sont trop generiques pour cohabiter
+   avec Bootstrap sans collision.
+
+   Correspondances : --surface, --line, --tx-3 et --f-num remplacent
+   respectivement --surface, --line-2, --ink-3 et --fm.
+   ══════════════════════════════════════════════════════════════ */
+
+.dck-front.dck-front .dck-pilotage {
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  margin-bottom:22px;
+}
+
+/* ── Indicateurs ────────────────────────────────────────────── */
+
+.dck-front.dck-front .dck-kpis {
+  display:grid;
+  grid-template-columns:repeat(4, 1fr);
+  gap:14px;
+}
+
+.dck-front.dck-front .dck-k {
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  padding:15px 16px 12px;
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+  text-decoration:none;
+  transition:border-color .15s ease;
+}
+
+.dck-front.dck-front a.dck-k:hover { border-color:var(--line-strong); }
+
+.dck-front.dck-front .dck-k__lbl {
+  font-size:10.5px;
+  font-weight:600;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--tx-3);
+}
+
+.dck-front.dck-front .dck-k__val {
+  font-family:var(--f-num);
+  font-weight:600;
+  font-size:27px;
+  letter-spacing:-.02em;
+  line-height:1.15;
+  font-variant-numeric:tabular-nums;
+  color:var(--tx);
+}
+
+.dck-front.dck-front .dck-k__val.is-alerte { color:var(--err); }
+
+.dck-front.dck-front .dck-k__foot {
+  display:flex;
+  align-items:flex-end;
+  gap:10px;
+  margin-top:7px;
+}
+
+.dck-front.dck-front .dck-k__delta {
+  font-size:11.5px;
+  font-weight:600;
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+}
+
+.dck-front.dck-front .dck-k__delta.is-up   { color:var(--ok); }
+.dck-front.dck-front .dck-k__delta.is-down { color:var(--err); }
+.dck-front.dck-front .dck-k__delta.is-flat { color:var(--tx-3); }
+
+/* ── Grille analytique ──────────────────────────────────────── */
+
+.dck-front.dck-front .dck-grid2 {
+  display:grid;
+  grid-template-columns:1.55fr 1fr;
+  gap:18px;
+  align-items:start;
+}
+
+/* ── Cartes ─────────────────────────────────────────────────── */
+
+.dck-front.dck-front .dck-c {
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  overflow:hidden;
+}
+
+.dck-front.dck-front .dck-c__head {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:13px 16px;
+  border-bottom:1px solid var(--line);
+}
+
+.dck-front.dck-front .dck-c__head h3 {
+  font-size:13.5px;
+  font-weight:600;
+  margin:0;
+  color:var(--tx);
+}
+
+.dck-front.dck-front .dck-c__sub {
+  font-size:11.5px;
+  color:var(--tx-3);
+  margin-top:2px;
+}
+
+.dck-front.dck-front .dck-c__right { margin-left:auto; }
+
+.dck-front.dck-front .dck-lien {
+  font-size:12px;
+  font-weight:500;
+  color:var(--tx-2);
+  text-decoration:none;
+}
+
+.dck-front.dck-front .dck-lien:hover { color:var(--tx); text-decoration:underline; }
+
+.dck-front.dck-front .dck-c__body { padding:16px; }
+
+/* ── Graphique en barres ────────────────────────────────────── */
+
+.dck-front.dck-front .dck-chart { overflow-x:auto; }
+.dck-front.dck-front .dck-bars { display:block; width:100%; height:auto; }
+.dck-front.dck-front .dck-bar__v { fill:var(--act); }
+.dck-front.dck-front .dck-bar__hit { fill:transparent; cursor:pointer; }
+.dck-front.dck-front .dck-bar:hover .dck-bar__v { fill:var(--act-hover); }
+.dck-front.dck-front .dck-grid { stroke:var(--line); stroke-width:1; }
+.dck-front.dck-front .dck-zero { stroke:var(--line-strong); stroke-width:1; }
+
+.dck-front.dck-front .dck-axe {
+  font-family:var(--f-num);
+  font-size:9.5px;
+  fill:var(--tx-3);
+}
+
+/* ── Barre empilee et legende ───────────────────────────────── */
+
+.dck-front.dck-front .dck-stack {
+  display:flex;
+  height:13px;
+  border-radius:7px;
+  overflow:hidden;
+  gap:2px;
+  background:var(--surface);
+}
+
+.dck-front.dck-front .dck-stack > span { display:block; }
+
+.dck-front.dck-front .dck-legend {
+  display:flex;
+  flex-direction:column;
+  gap:9px;
+  margin-top:15px;
+}
+
+.dck-front.dck-front .dck-legend__row {
+  display:flex;
+  align-items:center;
+  gap:9px;
+  font-size:13px;
+}
+
+.dck-front.dck-front .dck-legend__key {
+  width:9px; height:9px;
+  border-radius:2.5px;
+  flex:none;
+  display:inline-block;
+}
+
+.dck-front.dck-front .dck-legend__nm { color:var(--tx-2); }
+
+.dck-front.dck-front .dck-legend__n {
+  margin-left:auto;
+  font-family:var(--f-num);
+  font-variant-numeric:tabular-nums;
+  font-weight:600;
+  color:var(--tx);
+}
+
+.dck-front.dck-front .dck-legend__p {
+  font-family:var(--f-num);
+  font-variant-numeric:tabular-nums;
+  font-size:12px;
+  color:var(--tx-3);
+  width:52px;
+  text-align:right;
+}
+
+/* ── Tableau ────────────────────────────────────────────────── */
+
+.dck-front.dck-front .dck-tbl { overflow-x:auto; }
+
+.dck-front.dck-front .dck-tbl table {
+  border-collapse:collapse;
+  width:100%;
+  font-size:13px;
+  margin:0;
+}
+
+.dck-front.dck-front .dck-tbl th {
+  text-align:left;
+  font-size:10px;
+  font-weight:600;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--tx-3);
+  padding:9px 16px;
+  background:var(--surface-2);
+  border:0;
+  border-bottom:1px solid var(--line);
+}
+
+.dck-front.dck-front .dck-tbl td {
+  padding:11px 16px;
+  border:0;
+  border-bottom:1px solid var(--line);
+  vertical-align:middle;
+  color:var(--tx-2);
+}
+
+.dck-front.dck-front .dck-tbl tbody tr:last-child td { border-bottom:0; }
+.dck-front.dck-front .dck-tbl tbody tr:hover td { background:var(--surface-2); }
+
+.dck-front.dck-front .dck-ref,
+.dck-front.dck-front .dck-date {
+  font-family:var(--f-num);
+  font-variant-numeric:tabular-nums;
+  font-size:12px;
+  white-space:nowrap;
+}
+
+.dck-front.dck-front .dck-ttl {
+  font-weight:500;
+  color:var(--tx);
+  text-decoration:none;
+}
+
+.dck-front.dck-front .dck-ttl:hover { text-decoration:underline; }
+.dck-front.dck-front .dck-cl { color:var(--tx-3); }
+
+.dck-front.dck-front .dck-vide {
+  text-align:center;
+  color:var(--tx-3);
+  padding:26px 16px !important;
+}
+
+.dck-front.dck-front .dck-pill {
+  display:inline-block;
+  font-size:11px;
+  font-weight:600;
+  padding:3px 9px;
+  border-radius:var(--r-full);
+  white-space:nowrap;
+}
+
+.dck-front.dck-front .dck-pill.is-late  { background:var(--err-bg);  color:var(--err);  }
+.dck-front.dck-front .dck-pill.is-doing { background:var(--info-bg); color:var(--info); }
+
+/* ── Echeancier ─────────────────────────────────────────────── */
+
+.dck-front.dck-front .dck-dl {
+  display:flex;
+  gap:12px;
+  padding:11px 16px;
+  border-bottom:1px solid var(--line);
+  align-items:flex-start;
+}
+
+.dck-front.dck-front .dck-dl:last-child { border-bottom:0; }
+
+.dck-front.dck-front .dck-dl__when {
+  flex:none;
+  width:42px;
+  text-align:center;
+  font-family:var(--f-num);
+  line-height:1.1;
+  padding-top:2px;
+}
+
+.dck-front.dck-front .dck-dl__when b {
+  display:block;
+  font-size:15px;
+  font-weight:600;
+  color:var(--tx);
+}
+
+.dck-front.dck-front .dck-dl__when span {
+  font-size:9.5px;
+  text-transform:uppercase;
+  color:var(--tx-3);
+  letter-spacing:.06em;
+}
+
+.dck-front.dck-front .dck-dl.is-urgent .dck-dl__when b { color:var(--err); }
+
+.dck-front.dck-front .dck-dl__what { min-width:0; }
+
+.dck-front.dck-front .dck-dl__what b {
+  display:block;
+  font-size:13px;
+  font-weight:600;
+  color:var(--tx);
+}
+
+.dck-front.dck-front .dck-dl__what span {
+  font-size:11.5px;
+  color:var(--tx-3);
+}
+
+/* ── Adaptation aux petits ecrans ───────────────────────────── */
+
+@media (max-width:1200px) {
+  .dck-front.dck-front .dck-grid2 { grid-template-columns:1fr; }
+}
+
+@media (max-width:900px) {
+  .dck-front.dck-front .dck-kpis { grid-template-columns:repeat(2, 1fr); }
+}
+
+@media (max-width:560px) {
+  .dck-front.dck-front .dck-kpis { grid-template-columns:1fr; }
+}
