@@ -241,6 +241,13 @@
             @include('dashboard.ajax.pilotage')
         @endisset
 
+        {{-- Les widgets historiques ne sont affiches que si au moins un
+             reste actif. Leurs deux conteneurs — la rangee emp-dash-detail
+             et la colonne de droite — n'ont aucune condition propre : sans
+             cette garde, ils laisseraient une zone vide sous le bloc de
+             pilotage. Rallumer un widget depuis les reglages fait
+             reapparaitre la section. --}}
+        @if (count($activeWidgets) > 0)
          <!-- EMPLOYEE DASHBOARD DETAIL START -->
          <div class="row emp-dash-detail">
             <!-- EMP DASHBOARD INFO NOTICES START -->
@@ -445,6 +452,7 @@
             <!-- EMP DASHBOARD TASKS PROJECTS EVENTS END -->
         </div>
         <!-- EMPLOYEE DASHBOARD DETAIL END -->
+        @endif
 
     </div>
     <!-- CONTENT WRAPPER END -->
