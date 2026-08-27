@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\DB;
 trait OverviewDashboard
 {
     use PilotageDiligences;
+    use PilotageCabinet;
 
 
     /**
@@ -57,6 +58,7 @@ trait OverviewDashboard
             ->first();
 
         $this->chargerPilotage();
+        $this->chargerPilotageCabinet();
 
         $minutes = $this->counts->totalHoursLogged - $this->counts->totalBreakMinutes;
         $hours = intdiv($minutes, 60);

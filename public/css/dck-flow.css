@@ -2880,3 +2880,94 @@ button {
 @media (max-width:560px) {
   .dck-front.dck-front .dck-g4 { grid-template-columns:1fr; }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   TABLEAU DE BORD DU CABINET — complements
+   ──────────────────────────────────────────────────────────────
+   Reprend les composants deja poses pour l'espace collaborateur
+   (.dck-grid, .dck-kpi2, .dck-bar, .dck-note) et ajoute ce que
+   PAGES.dashboard demande en propre : le graphique en aires a deux
+   series, sa legende, et le taux de cloture.
+   ══════════════════════════════════════════════════════════════ */
+
+.dck-front.dck-front .dck-g2 { grid-template-columns:repeat(2, 1fr); }
+
+/* Graphique a deux series */
+.dck-front.dck-front .dck-aires { display:block; width:100%; height:auto; }
+
+.dck-front.dck-front .dck-serie {
+  fill:none;
+  stroke-width:2;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+
+.dck-front.dck-front .dck-serie--1 { stroke:#175CD3; }
+.dck-front.dck-front .dck-serie--2 { stroke:#0E7C5A; }
+
+.dck-front.dck-front .dck-legende2 {
+  display:flex;
+  gap:18px;
+  margin-top:14px;
+  font-size:12.5px;
+  color:var(--tx-2);
+}
+
+.dck-front.dck-front .dck-legende2 span {
+  display:flex;
+  align-items:center;
+  gap:7px;
+}
+
+.dck-front.dck-front .dck-legende2 i {
+  width:9px; height:9px;
+  border-radius:2.5px;
+  display:inline-block;
+  flex:0 0 auto;
+}
+
+/* Barre courte, dans une cellule de tableau */
+.dck-front.dck-front .dck-bar--min {
+  width:70px;
+  display:inline-block;
+  vertical-align:middle;
+  margin-right:8px;
+}
+
+.dck-front.dck-front .dck-av {
+  font-family:var(--f-num);
+  font-variant-numeric:tabular-nums;
+  font-size:12px;
+  color:var(--tx-3);
+}
+
+.dck-front.dck-front .dck-date.is-late { color:var(--err); font-weight:600; }
+
+/* Taux de cloture */
+.dck-front.dck-front .dck-taux {
+  display:flex;
+  align-items:center;
+  gap:16px;
+}
+
+.dck-front.dck-front .dck-taux b {
+  font-family:var(--f-num);
+  font-variant-numeric:tabular-nums;
+  font-size:34px;
+  font-weight:600;
+  letter-spacing:-.03em;
+  line-height:1;
+  color:var(--tx);
+}
+
+.dck-front.dck-front .dck-taux .dck-bar { flex:1 1 auto; }
+
+.dck-front.dck-front .dck-note.is-warn {
+  background:var(--warn-bg);
+  border-color:var(--warn-line);
+  color:var(--warn);
+}
+
+@media (max-width:1200px) {
+  .dck-front.dck-front .dck-g2 { grid-template-columns:1fr; }
+}
