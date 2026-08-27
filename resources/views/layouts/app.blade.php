@@ -194,6 +194,7 @@
 {{-- Fluidite percue : squelettes, barre de navigation, retour immediat
      sur les boutons. Charge apres main.js, qu il complete sans le modifier. --}}
 <script src="{{ asset('js/dck-fluidite.js') }}?v={{ @filemtime(public_path('js/dck-fluidite.js')) }}"></script>
+<script src="{{ asset('js/dck-theme.js') }}?v={{ @filemtime(public_path('js/dck-theme.js')) }}"></script>
 <script>
     // Translation of default values for the select picker box.
     $.fn.selectpicker.Constructor.DEFAULTS.noneSelectedText = "@lang('placeholders.noneSelectedText')";

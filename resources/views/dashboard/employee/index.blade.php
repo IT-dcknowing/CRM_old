@@ -66,15 +66,6 @@
     <!-- CONTENT WRAPPER START -->
     <div class="px-4 py-2 border-top-0 emp-dashboard dck-front">
 
-        {{-- Bloc de pilotage, identique a celui de l'administrateur mais
-             restreint aux diligences dont le collaborateur est membre.
-             Les variables sont preparees par PilotageDiligences. --}}
-        @isset($diligenceKpis)
-            <div class="pt-3">
-                @include('dashboard.ajax.pilotage')
-            </div>
-        @endisset
-
         <!-- WELOCOME START -->
         @if (!is_null($checkTodayLeave))
             <div class="row pt-4">
@@ -241,6 +232,15 @@
             <!-- CLOCK IN CLOCK OUT END -->
         </div>
         <!-- WELOCOME END -->
+
+        {{-- Bloc de pilotage, place apres le bandeau de bienvenue et de
+             pointage : l'ecran se lit alors de haut en bas, du contexte
+             personnel vers l'activite. Restreint aux diligences dont le
+             collaborateur est membre (voir PilotageDiligences). --}}
+        @isset($diligenceKpis)
+            @include('dashboard.ajax.pilotage')
+        @endisset
+
          <!-- EMPLOYEE DASHBOARD DETAIL START -->
          <div class="row emp-dash-detail">
             <!-- EMP DASHBOARD INFO NOTICES START -->

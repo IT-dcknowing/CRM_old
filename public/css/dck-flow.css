@@ -2217,3 +2217,192 @@ button {
   border-radius:var(--r-sm) !important;
   font-size:13px;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   THEME SOMBRE
+   ──────────────────────────────────────────────────────────────
+   Le gabarit pose <body class="dark-theme"> selon user()->dark_theme.
+   main.css traite ainsi le theme d'origine, mais cette feuille n'en
+   savait rien : les ecrans refondus seraient restes clairs sur fond
+   sombre, donc illisibles.
+
+   Toute la feuille etant construite sur des jetons, il suffit de les
+   redefinir : cartes, tableaux, champs, boutons, indicateurs,
+   graphiques et modales suivent sans qu'une seule regle de composant
+   soit dupliquee.
+
+   Les valeurs ne sont pas une inversion mecanique du clair. Sur fond
+   sombre, un blanc pur vibre et les bordures claires se detachent
+   trop : les surfaces montent par paliers, les filets restent
+   discrets, et les couleurs de statut sont eclaircies pour garder
+   leur contraste sur un fond fonce.
+   ══════════════════════════════════════════════════════════════ */
+
+.dark-theme .dck-front,
+.dark-theme .dck-chrome {
+  /* Neutres inverses : n0 devient la surface la plus sombre. */
+  --n0:#161a20; --n50:#1c2128; --n100:#232931; --n200:#2f3742;
+  --n300:#3d4653; --n400:#78828f; --n500:#98a2ae;
+  --n600:#b4bcc6; --n700:#ccd2da; --n800:#e2e6eb; --n900:#f2f4f7;
+
+  --surface:var(--n0);
+  --surface-2:var(--n50);
+  --surface-3:var(--n100);
+  --line:var(--n200);
+  --line-strong:var(--n300);
+
+  --tx:var(--n900);
+  --tx-2:var(--n700);
+  --tx-3:var(--n500);
+  --tx-4:var(--n400);
+
+  /* L'action passe du noir au blanc : c'est elle qui doit ressortir. */
+  --act:#f2f4f7;
+  --act-hover:#ffffff;
+  --act-tx:#12161c;
+
+  /* Statuts eclaircis pour rester lisibles sur fond sombre. */
+  --ok:#86c98a;   --ok-bg:#16251a;   --ok-line:#2c4a31;
+  --warn:#dcb367; --warn-bg:#2a2214; --warn-line:#4c3f22;
+  --err:#e59083;  --err-bg:#2b1a17;  --err-line:#4d2f2a;
+  --info:#7ab6e8; --info-bg:#152634; --info-line:#28455f;
+}
+
+/* Le fond de page : le gabarit peint le corps, on accorde les
+   conteneurs de contenu pour eviter un bandeau clair residuel. */
+.dark-theme .dck-front.admin-dashboard,
+.dark-theme .dck-front.emp-dashboard,
+.dark-theme .dck-front.w-task-board-box,
+.dark-theme .dck-front.content-wrapper {
+  background:var(--surface-2) !important;
+}
+
+.dark-theme .dck-front.dck-front .bg-white,
+.dark-theme .dck-front.dck-front .card,
+.dark-theme .dck-front.dck-front .dck-c,
+.dark-theme .dck-front.dck-front .dck-k,
+.dark-theme .dck-front.dck-front .w-tables,
+.dark-theme .dck-front.dck-front .task-card {
+  background:var(--surface) !important;
+  color:var(--tx);
+}
+
+/* Le theme d'origine impose des couleurs de texte en dur : on les
+   ramene sur les jetons, sinon du gris fonce subsiste sur fond sombre. */
+.dark-theme .dck-front.dck-front .text-dark,
+.dark-theme .dck-front.dck-front .text-darkest-grey,
+.dark-theme .dck-chrome.dck-chrome .text-dark {
+  color:var(--tx) !important;
+}
+
+.dark-theme .dck-front.dck-front .text-dark-grey,
+.dark-theme .dck-front.dck-front .text-lightest,
+.dark-theme .dck-chrome.dck-chrome .text-dark-grey {
+  color:var(--tx-3) !important;
+}
+
+/* ── Barre laterale et bandeau ──────────────────────────────── */
+
+.dark-theme .dck-chrome.dck-chrome,
+.dark-theme aside.dck-chrome.is-dark {
+  background:var(--surface) !important;
+  border-color:var(--line) !important;
+}
+
+.dark-theme .dck-chrome.dck-chrome .sidebar-brand-box {
+  background:var(--surface-2) !important;
+}
+
+.dark-theme .dck-chrome.dck-chrome .dropdown-menu,
+.dark-theme .dck-front.dck-front .dropdown-menu {
+  background:var(--surface-2) !important;
+  border-color:var(--line) !important;
+}
+
+.dark-theme .dck-chrome.dck-chrome .dropdown-item {
+  color:var(--tx-2) !important;
+}
+
+.dark-theme .dck-chrome.dck-chrome .dropdown-item:hover {
+  background:var(--surface-3) !important;
+  color:var(--tx) !important;
+}
+
+/* ── Champs de saisie ───────────────────────────────────────── */
+
+.dark-theme .dck-front.dck-front .form-control,
+.dark-theme .dck-front.dck-front .select2-container--default .select2-selection--single,
+.dark-theme .dck-front.dck-front .bootstrap-select > .dropdown-toggle {
+  background-color:var(--surface-2) !important;
+  border-color:var(--line-strong) !important;
+  color:var(--tx) !important;
+}
+
+.dark-theme .dck-front.dck-front .form-control:focus {
+  box-shadow:0 0 0 3px rgba(242,244,247,.14);
+}
+
+.dark-theme .dck-front.dck-front .form-control:disabled,
+.dark-theme .dck-front.dck-front .form-control[readonly] {
+  background-color:var(--surface-3) !important;
+}
+
+/* ── Tableaux ───────────────────────────────────────────────── */
+
+.dark-theme .dck-front.dck-front table.dataTable thead th,
+.dark-theme .dck-front.dck-front .table thead th,
+.dark-theme .dck-front.dck-front .dck-tbl th {
+  background:var(--surface-2) !important;
+  color:var(--tx-3) !important;
+}
+
+.dark-theme .dck-front.dck-front table.dataTable tbody tr:hover,
+.dark-theme .dck-front.dck-front .table tbody tr:hover,
+.dark-theme .dck-front.dck-front .dck-tbl tbody tr:hover td {
+  background:var(--surface-2) !important;
+}
+
+/* ── Modales ────────────────────────────────────────────────── */
+
+.dark-theme .modal-content,
+.dark-theme .dck-front.dck-front .modal-content {
+  background:var(--surface, #161a20) !important;
+  border-color:var(--line, #2f3742) !important;
+  color:var(--tx, #f2f4f7);
+}
+
+/* ── Graphique du bloc de pilotage ──────────────────────────── */
+
+.dark-theme .dck-front.dck-front .dck-bar__v { fill:var(--act); }
+.dark-theme .dck-front.dck-front .dck-bar:hover .dck-bar__v { fill:#ffffff; }
+.dark-theme .dck-front.dck-front .dck-grid { stroke:var(--line); }
+.dark-theme .dck-front.dck-front .dck-zero { stroke:var(--line-strong); }
+
+/* La barre empilee separe ses segments par la couleur de surface :
+   elle doit suivre le theme, sinon des filets clairs subsistent. */
+.dark-theme .dck-front.dck-front .dck-stack { background:var(--surface); }
+
+/* ── Cartes du tableau des taches ───────────────────────────── */
+
+.dark-theme .dck-front.dck-front .board-panel {
+  background:var(--surface-2) !important;
+  border-color:var(--line) !important;
+}
+
+.dark-theme .dck-front.dck-front .b-p-badge {
+  background:var(--surface-3) !important;
+  color:var(--tx-2) !important;
+}
+
+.dark-theme .dck-front.dck-front .task-card:hover {
+  box-shadow:0 2px 10px rgba(0,0,0,.45) !important;
+}
+
+/* ── Squelettes de chargement ───────────────────────────────── */
+
+.dark-theme .dck-skel__line,
+.dark-theme .dck-skel__box,
+.dark-theme .dck-skel__card { background:#232931; }
+.dark-theme .dck-skel__sep { background:#2f3742; }
+.dark-theme .dck-skel-row td { border-bottom-color:#2f3742; }
+.dark-theme .dck-nav-bar { background:#f2f4f7; }

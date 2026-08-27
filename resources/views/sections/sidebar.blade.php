@@ -82,6 +82,7 @@
                     <label for="dark-theme-toggle">@lang('app.darkTheme')</label>
                     <div class="custom-control custom-switch">
                         <input type="checkbox" class="custom-control-input" id="dark-theme-toggle"
+                            data-url="{{ route('profile.dark_theme') }}"
                             @if (user()->dark_theme) checked @endif>
                         <label class="custom-control-label f-14" for="dark-theme-toggle"></label>
                     </div>
