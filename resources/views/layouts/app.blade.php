@@ -41,7 +41,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
 
-    <link type="text/css" rel="stylesheet" media="all" href="{{ asset('css/dck-flow.css') }}">
+    <link type="text/css" rel="stylesheet" media="all" href="{{ asset('css/dck-flow.css') }}?v={{ @filemtime(public_path('css/dck-flow.css')) }}">
 
     <title>{{ is_array(__($pageTitle)) ? $pageTitle : __($pageTitle) }}</title>
     <meta name="msapplication-TileColor" content="#ffffff">
@@ -189,11 +189,11 @@
 @include('sections.modals')
 
 <!-- Global Required Javascript -->
-<script src="{{ asset('js/main.js') }}"></script>
+<script src="{{ asset('js/main.js') }}?v={{ @filemtime(public_path('js/main.js')) }}"></script>
 
 {{-- Fluidite percue : squelettes, barre de navigation, retour immediat
      sur les boutons. Charge apres main.js, qu il complete sans le modifier. --}}
-<script src="{{ asset('js/dck-fluidite.js') }}"></script>
+<script src="{{ asset('js/dck-fluidite.js') }}?v={{ @filemtime(public_path('js/dck-fluidite.js')) }}"></script>
 <script>
     // Translation of default values for the select picker box.
     $.fn.selectpicker.Constructor.DEFAULTS.noneSelectedText = "@lang('placeholders.noneSelectedText')";

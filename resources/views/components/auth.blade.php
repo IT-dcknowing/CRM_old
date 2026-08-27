@@ -117,7 +117,7 @@
 <script src="{{ asset('vendor/jquery/all.min.js') }}" defer="defer"></script>
 
 <!-- Template JS -->
-<script src="{{ asset('js/main.js') }}"></script>
+<script src="{{ asset('js/main.js') }}?v={{ @filemtime(public_path('js/main.js')) }}"></script>
 <script>
     document.loading = '@lang('app.loading')';
     const MODAL_DEFAULT = '#myModalDefault';
