@@ -14,10 +14,15 @@ $moveClass = '';
 </style>
 
 @php
-    $priorityColor = ($task->priority == 'high' ? '#dd0000' : ($task->priority == 'medium' ? '#ffc202' : '#0a8a1f'));
+    // Lisere de priorite. Les tons vifs d'origine (#dd0000, #ffc202,
+    // #0a8a1f) sont remplaces par la palette de la maquette, validee
+    // pour le contraste et la vision des couleurs.
+    $priorityColor = ($task->priority == 'high'
+        ? '#B42318'
+        : ($task->priority == 'medium' ? '#B54708' : '#0E7C5A'));
 @endphp
 <div class="card rounded bg-white border-grey b-shadow-4 m-1 mb-2 {{ $moveClass }} task-card"
-    data-task-id="{{ $task->id }}" data-need-approval="{{ optional($task->project)->need_approval_by_admin ?? 0 }}" id="drag-task-{{ $task->id }}" style="border-left: 3px solid {{ $priorityColor }}; background-color: {{ $priorityColor.'08 !important;' }}">
+    data-task-id="{{ $task->id }}" data-need-approval="{{ optional($task->project)->need_approval_by_admin ?? 0 }}" id="drag-task-{{ $task->id }}" style="border-left: 3px solid {{ $priorityColor }};">
     <div class="card-body p-2">
         <div class="d-flex justify-content-between mb-1">
             <a href="{{ route('tasks.show', [$task->id]) }}"
