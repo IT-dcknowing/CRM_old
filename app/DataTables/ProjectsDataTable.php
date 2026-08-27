@@ -215,7 +215,7 @@ class ProjectsDataTable extends BaseDataTable
         $datatables->addColumn('client_email', fn($row) => $row->client?->email ?? '-');
 
         $datatables->addColumn('project_status', fn($row) => ucwords($row->status));
-        $datatables->editColumn('client_id', fn($row) => $row->client_id ? view('components.client', ['user' => $row->client]) : '-');
+        $datatables->editColumn('client_id', fn($row) => $row->client ? view('components.client', ['user' => $row->client]) : '-');
         $datatables->addColumn('status', function ($row) use ($projectStatus) {
             $projectUsers = $row->members->pluck('user_id')->toArray();
 
