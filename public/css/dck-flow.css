@@ -2406,3 +2406,236 @@ button {
 .dark-theme .dck-skel__sep { background:#2f3742; }
 .dark-theme .dck-skel-row td { border-bottom-color:#2f3742; }
 .dark-theme .dck-nav-bar { background:#f2f4f7; }
+
+/* ══════════════════════════════════════════════════════════════
+   BARRE LATERALE — rail sombre de la maquette
+   ──────────────────────────────────────────────────────────────
+   pilotage-dc-knowing pose un rail sombre de 236 px, texte gris
+   bleute, accent or sur l'entree active :
+
+       --rail       #101418     fond
+       --rail-2     #171C22     survol et entree active
+       --rail-ink   #99A4B0     libelles
+       --rail-ink-2 #626D79     titres de section
+       --rail-line  #222932     filets
+       --gold-mark  #C9A227     accent
+
+   Plutot que de reecrire les regles de la barre, on redefinit ses
+   jetons : toutes celles ecrites plus haut suivent d'elles-memes. Le
+   selecteur vise aside.dck-chrome — le bandeau superieur porte la
+   meme classe et doit rester clair.
+   ══════════════════════════════════════════════════════════════ */
+
+aside.dck-chrome.dck-chrome {
+  --surface:#101418;
+  --surface-2:#171c22;
+  --surface-3:#171c22;
+  --line:#222932;
+  --line-strong:#2b333d;
+
+  --tx:#ffffff;
+  --tx-2:#99a4b0;
+  --tx-3:#626d79;
+  --tx-4:#4d5761;
+
+  /* L'entree active ne s'inverse plus en noir sur blanc : elle
+     s'eclaire d'un cran et prend le lisere or. */
+  --act:#171c22;
+  --act-hover:#1d232b;
+  --act-tx:#ffffff;
+
+  --or:#c9a227;
+}
+
+/* Largeur : la maquette pose 236px, le theme 240px — avec les marges
+   de contenu et le mode reduit (60px) accordes dessus. Les quatre
+   pixels d'ecart ne justifient pas de reprendre tout l'alignement du
+   gabarit : la largeur d'origine est conservee. */
+
+/* ── Bloc de marque ─────────────────────────────────────────── */
+
+aside.dck-chrome.dck-chrome .sidebar-brand-box {
+  background:var(--surface) !important;
+  border-bottom:1px solid var(--line);
+}
+
+aside.dck-chrome.dck-chrome .sidebar-brand-name h1,
+aside.dck-chrome.dck-chrome .sidebar-brand h1,
+aside.dck-chrome.dck-chrome .text-white-shade {
+  color:#ffffff !important;
+}
+
+aside.dck-chrome.dck-chrome .pro-name p { color:var(--tx-3) !important; }
+
+/* ── Titres de section ──────────────────────────────────────── */
+
+aside.dck-chrome.dck-chrome .dck-sect {
+  font-size:10px !important;
+  font-weight:600;
+  letter-spacing:.13em;
+  text-transform:uppercase;
+  color:var(--tx-3) !important;
+  padding:0 8px 7px !important;
+}
+
+/* ── Entrees ────────────────────────────────────────────────── */
+
+aside.dck-chrome.dck-chrome .nav-item,
+aside.dck-chrome.dck-chrome .accordionItemHeading,
+aside.dck-chrome.dck-chrome .sidebar-text-color {
+  color:var(--tx-2) !important;
+  font-size:13.5px !important;
+  border-left:2px solid transparent;
+}
+
+aside.dck-chrome.dck-chrome .nav-item:hover,
+aside.dck-chrome.dck-chrome .accordionItemHeading:hover {
+  background:var(--surface-2) !important;
+  color:#ffffff !important;
+}
+
+/* Entree active : fond eclairci et lisere or, comme .nav-item.on */
+aside.dck-chrome.dck-chrome .accordionItem.active > .nav-item,
+aside.dck-chrome.dck-chrome .nav-item.active,
+aside.dck-chrome.dck-chrome .accordionItemHeading.active {
+  background:var(--surface-2) !important;
+  color:#ffffff !important;
+  border-left-color:var(--or);
+}
+
+/* ── Sous-entrees des menus deroulants ──────────────────────── */
+
+aside.dck-chrome.dck-chrome .accordionItemContent a {
+  color:var(--tx-2) !important;
+  font-size:13px !important;
+}
+
+aside.dck-chrome.dck-chrome .accordionItemContent a:hover {
+  color:#ffffff !important;
+  background:var(--surface-2) !important;
+}
+
+/* ── Compteurs ──────────────────────────────────────────────── */
+
+aside.dck-chrome.dck-chrome .menu-item-count {
+  font-family:var(--f-num, "IBM Plex Mono", monospace);
+  font-size:10.5px !important;
+  background:rgba(255,255,255,.09) !important;
+  color:var(--tx-2) !important;
+  border-radius:var(--r-full);
+  padding:1px 7px !important;
+}
+
+aside.dck-chrome.dck-chrome .nav-item.active .menu-item-count,
+aside.dck-chrome.dck-chrome .accordionItem.active .menu-item-count {
+  background:rgba(201,162,39,.18) !important;
+  color:var(--or) !important;
+}
+
+/* ── Pied du rail ───────────────────────────────────────────── */
+
+aside.dck-chrome.dck-chrome .sidebarTogglerBox {
+  background:var(--surface) !important;
+  border-top:1px solid var(--line);
+}
+
+aside.dck-chrome.dck-chrome .sidebarTogglerBox p,
+aside.dck-chrome.dck-chrome .sidebarTogglerBox button {
+  color:var(--tx-3) !important;
+}
+
+/* ── Menu du profil ─────────────────────────────────────────────
+   Ce menu deroulant s'ouvre sur le rail mais se lit comme une carte :
+   il garde donc le fond clair et les jetons du contenu. */
+
+aside.dck-chrome.dck-chrome .sidebar-brand-dropdown {
+  --surface:#ffffff;
+  --tx:#111827;
+  --tx-2:#374151;
+  --tx-3:#6b7280;
+  --line:#e5e7eb;
+  background:#ffffff !important;
+  border:1px solid #e5e7eb !important;
+}
+
+aside.dck-chrome.dck-chrome .sidebar-brand-dropdown .dropdown-item,
+aside.dck-chrome.dck-chrome .sidebar-brand-dropdown h3,
+aside.dck-chrome.dck-chrome .sidebar-brand-dropdown label {
+  color:#111827 !important;
+}
+
+aside.dck-chrome.dck-chrome .sidebar-brand-dropdown .text-dark-grey {
+  color:#6b7280 !important;
+}
+
+aside.dck-chrome.dck-chrome .sidebar-brand-dropdown .dropdown-item:hover {
+  background:#f3f4f6 !important;
+}
+
+/* En theme sombre, le rail est deja a sa place : on ne redefinit que
+   le menu du profil, qui doit suivre le reste de l'application. */
+.dark-theme aside.dck-chrome.dck-chrome .sidebar-brand-dropdown {
+  --surface:#171b19;
+  background:#1c2128 !important;
+  border-color:#2f3742 !important;
+}
+
+.dark-theme aside.dck-chrome.dck-chrome .sidebar-brand-dropdown .dropdown-item,
+.dark-theme aside.dck-chrome.dck-chrome .sidebar-brand-dropdown h3,
+.dark-theme aside.dck-chrome.dck-chrome .sidebar-brand-dropdown label {
+  color:#e8ebe9 !important;
+}
+
+.dark-theme aside.dck-chrome.dck-chrome .sidebar-brand-dropdown .dropdown-item:hover {
+  background:#232931 !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FORMULAIRES — alignement fin sur l'atelier
+   ──────────────────────────────────────────────────────────────
+   L'atelier documente une proposition deja appliquee pour l'essentiel :
+   des champs de 40 px au lieu de 50, et une erreur explicite plutot
+   que decorative. Restent trois ecarts de detail.
+
+       .field           gap 6px entre libelle et champ
+       .field > label   13px / 500 (la feuille posait 600)
+       .input           14.5px, hauteur ferme a 40px
+       .hint            12.5px, gris
+       .hint.err        rouge, 500
+   ══════════════════════════════════════════════════════════════ */
+
+.dck-front.dck-front .form-group > label,
+.dck-front.dck-front label {
+  font-weight:500;
+  margin-bottom:6px;
+}
+
+.dck-front.dck-front .form-control,
+.dck-front.dck-front .bootstrap-select > .dropdown-toggle,
+.dck-front.dck-front .select2-container--default .select2-selection--single {
+  font-size:14.5px;
+}
+
+/* Le libelle d'un champ obligatoire garde son marqueur discret */
+.dck-front.dck-front label .text-red,
+.dck-front.dck-front label .required {
+  color:var(--err) !important;
+  font-weight:500;
+}
+
+/* Message d'aide sous un champ */
+.dck-front.dck-front .form-text,
+.dck-front.dck-front small.text-muted {
+  font-size:12.5px;
+  color:var(--tx-3) !important;
+  margin-top:6px;
+}
+
+/* Message d'erreur : explicite, jamais un simple liseré rouge */
+.dck-front.dck-front .invalid-feedback,
+.dck-front.dck-front .error-message,
+.dck-front.dck-front label.error {
+  font-size:12.5px;
+  font-weight:500;
+  color:var(--err) !important;
+}
