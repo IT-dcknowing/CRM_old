@@ -2014,71 +2014,6 @@ button {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   EN-TETE DE PAGE — fil d'Ariane au-dessus du titre
-   ──────────────────────────────────────────────────────────────
-   La maquette pose le chemin en petit AU-DESSUS du titre :
-
-       .crumb      11.5px, gris
-       .topbar h1  18px, interlettrage serre
-
-   Le composant app-title, lui, place les deux cote a cote dans un
-   meme <h2>. Il est partage par tous les ecrans du projet : plutot
-   que de le restructurer, on empile ses deux <span> et on inverse
-   leur ordre d'affichage. Le HTML reste intact, l'ordre de lecture
-   par un lecteur d'ecran aussi — seul le rendu change.
-   ══════════════════════════════════════════════════════════════ */
-
-.dck-chrome.dck-chrome .page-heading h2 {
-  display:flex;
-  flex-direction:column;
-  align-items:flex-start;
-  gap:1px;
-  padding-right:0 !important;
-}
-
-/* Le titre : deuxieme a l'ecran, premier dans le HTML. */
-.dck-chrome.dck-chrome .page-heading h2 > span:first-child {
-  order:2;
-  font-size:18px;
-  font-weight:600;
-  letter-spacing:-.015em;
-  line-height:1.25;
-  color:var(--tx);
-  max-width:none;
-}
-
-/* Le fil d'Ariane : premier a l'ecran, sous forme de chemin discret. */
-.dck-chrome.dck-chrome .page-heading h2 > span:last-child {
-  order:1;
-  margin:0 !important;
-  font-size:11.5px !important;
-  font-weight:400 !important;
-  line-height:1.3;
-  color:var(--tx-3) !important;
-  max-width:none;
-}
-
-.dck-chrome.dck-chrome .page-heading h2 > span:last-child a {
-  color:var(--tx-3) !important;
-  text-decoration:none;
-}
-
-.dck-chrome.dck-chrome .page-heading h2 > span:last-child a:hover {
-  color:var(--tx-2) !important;
-  text-decoration:underline;
-}
-
-/* La barre respire comme dans la maquette : 14px de haut, 26px de cote. */
-.dck-chrome.dck-chrome.main-header .container-fluid,
-.dck-chrome.dck-chrome .navbar-left {
-  min-height:0;
-}
-
-@media (max-width:768px) {
-  .dck-chrome.dck-chrome .page-heading h2 > span:first-child { font-size:16px; }
-}
-
-/* ══════════════════════════════════════════════════════════════
    TABLEAU DES TACHES — cartes et colonnes
    ──────────────────────────────────────────────────────────────
    Reference : section « Cartes du tableau » de atelier-taskflow.
@@ -2408,189 +2343,6 @@ button {
 .dark-theme .dck-nav-bar { background:#f2f4f7; }
 
 /* ══════════════════════════════════════════════════════════════
-   BARRE LATERALE — rail sombre de la maquette
-   ──────────────────────────────────────────────────────────────
-   pilotage-dc-knowing pose un rail sombre de 236 px, texte gris
-   bleute, accent or sur l'entree active :
-
-       --rail       #101418     fond
-       --rail-2     #171C22     survol et entree active
-       --rail-ink   #99A4B0     libelles
-       --rail-ink-2 #626D79     titres de section
-       --rail-line  #222932     filets
-       --gold-mark  #C9A227     accent
-
-   Plutot que de reecrire les regles de la barre, on redefinit ses
-   jetons : toutes celles ecrites plus haut suivent d'elles-memes. Le
-   selecteur vise aside.dck-chrome — le bandeau superieur porte la
-   meme classe et doit rester clair.
-   ══════════════════════════════════════════════════════════════ */
-
-aside.dck-chrome.dck-chrome {
-  --surface:#101418;
-  --surface-2:#171c22;
-  --surface-3:#171c22;
-  --line:#222932;
-  --line-strong:#2b333d;
-
-  --tx:#ffffff;
-  --tx-2:#99a4b0;
-  --tx-3:#626d79;
-  --tx-4:#4d5761;
-
-  /* L'entree active ne s'inverse plus en noir sur blanc : elle
-     s'eclaire d'un cran et prend le lisere or. */
-  --act:#171c22;
-  --act-hover:#1d232b;
-  --act-tx:#ffffff;
-
-  --or:#c9a227;
-}
-
-/* Largeur : la maquette pose 236px, le theme 240px — avec les marges
-   de contenu et le mode reduit (60px) accordes dessus. Les quatre
-   pixels d'ecart ne justifient pas de reprendre tout l'alignement du
-   gabarit : la largeur d'origine est conservee. */
-
-/* ── Bloc de marque ─────────────────────────────────────────── */
-
-aside.dck-chrome.dck-chrome .sidebar-brand-box {
-  background:var(--surface) !important;
-  border-bottom:1px solid var(--line);
-}
-
-aside.dck-chrome.dck-chrome .sidebar-brand-name h1,
-aside.dck-chrome.dck-chrome .sidebar-brand h1,
-aside.dck-chrome.dck-chrome .text-white-shade {
-  color:#ffffff !important;
-}
-
-aside.dck-chrome.dck-chrome .pro-name p { color:var(--tx-3) !important; }
-
-/* ── Titres de section ──────────────────────────────────────── */
-
-aside.dck-chrome.dck-chrome .dck-sect {
-  font-size:10px !important;
-  font-weight:600;
-  letter-spacing:.13em;
-  text-transform:uppercase;
-  color:var(--tx-3) !important;
-  padding:0 8px 7px !important;
-}
-
-/* ── Entrees ────────────────────────────────────────────────── */
-
-aside.dck-chrome.dck-chrome .nav-item,
-aside.dck-chrome.dck-chrome .accordionItemHeading,
-aside.dck-chrome.dck-chrome .sidebar-text-color {
-  color:var(--tx-2) !important;
-  font-size:13.5px !important;
-  border-left:2px solid transparent;
-}
-
-aside.dck-chrome.dck-chrome .nav-item:hover,
-aside.dck-chrome.dck-chrome .accordionItemHeading:hover {
-  background:var(--surface-2) !important;
-  color:#ffffff !important;
-}
-
-/* Entree active : fond eclairci et lisere or, comme .nav-item.on */
-aside.dck-chrome.dck-chrome .accordionItem.active > .nav-item,
-aside.dck-chrome.dck-chrome .nav-item.active,
-aside.dck-chrome.dck-chrome .accordionItemHeading.active {
-  background:var(--surface-2) !important;
-  color:#ffffff !important;
-  border-left-color:var(--or);
-}
-
-/* ── Sous-entrees des menus deroulants ──────────────────────── */
-
-aside.dck-chrome.dck-chrome .accordionItemContent a {
-  color:var(--tx-2) !important;
-  font-size:13px !important;
-}
-
-aside.dck-chrome.dck-chrome .accordionItemContent a:hover {
-  color:#ffffff !important;
-  background:var(--surface-2) !important;
-}
-
-/* ── Compteurs ──────────────────────────────────────────────── */
-
-aside.dck-chrome.dck-chrome .menu-item-count {
-  font-family:var(--f-num, "IBM Plex Mono", monospace);
-  font-size:10.5px !important;
-  background:rgba(255,255,255,.09) !important;
-  color:var(--tx-2) !important;
-  border-radius:var(--r-full);
-  padding:1px 7px !important;
-}
-
-aside.dck-chrome.dck-chrome .nav-item.active .menu-item-count,
-aside.dck-chrome.dck-chrome .accordionItem.active .menu-item-count {
-  background:rgba(201,162,39,.18) !important;
-  color:var(--or) !important;
-}
-
-/* ── Pied du rail ───────────────────────────────────────────── */
-
-aside.dck-chrome.dck-chrome .sidebarTogglerBox {
-  background:var(--surface) !important;
-  border-top:1px solid var(--line);
-}
-
-aside.dck-chrome.dck-chrome .sidebarTogglerBox p,
-aside.dck-chrome.dck-chrome .sidebarTogglerBox button {
-  color:var(--tx-3) !important;
-}
-
-/* ── Menu du profil ─────────────────────────────────────────────
-   Ce menu deroulant s'ouvre sur le rail mais se lit comme une carte :
-   il garde donc le fond clair et les jetons du contenu. */
-
-aside.dck-chrome.dck-chrome .sidebar-brand-dropdown {
-  --surface:#ffffff;
-  --tx:#111827;
-  --tx-2:#374151;
-  --tx-3:#6b7280;
-  --line:#e5e7eb;
-  background:#ffffff !important;
-  border:1px solid #e5e7eb !important;
-}
-
-aside.dck-chrome.dck-chrome .sidebar-brand-dropdown .dropdown-item,
-aside.dck-chrome.dck-chrome .sidebar-brand-dropdown h3,
-aside.dck-chrome.dck-chrome .sidebar-brand-dropdown label {
-  color:#111827 !important;
-}
-
-aside.dck-chrome.dck-chrome .sidebar-brand-dropdown .text-dark-grey {
-  color:#6b7280 !important;
-}
-
-aside.dck-chrome.dck-chrome .sidebar-brand-dropdown .dropdown-item:hover {
-  background:#f3f4f6 !important;
-}
-
-/* En theme sombre, le rail est deja a sa place : on ne redefinit que
-   le menu du profil, qui doit suivre le reste de l'application. */
-.dark-theme aside.dck-chrome.dck-chrome .sidebar-brand-dropdown {
-  --surface:#171b19;
-  background:#1c2128 !important;
-  border-color:#2f3742 !important;
-}
-
-.dark-theme aside.dck-chrome.dck-chrome .sidebar-brand-dropdown .dropdown-item,
-.dark-theme aside.dck-chrome.dck-chrome .sidebar-brand-dropdown h3,
-.dark-theme aside.dck-chrome.dck-chrome .sidebar-brand-dropdown label {
-  color:#e8ebe9 !important;
-}
-
-.dark-theme aside.dck-chrome.dck-chrome .sidebar-brand-dropdown .dropdown-item:hover {
-  background:#232931 !important;
-}
-
-/* ══════════════════════════════════════════════════════════════
    FORMULAIRES — alignement fin sur l'atelier
    ──────────────────────────────────────────────────────────────
    L'atelier documente une proposition deja appliquee pour l'essentiel :
@@ -2638,4 +2390,152 @@ aside.dck-chrome.dck-chrome .sidebar-brand-dropdown .dropdown-item:hover {
   font-size:12.5px;
   font-weight:500;
   color:var(--err) !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BANDEAU SUPERIEUR — conforme a dck-flow-task
+   ──────────────────────────────────────────────────────────────
+       .header    hauteur 64px, padding 0 22px
+       .crumb     display:flex, gap 7px — titre et chemin EN LIGNE
+       .crumb b   15,5px / 600, interlettrage -.02em
+       .crumb i   separateur, --tx-4
+       .crumb small 13px, --tx-3
+
+   Le titre reste donc devant le chemin, sur une seule ligne. Une
+   version anterieure de ce fichier les empilait, d'apres la maquette
+   de pilotage qui suit une autre disposition : c'est corrige.
+   ══════════════════════════════════════════════════════════════ */
+
+.dck-chrome.dck-chrome.main-header { height:64px; }
+
+.dck-chrome.dck-chrome .page-heading h2 {
+  display:flex;
+  align-items:center;
+  gap:7px;
+  margin:0;
+}
+
+/* Le titre */
+.dck-chrome.dck-chrome .page-heading h2 > span:first-child {
+  font-size:15.5px !important;
+  font-weight:600 !important;
+  letter-spacing:-.02em;
+  color:var(--tx) !important;
+}
+
+/* Le chemin, a la suite */
+.dck-chrome.dck-chrome .page-heading h2 > span:last-child {
+  margin:0 !important;
+  font-size:13px !important;
+  font-weight:400 !important;
+  color:var(--tx-3) !important;
+}
+
+.dck-chrome.dck-chrome .page-heading h2 > span:last-child a {
+  color:var(--tx-3) !important;
+  text-decoration:none;
+}
+
+.dck-chrome.dck-chrome .page-heading h2 > span:last-child a:hover {
+  color:var(--tx-2) !important;
+  text-decoration:underline;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BARRE LATERALE — conforme a dck-flow-task
+   ──────────────────────────────────────────────────────────────
+   La barre est CLAIRE : .sidebar prend var(--surface). C'est
+   l'entree courante qui s'inverse en noir — .sb-item.on pose
+   background:var(--act) et color:var(--act-tx).
+
+       .sb-brand   hauteur 64px, gap 10px, padding 0 18px
+       .sb-mark    32x32, rayon 9px, fond noir, sigle blanc
+       .sb-name    700 / 14,5px ; son <span> en 400 gris
+       .sb-sect    11px / 600, interlettrage .08em, --tx-4
+       .sb-item    gap 11px, padding 9px 10px, 2px d'ecart
+       .sb-count   pastille --surface-3, chasse fixe, rayon plein
+       .sb-foot    filet superieur, 10px 12px
+   ══════════════════════════════════════════════════════════════ */
+
+/* Titres de section */
+.dck-chrome.dck-chrome .dck-sect {
+  margin:18px 8px 6px !important;
+  font-size:11px !important;
+  font-weight:600 !important;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--tx-4) !important;
+}
+
+.dck-chrome.dck-chrome .dck-sect:first-child { margin-top:2px !important; }
+
+/* Entrees */
+.dck-chrome.dck-chrome .nav-item,
+.dck-chrome.dck-chrome .accordionItemHeading {
+  gap:11px;
+  padding:9px 10px !important;
+  margin-bottom:2px;
+  font-size:14px !important;
+}
+
+/* Compteurs : pastille discrete, chiffres alignes */
+.dck-chrome.dck-chrome .menu-item-count {
+  padding:1px 7px !important;
+  border-radius:var(--r-full) !important;
+  background:var(--surface-3) !important;
+  color:var(--tx-3) !important;
+  font-family:"IBM Plex Mono", ui-monospace, monospace;
+  font-size:11px !important;
+  font-weight:500 !important;
+  margin-left:auto;
+}
+
+/* Sur l'entree courante, la pastille s'eclaircit au lieu de disparaitre
+   sur le fond noir. */
+.dck-chrome.dck-chrome .nav-item.active .menu-item-count,
+.dck-chrome.dck-chrome .accordionItem.active .menu-item-count,
+.dck-chrome.dck-chrome .accordionItemHeading.active .menu-item-count {
+  background:rgba(255,255,255,.18) !important;
+  color:var(--act-tx) !important;
+}
+
+/* Sous-entrees : filet vertical, comme .sb-sub */
+.dck-chrome.dck-chrome .accordionItemContent {
+  margin:2px 0 6px 30px;
+  padding-left:11px;
+  border-left:1px solid var(--line);
+}
+
+.dck-chrome.dck-chrome .accordionItemContent a {
+  display:block;
+  padding:7px 10px;
+  margin-bottom:1px;
+  border-radius:var(--r-sm);
+  font-size:13.5px !important;
+  color:var(--tx-2) !important;
+}
+
+.dck-chrome.dck-chrome .accordionItemContent a:hover {
+  background:var(--surface-3);
+  color:var(--tx) !important;
+  text-decoration:none;
+}
+
+/* Bloc de marque : le sigle est un carre noir a coins arrondis */
+.dck-chrome.dck-chrome .sidebar-brand-box {
+  height:64px;
+  gap:10px;
+  padding:0 18px !important;
+}
+
+.dck-chrome.dck-chrome .sidebar-brand img {
+  max-height:32px;
+  width:auto;
+  border-radius:9px;
+}
+
+/* Pied : filet superieur, identite du collaborateur */
+.dck-chrome.dck-chrome .sidebarTogglerBox {
+  border-top:1px solid var(--line);
+  padding:10px 12px;
 }
