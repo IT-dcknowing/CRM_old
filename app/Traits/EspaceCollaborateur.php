@@ -94,6 +94,43 @@ trait EspaceCollaborateur
             ->count('tasks.id');
     }
 
+
+    /**
+     * Minutes pointees jour par jour sur la semaine en cours.
+     *
+     * EmployeeDashboard expose weekWiseTimelogs, mais c'est un TOTAL en
+     * minutes, pas un detail. La maquette demande une barre par jour :
+     * une requete groupee la fournit, sans boucler sur les jours.
+     *
+     * @return array<int, array{jour: \Carbon\Carbon, minutes: int}>
+     */
+    protected function espaceSemaine(int $userId): array
+    {
+        $debut = now()->startOfWeek();
+        $fin = now()->endOfWeek();
+
+        $parJour = DB::table('project_time_logs')
+            ->selectRaw('DATE(start_time) as j, SUM(total_minutes) as m')
+            ->where('user_id', $userId)
+            ->where('company_id', company()->id)
+            ->whereBetween(DB::raw('DATE(start_time)'), [$debut->toDateString(), $fin->toDateString()])
+            ->groupBy('j')
+            ->pluck('m', 'j');
+
+        $jours = [];
+        $curseur = $debut->copy();
+
+        while ($curseur->lessThanOrEqualTo($fin)) {
+            $jours[] = [
+                'jour'    => $curseur->copy(),
+                'minutes' => (int) ($parJour[$curseur->toDateString()] ?? 0),
+            ];
+            $curseur->addDay();
+        }
+
+        return $jours;
+    }
+
     /**
      * Renseigne les variables attendues par la vue mon-espace.
      */
@@ -102,5 +139,6 @@ trait EspaceCollaborateur
         $this->espaceDiligences     = $this->espaceDiligences($userId);
         $this->espaceConges         = $this->espaceCongesRestants($userId);
         $this->espaceTermineesMois  = $this->espaceTermineesCeMois($userId);
+        $this->espaceSemaine        = $this->espaceSemaine($userId);
     }
 }

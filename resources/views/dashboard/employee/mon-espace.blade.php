@@ -11,8 +11,11 @@
 --}}
 
 @php
-    $enRetard = isset($dueTasks) ? $dueTasks->count() : 0;
-    $termineeCol = \App\Models\TaskboardColumn::completeColumn();
+    // dueTasks est un entier : EmployeeDashboard y stocke deja un count().
+    // La conversion accepte aussi une collection, au cas ou la source change.
+    $enRetard = ($dueTasks ?? 0) instanceof \Countable || is_array($dueTasks ?? 0)
+        ? count($dueTasks)
+        : (int) ($dueTasks ?? 0);
 @endphp
 
 <div class="dck-espace">
@@ -115,19 +118,15 @@
             </div>
             <div class="dck-c__body">
                 @php
-                    $jours = collect($weekWiseTimelogs ?? [])->take(7);
-                    $maxMin = max(1, $jours->max('total_minutes') ?: 1);
-                    $totalMin = $jours->sum('total_minutes');
+                    $jours = collect($espaceSemaine ?? []);
+                    $maxMin = max(1, (int) $jours->max('minutes'));
+                    $totalMin = (int) $jours->sum('minutes');
                 @endphp
                 @forelse ($jours as $j)
-                    @php
-                        $min = (int) ($j->total_minutes ?? 0);
-                        $pct = round(100 * $min / $maxMin);
-                    @endphp
                     <div class="dck-bl">
-                        <span class="dck-bl__j">{{ \Carbon\Carbon::parse($j->date ?? now())->translatedFormat('D j') }}</span>
-                        <span class="dck-bar"><i style="width:{{ $pct }}%"></i></span>
-                        <span class="dck-bl__v">{{ intdiv($min, 60) }} h {{ str_pad($min % 60, 2, '0', STR_PAD_LEFT) }}</span>
+                        <span class="dck-bl__j">{{ $j['jour']->translatedFormat('D j') }}</span>
+                        <span class="dck-bar"><i style="width:{{ round(100 * $j['minutes'] / $maxMin) }}%"></i></span>
+                        <span class="dck-bl__v">{{ intdiv($j['minutes'], 60) }} h {{ str_pad($j['minutes'] % 60, 2, '0', STR_PAD_LEFT) }}</span>
                     </div>
                 @empty
                     <p class="dck-vide2">@lang('Aucune heure pointée cette semaine.')</p>
