@@ -40,6 +40,7 @@ use App\Models\EmployeeShift;
 trait EmployeeDashboard
 {
     use PilotageDiligences;
+    use EspaceCollaborateur;
 
 
     /**
@@ -48,9 +49,10 @@ trait EmployeeDashboard
     {
         $user = user();
 
-        // Bloc de pilotage restreint : un collaborateur ne voit que les
-        // diligences dont il est membre, jamais le portefeuille entier.
-        $this->chargerPilotage($user->id);
+        // Bloc « Mon tableau de bord » conforme a dck-flow-task :
+        // ses taches, sa semaine, ses diligences, les annonces. Les
+        // indicateurs de portefeuille restent sur l'ecran administrateur.
+        $this->chargerEspaceCollaborateur($user->id);
 
         $completedTaskColumn = TaskboardColumn::completeColumn();
         $showClockIn = attendance_setting();

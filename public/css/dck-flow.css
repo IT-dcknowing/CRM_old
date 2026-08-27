@@ -2539,3 +2539,344 @@ button {
   border-top:1px solid var(--line);
   padding:10px 12px;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   MON TABLEAU DE BORD — ecran mon-espace de dck-flow-task
+   ──────────────────────────────────────────────────────────────
+       .stack   colonne, 18px    .grid    grille, 16px
+       .g-4     4 colonnes       .g-23    2fr 1fr      .g-3  3 colonnes
+       .kpi     17px 18px, icone 30x30 rayon 8, valeur 29px mono
+       .tcard   12px, rayon 10, titre 13,5px/600, meta 12px
+       .bar     6px, rayon plein, remplissage anime
+       .note    13px 15px, variantes ok / err / warn / info
+   ══════════════════════════════════════════════════════════════ */
+
+.dck-front.dck-front .dck-espace {
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  margin-bottom:22px;
+}
+
+.dck-front.dck-front .dck-grid { display:grid; gap:16px; }
+.dck-front.dck-front .dck-g4  { grid-template-columns:repeat(4, 1fr); }
+.dck-front.dck-front .dck-g3  { grid-template-columns:repeat(3, 1fr); }
+.dck-front.dck-front .dck-g23 { grid-template-columns:2fr 1fr; }
+
+/* ── Bandeau d'alerte ───────────────────────────────────────── */
+
+.dck-front.dck-front .dck-note {
+  display:flex;
+  gap:11px;
+  align-items:flex-start;
+  padding:13px 15px;
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  background:var(--surface);
+}
+
+.dck-front.dck-front .dck-note.is-err {
+  background:var(--err-bg);
+  border-color:var(--err-line);
+  color:var(--err);
+}
+
+.dck-front.dck-front .dck-note b { display:block; font-size:13.5px; font-weight:600; }
+.dck-front.dck-front .dck-note p { margin:3px 0 0; font-size:13px; line-height:1.5; opacity:.86; }
+.dck-front.dck-front .dck-note__i { flex:0 0 auto; font-size:17px; line-height:1.2; }
+
+.dck-front.dck-front .dck-note__act {
+  margin-left:auto;
+  align-self:center;
+  flex:0 0 auto;
+  padding:5px 12px;
+  border:1px solid currentColor;
+  border-radius:var(--r-sm);
+  font-size:12.5px;
+  font-weight:600;
+  color:inherit;
+  text-decoration:none;
+}
+
+.dck-front.dck-front .dck-note__act:hover { background:rgba(0,0,0,.05); text-decoration:none; }
+
+/* ── Indicateurs ────────────────────────────────────────────── */
+
+.dck-front.dck-front .dck-kpi2 {
+  padding:17px 18px;
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  text-decoration:none;
+  display:block;
+  transition:border-color .15s ease, transform .15s ease;
+}
+
+.dck-front.dck-front a.dck-kpi2:hover {
+  border-color:var(--line-strong);
+  transform:translateY(-2px);
+  text-decoration:none;
+}
+
+.dck-front.dck-front .dck-kpi2__top {
+  display:flex;
+  align-items:center;
+  gap:9px;
+  margin-bottom:12px;
+}
+
+.dck-front.dck-front .dck-kpi2__ico {
+  display:grid;
+  place-items:center;
+  width:30px; height:30px;
+  flex:0 0 auto;
+  border-radius:8px;
+  background:var(--surface-3);
+  color:var(--tx-3);
+  font-size:14px;
+}
+
+.dck-front.dck-front .dck-kpi2__lab {
+  font-size:12.5px;
+  font-weight:500;
+  color:var(--tx-3);
+}
+
+.dck-front.dck-front .dck-kpi2__val {
+  font-family:var(--f-num);
+  font-variant-numeric:tabular-nums;
+  font-size:29px;
+  font-weight:600;
+  letter-spacing:-.03em;
+  line-height:1;
+  color:var(--tx);
+}
+
+.dck-front.dck-front .dck-kpi2__sub {
+  margin-top:9px;
+  font-size:12.5px;
+  color:var(--tx-3);
+}
+
+/* ── Empilements dans les cartes ────────────────────────────── */
+
+.dck-front.dck-front .dck-pile   { display:flex; flex-direction:column; gap:9px; }
+.dck-front.dck-front .dck-pile-l { display:flex; flex-direction:column; gap:15px; }
+
+/* ── Carte de tache ─────────────────────────────────────────── */
+
+.dck-front.dck-front .dck-tc {
+  display:block;
+  padding:12px;
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:10px;
+  text-decoration:none;
+  transition:border-color .15s ease, transform .15s ease;
+}
+
+.dck-front.dck-front .dck-tc:hover {
+  border-color:var(--line-strong);
+  transform:translateY(-1px);
+  text-decoration:none;
+}
+
+.dck-front.dck-front .dck-tc__top {
+  display:flex;
+  align-items:center;
+  gap:7px;
+  margin-bottom:8px;
+}
+
+.dck-front.dck-front .dck-tc__id {
+  font-family:var(--f-num);
+  font-size:11px;
+  font-weight:600;
+  color:var(--tx-4);
+}
+
+.dck-front.dck-front .dck-tc__top .dck-pill { margin-left:auto; }
+
+.dck-front.dck-front .dck-tc h5 {
+  font-size:13.5px;
+  font-weight:600;
+  line-height:1.4;
+  margin:0 0 9px;
+  color:var(--tx);
+}
+
+.dck-front.dck-front .dck-tc__meta {
+  display:flex;
+  align-items:center;
+  gap:9px;
+  font-size:12px;
+  color:var(--tx-3);
+}
+
+.dck-front.dck-front .dck-tc__ech {
+  margin-left:auto;
+  font-variant-numeric:tabular-nums;
+  white-space:nowrap;
+}
+
+.dck-front.dck-front .dck-tc__ech.is-late { color:var(--err); font-weight:600; }
+
+/* ── Barres de progression ──────────────────────────────────── */
+
+.dck-front.dck-front .dck-bar {
+  display:block;
+  height:6px;
+  border-radius:var(--r-full);
+  background:var(--surface-3);
+  overflow:hidden;
+}
+
+.dck-front.dck-front .dck-bar > i {
+  display:block;
+  height:100%;
+  border-radius:var(--r-full);
+  background:var(--tx);
+}
+
+.dck-front.dck-front .dck-bar.is-ok   > i { background:var(--ok); }
+.dck-front.dck-front .dck-bar.is-warn > i { background:var(--warn); }
+
+/* ── Ma semaine ─────────────────────────────────────────────── */
+
+.dck-front.dck-front .dck-bl {
+  display:flex;
+  align-items:center;
+  gap:11px;
+  margin-bottom:11px;
+}
+
+.dck-front.dck-front .dck-bl__j {
+  flex:0 0 74px;
+  font-size:12.5px;
+  color:var(--tx-3);
+  text-transform:capitalize;
+}
+
+.dck-front.dck-front .dck-bl .dck-bar { flex:1 1 auto; }
+
+.dck-front.dck-front .dck-bl__v {
+  flex:0 0 auto;
+  font-family:var(--f-num);
+  font-variant-numeric:tabular-nums;
+  font-size:12.5px;
+  color:var(--tx-2);
+}
+
+.dck-front.dck-front .dck-total {
+  display:flex;
+  align-items:baseline;
+  gap:8px;
+  margin-top:16px;
+  padding-top:14px;
+  border-top:1px solid var(--line);
+  font-size:13px;
+  color:var(--tx-3);
+}
+
+.dck-front.dck-front .dck-total b {
+  margin-left:auto;
+  font-family:var(--f-num);
+  font-variant-numeric:tabular-nums;
+  font-size:17px;
+  color:var(--tx);
+}
+
+/* ── Mes diligences ─────────────────────────────────────────── */
+
+.dck-front.dck-front .dck-dl2 {
+  display:flex;
+  align-items:baseline;
+  gap:8px;
+  margin-bottom:6px;
+}
+
+.dck-front.dck-front .dck-lien2 {
+  font-size:13.5px;
+  color:var(--tx);
+  text-decoration:none;
+}
+
+.dck-front.dck-front .dck-lien2:hover { text-decoration:underline; }
+
+.dck-front.dck-front .dck-dl2 b {
+  margin-left:auto;
+  font-family:var(--f-num);
+  font-variant-numeric:tabular-nums;
+  font-size:12.5px;
+  color:var(--tx);
+}
+
+.dck-front.dck-front .dck-dl2__sub {
+  font-size:11.5px;
+  color:var(--tx-4);
+  margin-top:5px;
+}
+
+/* ── Annonces ───────────────────────────────────────────────── */
+
+.dck-front.dck-front .dck-an { display:flex; gap:9px; }
+
+.dck-front.dck-front .dck-an__p {
+  flex:0 0 auto;
+  width:7px; height:7px;
+  border-radius:50%;
+  margin-top:6px;
+  background:var(--info);
+}
+
+.dck-front.dck-front .dck-an b {
+  font-size:13.5px;
+  font-weight:600;
+  color:var(--tx);
+}
+
+.dck-front.dck-front .dck-an__d {
+  font-family:var(--f-num);
+  font-size:11.5px;
+  color:var(--tx-4);
+  margin-top:2px;
+}
+
+/* ── Ma presence ────────────────────────────────────────────── */
+
+.dck-front.dck-front .dck-pres {
+  display:flex;
+  flex-direction:column;
+  gap:11px;
+}
+
+.dck-front.dck-front .dck-pres__l {
+  font-size:12.5px;
+  color:var(--tx-3);
+}
+
+.dck-front.dck-front .dck-pres b {
+  font-family:var(--f-num);
+  font-variant-numeric:tabular-nums;
+  font-size:17px;
+  color:var(--tx);
+}
+
+.dck-front.dck-front .dck-vide2 {
+  font-size:13px;
+  color:var(--tx-3);
+  margin:0;
+  padding:14px 0;
+}
+
+/* ── Adaptation aux petits ecrans ───────────────────────────── */
+
+@media (max-width:1200px) {
+  .dck-front.dck-front .dck-g23,
+  .dck-front.dck-front .dck-g3 { grid-template-columns:1fr; }
+  .dck-front.dck-front .dck-g4 { grid-template-columns:repeat(2, 1fr); }
+}
+
+@media (max-width:560px) {
+  .dck-front.dck-front .dck-g4 { grid-template-columns:1fr; }
+}

@@ -1,0 +1,106 @@
+<?php
+
+namespace App\Traits;
+
+use App\Models\Project;
+use App\Models\TaskboardColumn;
+use Illuminate\Support\Facades\DB;
+
+/**
+ * Donnees propres au tableau de bord du collaborateur, tel que la
+ * maquette dck-flow-task le decrit sous l'ecran « Mon tableau de bord ».
+ *
+ * EmployeeDashboard prepare deja l'essentiel : pendingTasks,
+ * inProcessTasks, dueTasks, notices, weekWiseTimelogs, currentClockIn,
+ * totalTimeFormatted et counts. Ce trait n'ajoute que les trois
+ * elements qui manquaient, sans recalculer ce qui existe.
+ */
+trait EspaceCollaborateur
+{
+    /**
+     * Diligences dont le collaborateur est membre, avec leur
+     * avancement et le detail des taches terminees. Une seule requete :
+     * les deux comptages passent par des sous-selections.
+     */
+    protected function espaceDiligences(int $userId, int $limite = 4)
+    {
+        $termine = TaskboardColumn::completeColumn();
+
+        return Project::query()
+            ->select('projects.id', 'projects.project_name', 'projects.completion_percent')
+            ->selectSub(
+                DB::table('tasks')
+                    ->selectRaw('count(*)')
+                    ->whereColumn('tasks.project_id', 'projects.id')
+                    ->whereNull('tasks.deleted_at'),
+                'taches_total'
+            )
+            ->selectSub(
+                DB::table('tasks')
+                    ->selectRaw('count(*)')
+                    ->whereColumn('tasks.project_id', 'projects.id')
+                    ->whereNull('tasks.deleted_at')
+                    ->where('tasks.board_column_id', $termine->id),
+                'taches_faites'
+            )
+            ->where('projects.company_id', company()->id)
+            ->whereNull('projects.deleted_at')
+            ->whereIn('projects.id', function ($q) use ($userId) {
+                $q->select('project_id')->from('project_members')->where('user_id', $userId);
+            })
+            ->orderByDesc('projects.updated_at')
+            ->limit($limite)
+            ->get();
+    }
+
+    /**
+     * Solde de conges, tous types confondus.
+     * La colonne leaves_remaining est portee par la table pivot des
+     * types de conges attribues a l'utilisateur.
+     */
+    protected function espaceCongesRestants(int $userId): ?int
+    {
+        if (!DB::getSchemaBuilder()->hasTable('leave_types')) {
+            return null;
+        }
+
+        $solde = DB::table('leave_types')
+            ->where('company_id', company()->id)
+            ->sum('no_of_leaves');
+
+        $pris = DB::table('leaves')
+            ->where('user_id', $userId)
+            ->where('status', 'approved')
+            ->whereYear('leave_date', now()->year)
+            ->count();
+
+        return max(0, (int) $solde - (int) $pris);
+    }
+
+    /**
+     * Taches terminees par le collaborateur depuis le debut du mois.
+     */
+    protected function espaceTermineesCeMois(int $userId): int
+    {
+        $termine = TaskboardColumn::completeColumn();
+
+        return DB::table('tasks')
+            ->join('task_users', 'task_users.task_id', '=', 'tasks.id')
+            ->where('task_users.user_id', $userId)
+            ->where('tasks.board_column_id', $termine->id)
+            ->whereNull('tasks.deleted_at')
+            ->where('tasks.updated_at', '>=', now()->startOfMonth())
+            ->distinct()
+            ->count('tasks.id');
+    }
+
+    /**
+     * Renseigne les variables attendues par la vue mon-espace.
+     */
+    protected function chargerEspaceCollaborateur(int $userId): void
+    {
+        $this->espaceDiligences     = $this->espaceDiligences($userId);
+        $this->espaceConges         = $this->espaceCongesRestants($userId);
+        $this->espaceTermineesMois  = $this->espaceTermineesCeMois($userId);
+    }
+}

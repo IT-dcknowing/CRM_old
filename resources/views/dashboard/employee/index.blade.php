@@ -237,9 +237,7 @@
              pointage : l'ecran se lit alors de haut en bas, du contexte
              personnel vers l'activite. Restreint aux diligences dont le
              collaborateur est membre (voir PilotageDiligences). --}}
-        @isset($diligenceKpis)
-            @include('dashboard.ajax.pilotage')
-        @endisset
+        @include('dashboard.employee.mon-espace')
 
         {{-- Les widgets historiques ne sont affiches que si au moins un
              reste actif. Leurs deux conteneurs — la rangee emp-dash-detail
