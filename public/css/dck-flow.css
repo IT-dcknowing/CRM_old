@@ -105,7 +105,11 @@
 .dck-front.dck-front .select2-container--default.select2-container--focus .select2-selection--single {
   outline:none;
   border-color:var(--act);
-  box-shadow:0 0 0 2px rgba(0,0,0,.9);
+  /* Halo discret : un anneau noir a 90 % d'opacite, comme auparavant,
+     doublait visuellement l'epaisseur de la bordure et ecrasait le
+     champ. L'atelier pose un halo clair de 3 px autour d'une bordure
+     nette : c'est la meme intention, transposee sur le noir primaire. */
+  box-shadow:0 0 0 3px rgba(17,24,39,.12);
 }
 
 .dck-front.dck-front .form-control:disabled,
@@ -124,7 +128,7 @@
   border-color:var(--err);
 }
 .dck-front.dck-front .form-control.is-invalid:focus {
-  box-shadow:0 0 0 2px rgba(180,35,24,.32);
+  box-shadow:0 0 0 3px rgba(180,35,24,.16);
 }
 .dck-front.dck-front .invalid-feedback,
 .dck-front.dck-front .error-message,
@@ -1930,4 +1934,81 @@ button {
 
 @media (max-width:560px) {
   .dck-front.dck-front .dck-kpis { grid-template-columns:1fr; }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ONGLETS INTERNES — diligence, tache, contrat
+   ──────────────────────────────────────────────────────────────
+   Le contenu des onglets est injecte par ajax dans .content-wrapper,
+   qui porte .dck-front : la classe survit a l'appel, puisque le script
+   remplace le CONTENU du conteneur et non le conteneur lui-meme. Les
+   regles ci-dessous s'appliquent donc a tous les onglets sans qu'aucune
+   vue n'ait a etre modifiee.
+
+   L'essentiel etait deja couvert : les onglets Membres et Jalons
+   passent par x-cards.data et x-table, l'onglet Fichiers par
+   x-file-card, tous trois habilles. Restait .w-tables, le conteneur
+   de tableau du theme — utilise par 91 vues, dont onze onglets de
+   diligence. Une seule regle les couvre toutes.
+   ══════════════════════════════════════════════════════════════ */
+
+.dck-front.dck-front .w-tables {
+  background:var(--surface) !important;
+  border:1px solid var(--line);
+  border-radius:var(--r) !important;
+  box-shadow:none !important;
+  overflow:hidden;
+}
+
+/* Le tableau colle aux bords du conteneur : la bordure de la carte
+   fait office de cadre, un double filet serait redondant. */
+.dck-front.dck-front .w-tables > .table,
+.dck-front.dck-front .w-tables > table,
+.dck-front.dck-front .w-tables table.dataTable {
+  margin:0 !important;
+  border:0 !important;
+}
+
+/* La barre d'outils DataTables (recherche, longueur, export) vit
+   au-dessus du tableau, a l'interieur de la carte. */
+.dck-front.dck-front .w-tables .dataTables_wrapper > .row:first-child {
+  padding:12px 16px 0;
+}
+
+.dck-front.dck-front .w-tables .dataTables_wrapper > .row:last-child {
+  padding:10px 16px;
+  border-top:1px solid var(--line);
+}
+
+/* ── Barre d'action au-dessus des tableaux ──────────────────── */
+
+.dck-front.dck-front .table-responsive { border:0; }
+
+/* ── Onglet Vue d'ensemble d'une diligence ──────────────────── */
+
+/* Les blocs date de debut / echeance : meme facture que les
+   indicateurs, sans en reprendre la taille. */
+.dck-front.dck-front .project-detail-box h5 {
+  font-size:12px !important;
+  font-weight:500 !important;
+  color:var(--tx-3) !important;
+  letter-spacing:.02em;
+}
+
+/* ── Cartes de fichiers ─────────────────────────────────────── */
+
+.dck-front.dck-front .file-card {
+  box-shadow:none !important;
+  transition:border-color .15s ease;
+}
+
+.dck-front.dck-front .file-card:hover { border-color:var(--line-strong); }
+
+.dck-front.dck-front .file-card .card-body { padding:10px 12px; }
+
+/* ── Etat vide ──────────────────────────────────────────────── */
+
+.dck-front.dck-front .no-record-found,
+.dck-front.dck-front .text-center.p-20 .fa-3x {
+  color:var(--tx-4);
 }
