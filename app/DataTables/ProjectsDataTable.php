@@ -491,12 +491,17 @@ class ProjectsDataTable extends BaseDataTable
         }
 
         $model->groupBy('projects.id');
-        $model->orderByRaw('pinned_project desc');
+        // Tri repetant la sous-requete plutot que l'alias : DataTables
+        // compte les lignes avec un select count(*) qui conserve le
+        // ORDER BY mais supprime la liste des colonnes, donc l'alias.
+        $model->orderByRaw(
+            '(select count(*) from pinned where pinned.project_id = projects.id and pinned.user_id = ?) desc',
+            [user()->id]
+        );
 
         // Handle ordering
         $columns = $request->get('columns');
         $order = $request->get('order');
-        $model->orderByRaw('pinned_project desc');
 
         if ($order) {
             foreach ($order as $o) {
