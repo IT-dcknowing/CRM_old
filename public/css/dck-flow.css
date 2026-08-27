@@ -1808,6 +1808,10 @@ button {
 .dck-front.dck-front .dck-tbl table {
   border-collapse:collapse;
   width:100%;
+  /* Largeur plancher, comme .tbl dans la maquette : en dessous, le
+     tableau defile dans son conteneur au lieu d'ecraser ses colonnes
+     au point de les rendre illisibles. */
+  min-width:640px;
   font-size:13px;
   margin:0;
 }
@@ -1957,7 +1961,9 @@ button {
   border:1px solid var(--line);
   border-radius:var(--r) !important;
   box-shadow:none !important;
-  overflow:hidden;
+  /* Le defilement horizontal est pose plus bas, dans le bloc
+     d'adaptation aux petits ecrans : overflow:hidden coupait ici les
+     colonnes de droite au lieu de les rendre atteignables. */
 }
 
 /* Le tableau colle aux bords du conteneur : la bordure de la carte
@@ -2970,4 +2976,179 @@ button {
 
 @media (max-width:1200px) {
   .dck-front.dck-front .dck-g2 { grid-template-columns:1fr; }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ADAPTATION AUX PETITS ECRANS
+   ──────────────────────────────────────────────────────────────
+   Regle de conduite : la page ne defile jamais horizontalement.
+   Ce qui est large — tableaux, colonnes du tableau des taches,
+   graphiques — defile DANS son propre conteneur.
+
+   Les grilles des deux tableaux de bord ont deja leurs points de
+   rupture plus haut ; ce bloc traite ce qui restait : les tableaux
+   du theme, le tableau des taches, les en-tetes et les cartes.
+   ══════════════════════════════════════════════════════════════ */
+
+/* Garde-fou : aucun element ne pousse la page au-dela de sa largeur. */
+.dck-front.dck-front { min-width:0; }
+.dck-front.dck-front img { max-width:100%; height:auto; }
+
+/* ── Tableaux du theme ──────────────────────────────────────────
+   .w-tables portait overflow:hidden pour respecter son rayon. Sur un
+   petit ecran, cela COUPAIT les colonnes de droite au lieu de les
+   laisser defiler : elles devenaient inaccessibles. Le defilement
+   horizontal est retabli — le rayon reste applique, un conteneur
+   defilant clippe aussi ses coins. */
+
+.dck-front.dck-front .w-tables {
+  overflow-x:auto;
+  overflow-y:visible;
+  -webkit-overflow-scrolling:touch;
+}
+
+.dck-front.dck-front .table-responsive,
+.dck-front.dck-front .dataTables_wrapper {
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+}
+
+/* Les barres d'outils DataTables s'empilent au lieu de se serrer. */
+@media (max-width:768px) {
+  .dck-front.dck-front .dataTables_wrapper > .row > [class^="col"],
+  .dck-front.dck-front .dataTables_wrapper > .row > [class*=" col"] {
+    width:100%;
+    max-width:100%;
+    flex:0 0 100%;
+  }
+
+  .dck-front.dck-front .dataTables_paginate { justify-content:center; display:flex; }
+  .dck-front.dck-front .dataTables_info { text-align:center; }
+}
+
+/* ── Tableau des taches ─────────────────────────────────────────
+   Les colonnes restent cote a cote et l'ensemble defile : les
+   empiler ferait perdre la lecture par statut, qui est tout
+   l'interet de cet ecran. */
+
+.dck-front.dck-front .w-task-board-panel {
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  padding-bottom:8px;
+}
+
+@media (max-width:768px) {
+  .dck-front.dck-front .board-panel {
+    min-width:270px;
+    flex:0 0 270px;
+  }
+
+  .dck-front.dck-front .w-task-board-box { padding:12px !important; }
+}
+
+/* ── En-tetes de page ───────────────────────────────────────── */
+
+@media (max-width:768px) {
+  .dck-chrome.dck-chrome .page-heading h2 {
+    flex-wrap:wrap;
+    gap:2px 7px;
+  }
+
+  .dck-chrome.dck-chrome .page-heading h2 > span:first-child {
+    font-size:15px !important;
+    max-width:100%;
+  }
+
+  /* Le chemin passe sous le titre quand la ligne ne suffit plus. */
+  .dck-chrome.dck-chrome .page-heading h2 > span:last-child {
+    flex:1 0 100%;
+    font-size:11.5px !important;
+  }
+}
+
+/* ── Cartes et blocs de contenu ─────────────────────────────── */
+
+@media (max-width:768px) {
+  .dck-front.dck-front .dck-c__head {
+    flex-wrap:wrap;
+    gap:6px 10px;
+  }
+
+  .dck-front.dck-front .dck-c__right {
+    margin-left:0;
+    width:100%;
+  }
+
+  .dck-front.dck-front .dck-c__body { padding:14px; }
+
+  /* Les indicateurs gagnent en hauteur ce qu'ils perdent en largeur. */
+  .dck-front.dck-front .dck-kpi2__val,
+  .dck-front.dck-front .dck-k__val { font-size:25px; }
+
+  .dck-front.dck-front .dck-taux b { font-size:28px; }
+}
+
+/* ── Barres de la semaine et de repartition ─────────────────── */
+
+@media (max-width:560px) {
+  .dck-front.dck-front .dck-bl { gap:8px; }
+  .dck-front.dck-front .dck-bl__j { flex:0 0 62px; font-size:11.5px; }
+  .dck-front.dck-front .dck-bl__v { font-size:11.5px; }
+}
+
+/* ── Bandeaux d'alerte ──────────────────────────────────────── */
+
+@media (max-width:640px) {
+  .dck-front.dck-front .dck-note { flex-wrap:wrap; }
+
+  .dck-front.dck-front .dck-note__act {
+    margin-left:0;
+    width:100%;
+    text-align:center;
+  }
+}
+
+/* ── Formulaires ────────────────────────────────────────────── */
+
+@media (max-width:768px) {
+  /* Les boutons d'un pied de formulaire prennent toute la largeur
+     plutot que de se chevaucher. */
+  .dck-front.dck-front .modal-footer,
+  .dck-front.dck-front .form-actions {
+    flex-direction:column;
+    align-items:stretch;
+    gap:8px;
+  }
+
+  .dck-front.dck-front .modal-footer > .btn,
+  .dck-front.dck-front .form-actions > .btn {
+    width:100%;
+    margin:0 !important;
+  }
+}
+
+/* ── Panneau lateral ────────────────────────────────────────── */
+
+@media (max-width:768px) {
+  .dck-front.dck-front .right-modal,
+  .dck-front.dck-front #right-modal-content { width:100% !important; }
+}
+
+/* ── Cartes de fichiers ─────────────────────────────────────── */
+
+@media (max-width:560px) {
+  .dck-front.dck-front .file-card {
+    width:100% !important;
+    margin-right:0 !important;
+  }
+}
+
+/* ── Fiches de detail ───────────────────────────────────────── */
+
+@media (max-width:900px) {
+  .dck-detail-head .dck-grid { grid-template-columns:repeat(2, 1fr); }
+}
+
+@media (max-width:560px) {
+  .dck-detail-head .dck-grid { grid-template-columns:1fr; }
 }
