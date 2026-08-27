@@ -39,12 +39,18 @@ use App\Models\EmployeeShift;
  */
 trait EmployeeDashboard
 {
+    use PilotageDiligences;
+
 
     /**
      */
     public function employeeDashboard()
     {
         $user = user();
+
+        // Bloc de pilotage restreint : un collaborateur ne voit que les
+        // diligences dont il est membre, jamais le portefeuille entier.
+        $this->chargerPilotage($user->id);
 
         $completedTaskColumn = TaskboardColumn::completeColumn();
         $showClockIn = attendance_setting();

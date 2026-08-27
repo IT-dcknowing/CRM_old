@@ -22,6 +22,8 @@ use Illuminate\Support\Facades\DB;
  */
 trait OverviewDashboard
 {
+    use PilotageDiligences;
+
 
     /**
      *
@@ -54,11 +56,7 @@ trait OverviewDashboard
             )
             ->first();
 
-        $this->diligenceKpis   = $this->calculerDiligenceKpis();
-        $this->dashLivraisons  = $this->livraisonsParMois();
-        $this->dashRepartition = $this->repartitionPortefeuille();
-        $this->dashATraiter    = $this->diligencesATraiter();
-        $this->dashEcheances   = RegulatoryDeadline::prochaines(30, company()->id);
+        $this->chargerPilotage();
 
         $minutes = $this->counts->totalHoursLogged - $this->counts->totalBreakMinutes;
         $hours = intdiv($minutes, 60);
@@ -220,141 +218,9 @@ trait OverviewDashboard
     }
 
 
-    /**
-     * Indicateurs de tete du tableau de bord, conformes a la maquette
-     * pilotage-dc-knowing : diligences suivies, en cours, en retard et
-     * part livree dans les delais.
-     *
-     * Une seule requete, en sous-selects, sur le modele de $this->counts :
-     * le tableau de bord ne gagne donc qu'un aller-retour au total.
-     *
-     * Reserve sur le dernier indicateur : la table projects ne conserve
-     * aucune date de livraison. On approche la date de cloture par
-     * updated_at, qui bouge a chaque modification — le pourcentage est
-     * donc indicatif et peut etre sous-estime. A remplacer le jour ou
-     * une colonne de date de cloture existera.
-     */
-    private function calculerDiligenceKpis()
-    {
-        $id = company()->id;
-
-        $k = DB::table('projects')
-            ->selectRaw('COUNT(*) as suivies')
-            ->selectRaw("SUM(status = 'En cours') as enCours")
-            ->selectRaw("SUM(deadline IS NOT NULL AND deadline < CURDATE() AND status <> 'terminée') as enRetard")
-            ->selectRaw("SUM(status = 'terminée' AND deadline IS NOT NULL) as termineesAvecEcheance")
-            ->selectRaw("SUM(status = 'terminée' AND deadline IS NOT NULL AND DATE(updated_at) <= deadline) as dansLesDelais")
-            ->selectRaw('SUM(created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)) as creees30j')
-            ->where('company_id', $id)
-            ->whereNull('deleted_at')
-            ->first();
-
-        $suivies = (int) $k->suivies;
-        $avecEcheance = (int) $k->termineesAvecEcheance;
-
-        return (object) [
-            'suivies'    => $suivies,
-            'enCours'    => (int) $k->enCours,
-            'enRetard'   => (int) $k->enRetard,
-            'creees30j'  => (int) $k->creees30j,
-            'pctEnCours' => $suivies ? round(100 * $k->enCours / $suivies) : 0,
-            'pctRetard'  => $suivies ? round(100 * $k->enRetard / $suivies) : 0,
-            'pctDelais'  => $avecEcheance ? round(100 * $k->dansLesDelais / $avecEcheance) : null,
-            'termineesAvecEcheance' => $avecEcheance,
-        ];
-    }
 
 
-    /**
-     * Diligences terminees par mois sur douze mois glissants.
-     *
-     * Reserve : la table projects ne conserve pas de date de livraison.
-     * On se rabat sur updated_at, qui bouge a chaque modification — la
-     * repartition mensuelle est donc approximative. A remplacer par une
-     * vraie colonne de cloture le jour ou elle existera.
-     *
-     * @return array{labels: string[], valeurs: int[], total: int}
-     */
-    private function livraisonsParMois()
-    {
-        $debut = now()->startOfMonth()->subMonths(11);
 
-        $lignes = DB::table('projects')
-            ->selectRaw("DATE_FORMAT(updated_at, '%Y-%m') as mois, COUNT(*) as n")
-            ->where('company_id', company()->id)
-            ->whereNull('deleted_at')
-            ->where('status', 'terminée')
-            ->where('updated_at', '>=', $debut)
-            ->groupBy('mois')
-            ->pluck('n', 'mois');
 
-        $labels = [];
-        $valeurs = [];
-        $curseur = $debut->copy();
-
-        for ($i = 0; $i < 12; $i++) {
-            $cle = $curseur->format('Y-m');
-            $labels[] = ucfirst($curseur->translatedFormat('M'));
-            $valeurs[] = (int) ($lignes[$cle] ?? 0);
-            $curseur->addMonth();
-        }
-
-        return ['labels' => $labels, 'valeurs' => $valeurs, 'total' => array_sum($valeurs)];
-    }
-
-    /**
-     * Repartition du portefeuille en quatre etats, comme la maquette.
-     *
-     * « En retard » n'est pas un statut stocke : il se deduit d'une
-     * echeance depassee sur une diligence ni terminee ni annulee. Il
-     * prime sur le statut d'origine, sinon une diligence en retard
-     * serait comptee deux fois.
-     *
-     * @return array<int, array{cle: string, libelle: string, n: int, pct: float, couleur: string}>
-     */
-    private function repartitionPortefeuille()
-    {
-        $r = DB::table('projects')
-            ->selectRaw("SUM(status = 'terminée') as terminees")
-            ->selectRaw("SUM(deadline IS NOT NULL AND deadline < CURDATE() AND status NOT IN ('terminée','annulée')) as enRetard")
-            ->selectRaw("SUM(status = 'En cours' AND NOT (deadline IS NOT NULL AND deadline < CURDATE())) as enCours")
-            ->selectRaw("SUM(status NOT IN ('terminée','En cours','annulée') AND NOT (deadline IS NOT NULL AND deadline < CURDATE())) as aFaire")
-            ->where('company_id', company()->id)
-            ->whereNull('deleted_at')
-            ->first();
-
-        $etats = [
-            ['terminees', __('Terminées'), (int) $r->terminees, '#0E7C5A'],
-            ['enCours',   __('En cours'),  (int) $r->enCours,   '#175CD3'],
-            ['aFaire',    __('À faire'),   (int) $r->aFaire,    '#667085'],
-            ['enRetard',  __('En retard'), (int) $r->enRetard,  '#B42318'],
-        ];
-
-        $total = array_sum(array_column($etats, 2));
-
-        return array_map(fn ($e) => [
-            'cle'     => $e[0],
-            'libelle' => $e[1],
-            'n'       => $e[2],
-            'pct'     => $total ? round(100 * $e[2] / $total, 1) : 0,
-            'couleur' => $e[3],
-        ], $etats);
-    }
-
-    /**
-     * Diligences ouvertes les plus proches de leur echeance.
-     * Les relations sont chargees d'avance : pas de requete par ligne.
-     */
-    private function diligencesATraiter(int $limite = 6)
-    {
-        return Project::with(['client:id,name,image', 'members.user:id,name,image'])
-            ->select('id', 'project_name', 'project_short_code', 'client_id', 'deadline', 'status', 'completion_percent')
-            ->where('company_id', company()->id)
-            ->whereNull('deleted_at')
-            ->where('status', '<>', 'terminée')
-            ->orderByRaw('deadline IS NULL, deadline ASC')
-            ->limit($limite)
-            ->get();
-    }
 
 }

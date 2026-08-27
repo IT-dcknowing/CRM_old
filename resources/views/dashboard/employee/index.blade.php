@@ -64,7 +64,17 @@
 
 @section('content')
     <!-- CONTENT WRAPPER START -->
-    <div class="px-4 py-2 border-top-0 emp-dashboard">
+    <div class="px-4 py-2 border-top-0 emp-dashboard dck-front">
+
+        {{-- Bloc de pilotage, identique a celui de l'administrateur mais
+             restreint aux diligences dont le collaborateur est membre.
+             Les variables sont preparees par PilotageDiligences. --}}
+        @isset($diligenceKpis)
+            <div class="pt-3">
+                @include('dashboard.ajax.pilotage')
+            </div>
+        @endisset
+
         <!-- WELOCOME START -->
         @if (!is_null($checkTodayLeave))
             <div class="row pt-4">
