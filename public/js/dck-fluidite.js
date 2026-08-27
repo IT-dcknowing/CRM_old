@@ -43,9 +43,11 @@
             '</div>' +
         '</div>';
 
-    // Le helper utilise document.loading pour remplir le panneau
-    // a la fermeture : on lui donne le squelette plutot qu'un mot.
-    document.loading = SQUELETTE;
+    // NE PAS toucher a document.loading : main.js s'en sert aussi pour
+    // remplir les boutons en attente (loadingButton, ligne 28204) et un
+    // span sr-only. Y mettre le squelette injectait ses ~20 div dans
+    // chaque bouton. Le squelette est pose directement ci-dessous, sur
+    // le seul conteneur qui le concerne.
 
     document.addEventListener('click', function (e) {
         var lien = e.target.closest && e.target.closest('.openRightModal');
