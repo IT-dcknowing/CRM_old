@@ -10,7 +10,7 @@
 
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="{{ asset('vendor/css/all.min.css') }}" defer="defer">
-    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&ampdisplay=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet" />
 
     <!-- Simple Line Icons -->
     <link rel="stylesheet" href="{{ asset('vendor/css/simple-line-icons.css') }}" defer="defer">
@@ -194,7 +194,6 @@
 {{-- Fluidite percue : squelettes, barre de navigation, retour immediat
      sur les boutons. Charge apres main.js, qu il complete sans le modifier. --}}
 <script src="{{ asset('js/dck-fluidite.js') }}?v={{ @filemtime(public_path('js/dck-fluidite.js')) }}"></script>
-<script src="{{ asset('js/dck-theme.js') }}?v={{ @filemtime(public_path('js/dck-theme.js')) }}"></script>
 <script>
     // Translation of default values for the select picker box.
     $.fn.selectpicker.Constructor.DEFAULTS.noneSelectedText = "@lang('placeholders.noneSelectedText')";
