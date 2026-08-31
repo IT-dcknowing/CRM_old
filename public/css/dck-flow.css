@@ -3152,3 +3152,338 @@ button {
 @media (max-width:560px) {
   .dck-detail-head .dck-grid { grid-template-columns:1fr; }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   MENU DU PROFIL — conforme a dck-flow-task
+   ──────────────────────────────────────────────────────────────
+       .pop-menu        196px mini, 6px de marge interne
+       .pop-lab         11px / 600, interlettrage .06em, majuscules
+       .pop-sep         filet de 1px, 5px 4px de marge
+       .pop-menu button gap 9px, padding 8px 10px
+       .danger          rouge, fond rouge pale au survol
+   ══════════════════════════════════════════════════════════════ */
+
+.dck-chrome.dck-chrome .sidebar-brand-dropdown {
+  min-width:216px;
+  padding:6px !important;
+  border:1px solid var(--line) !important;
+  border-radius:var(--r-sm) !important;
+  box-shadow:0 8px 28px rgba(15,20,25,.12) !important;
+}
+
+/* Intitule de section */
+.dck-chrome.dck-chrome .dck-pop__lab {
+  padding:7px 10px 4px;
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:var(--tx-4);
+}
+
+/* Adresse du compte : elle peut etre longue, elle se coupe proprement */
+.dck-chrome.dck-chrome .dck-pop__mail {
+  padding:0 10px 8px;
+  font-size:12.5px;
+  color:var(--tx-3);
+  word-break:break-all;
+  line-height:1.4;
+}
+
+.dck-chrome.dck-chrome .dck-pop__sep {
+  height:1px;
+  margin:5px 4px;
+  background:var(--line);
+}
+
+/* Entrees */
+.dck-chrome.dck-chrome .dck-pop__item {
+  display:flex;
+  align-items:center;
+  gap:9px;
+  width:100%;
+  margin:0;
+  padding:8px 10px;
+  border:0;
+  background:none;
+  border-radius:var(--r-sm);
+  font-size:13.5px;
+  font-weight:400;
+  color:var(--tx-2);
+  text-decoration:none;
+  cursor:pointer;
+}
+
+.dck-chrome.dck-chrome .dck-pop__item:hover {
+  background:var(--surface-3);
+  color:var(--tx);
+  text-decoration:none;
+}
+
+.dck-chrome.dck-chrome .dck-pop__item i {
+  font-size:15px;
+  opacity:.75;
+  flex:0 0 auto;
+  line-height:1;
+}
+
+/* Deconnexion : la seule action destructrice du menu */
+.dck-chrome.dck-chrome .dck-pop__item.is-danger { color:var(--err); }
+
+.dck-chrome.dck-chrome .dck-pop__item.is-danger:hover {
+  background:var(--err-bg);
+  color:var(--err);
+}
+
+/* L'interrupteur de theme reste dans le document — le libelle
+   « Changer de theme » l'actionne — mais il ne s'affiche plus. */
+.dck-chrome.dck-chrome .dck-pop__bascule {
+  position:absolute;
+  width:1px;
+  height:1px;
+  padding:0;
+  margin:-1px;
+  overflow:hidden;
+  clip:rect(0, 0, 0, 0);
+  white-space:nowrap;
+  border:0;
+}
+
+/* Il doit rester atteignable au clavier : le focus se voit sur
+   l'entree qui lui sert de libelle. */
+.dck-chrome.dck-chrome .dck-pop__bascule:focus-visible + * ,
+.dck-chrome.dck-chrome .dck-pop__item:focus-visible {
+  outline:2px solid var(--act);
+  outline-offset:-2px;
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   PIED DE LA BARRE LATERALE — identite du collaborateur
+   ──────────────────────────────────────────────────────────────
+       .sb-foot       filet superieur, 10px 12px
+       .sb-user       pleine largeur, gap 10px, padding 8px
+       .avatar        34x34, rond, initiales sur fond clair
+       .sb-user-txt b 13,5px / 600, coupe par des points de suspension
+       small          12px, --tx-3
+
+   La barre devient une colonne : le menu occupe la place restante et
+   defile, le pied reste colle en bas. Le menu du profil remonte, la
+   place manquant sous lui.
+   ══════════════════════════════════════════════════════════════ */
+
+.dck-chrome.dck-chrome .main-sidebar {
+  display:flex;
+  flex-direction:column;
+  height:100%;
+}
+
+.dck-chrome.dck-chrome .sidebar-brand-box { flex:0 0 auto; }
+
+.dck-chrome.dck-chrome .sidebar-menu {
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+}
+
+.dck-chrome.dck-chrome .dck-foot {
+  flex:0 0 auto;
+  border-top:1px solid var(--line);
+  padding:10px 12px;
+  /* Le bouton de repli occupe le bas de la barre : on lui laisse la place. */
+  margin-bottom:38px;
+}
+
+/* Le declencheur */
+.dck-chrome.dck-chrome .dck-user {
+  width:100%;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:8px;
+  border:0;
+  background:none;
+  border-radius:var(--r-sm);
+  text-align:left;
+  text-decoration:none;
+  cursor:pointer;
+}
+
+.dck-chrome.dck-chrome .dck-user:hover {
+  background:var(--surface-3);
+  text-decoration:none;
+}
+
+.dck-chrome.dck-chrome .dck-user__av {
+  flex:0 0 auto;
+  display:grid;
+  place-items:center;
+  width:34px;
+  height:34px;
+  border-radius:var(--r-full);
+  background:var(--surface-3);
+  border:1px solid var(--line);
+  font-size:12.5px;
+  font-weight:600;
+  color:var(--tx-2);
+  letter-spacing:.02em;
+}
+
+.dck-chrome.dck-chrome .dck-user__txt {
+  flex:1 1 auto;
+  min-width:0;
+}
+
+.dck-chrome.dck-chrome .dck-user__txt b {
+  display:block;
+  font-size:13.5px;
+  font-weight:600;
+  color:var(--tx);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.dck-chrome.dck-chrome .dck-user__txt small {
+  display:block;
+  font-size:12px;
+  color:var(--tx-3);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+/* Le menu s'ouvre vers le haut et s'aligne sur le bord gauche. */
+.dck-chrome.dck-chrome .dck-foot .dropdown-menu {
+  bottom:100%;
+  top:auto;
+  left:0;
+  right:auto;
+  margin:0 0 6px !important;
+  transform:none !important;
+}
+
+/* En mode reduit, seul l'avatar reste : le nom et la fonction
+   n'auraient plus la place de s'afficher. */
+body.sidebar-toggled .dck-chrome.dck-chrome .dck-user__txt,
+.mini-sidebar .dck-chrome.dck-chrome .dck-user__txt { display:none; }
+
+body.sidebar-toggled .dck-chrome.dck-chrome .dck-user,
+.mini-sidebar .dck-chrome.dck-chrome .dck-user { justify-content:center; }
+
+
+/* ══════════════════════════════════════════════════════════════
+   CORRECTIFS DU PIED DE BARRE ET DES MENUS
+   ──────────────────────────────────────────────────────────────
+   Deux defauts constates a l'ecran :
+
+   1. Le menu du profil se superposait au bloc utilisateur. Son
+      conteneur n'etait pas positionne : le menu, en absolu, se calait
+      donc sur un ancetre quelconque au lieu du pied.
+
+   2. En theme sombre, ce menu et les sous-menus du volet restaient
+      blancs. Les jetons sombres couvrent .dck-chrome, mais ces deux
+      elements recoivent un fond en dur depuis main.css, avec une
+      specificite superieure.
+   ══════════════════════════════════════════════════════════════ */
+
+/* 1. Le pied sert de repere au menu qu'il ouvre. */
+.dck-chrome.dck-chrome .dck-foot { position:relative; }
+
+.dck-chrome.dck-chrome .dck-foot .dropdown-menu {
+  /* Le declencheur porte data-display="static" : Bootstrap n'appelle
+     donc pas Popper et n'ecrit aucun style inline. Le positionnement
+     de .dropup s'applique, il suffit de l'ajuster. */
+  bottom:calc(100% + 6px);
+  left:12px;
+  right:auto;
+  margin:0 !important;
+}
+
+/* 2. Theme sombre — menu du profil */
+
+.dark-theme .dck-chrome.dck-chrome .sidebar-brand-dropdown {
+  background:var(--surface-2) !important;
+  border-color:var(--line) !important;
+  box-shadow:0 8px 28px rgba(0,0,0,.5) !important;
+}
+
+.dark-theme .dck-chrome.dck-chrome .dck-pop__lab { color:var(--tx-4) !important; }
+.dark-theme .dck-chrome.dck-chrome .dck-pop__mail { color:var(--tx-3) !important; }
+.dark-theme .dck-chrome.dck-chrome .dck-pop__sep { background:var(--line) !important; }
+
+.dark-theme .dck-chrome.dck-chrome .dck-pop__item { color:var(--tx-2) !important; }
+
+.dark-theme .dck-chrome.dck-chrome .dck-pop__item:hover {
+  background:var(--surface-3) !important;
+  color:var(--tx) !important;
+}
+
+.dark-theme .dck-chrome.dck-chrome .dck-pop__item.is-danger { color:var(--err) !important; }
+
+.dark-theme .dck-chrome.dck-chrome .dck-pop__item.is-danger:hover {
+  background:var(--err-bg) !important;
+}
+
+/* 2b. Theme sombre — sous-menus du volet
+   Le panneau qui liste Contrats, Diligences et Taches sortait en blanc
+   sur fond sombre. */
+
+.dark-theme .dck-chrome.dck-chrome .accordionItemContent,
+.dark-theme .dck-chrome.dck-chrome .accordionItemContent > div {
+  background:transparent !important;
+  border-left-color:var(--line) !important;
+}
+
+.dark-theme .dck-chrome.dck-chrome .accordionItemContent a {
+  background:transparent !important;
+  color:var(--tx-2) !important;
+}
+
+.dark-theme .dck-chrome.dck-chrome .accordionItemContent a:hover,
+.dark-theme .dck-chrome.dck-chrome .accordionItemContent a.active {
+  background:var(--surface-3) !important;
+  color:var(--tx) !important;
+}
+
+/* 2c. Theme sombre — identite du pied */
+
+.dark-theme .dck-chrome.dck-chrome .dck-foot { border-top-color:var(--line); }
+
+.dark-theme .dck-chrome.dck-chrome .dck-user__av {
+  background:var(--surface-3);
+  border-color:var(--line);
+  color:var(--tx-2);
+}
+
+.dark-theme .dck-chrome.dck-chrome .dck-user__txt b { color:var(--tx); }
+.dark-theme .dck-chrome.dck-chrome .dck-user__txt small { color:var(--tx-3); }
+.dark-theme .dck-chrome.dck-chrome .dck-user:hover { background:var(--surface-3); }
+
+/* 2d. Theme sombre — bloc de marque et bouton de repli */
+
+.dark-theme .dck-chrome.dck-chrome .sidebar-brand-box {
+  background:var(--surface) !important;
+  border-bottom-color:var(--line);
+}
+
+.dark-theme .dck-chrome.dck-chrome .sidebarTogglerBox {
+  background:var(--surface) !important;
+  border-top-color:var(--line);
+}
+
+
+/* Les declencheurs du pied et du menu sont des boutons : on neutralise
+   les styles propres au bouton natif (police heritee, alignement,
+   apparence systeme) pour qu'ils se lisent comme les entrees voisines. */
+.dck-chrome.dck-chrome button.dck-user,
+.dck-chrome.dck-chrome button.dck-pop__item {
+  font-family:inherit;
+  font-size:inherit;
+  line-height:inherit;
+  text-align:left;
+  appearance:none;
+  -webkit-appearance:none;
+}
+
+.dck-chrome.dck-chrome button.dck-pop__item { font-size:13.5px; }
