@@ -68,7 +68,7 @@
     @endif
     --}}
     
-    @if (!in_array('client', user_roles()) && in_array('clients', user_modules()) && $sidebarUserPermissions['view_clients'] != 5 && $sidebarUserPermissions['view_clients'] != 'none')
+    @if (false) {{-- [MODULE RETIRE] Clients (liste, situations fiscales, situations sociales, listes entreprises) --}}
         @if (!in_array('apporteurs', user_roles()))
             <x-menu-item dck="building" icon="building" :text="__('app.menu.clients')">
                 <x-slot name="iconPath">
