@@ -379,6 +379,31 @@
   padding:14px 22px;
 }
 
+/* ── Titres de section de formulaire ────────────────────────── */
+/* Rendu par le composant Blade x-dck.form-section, transcription
+   de la fonction sectionForm() de la maquette. */
+.dck-front.dck-front .dck-form-section {
+  display:flex;
+  align-items:baseline;
+  gap:9px;
+  margin:6px 0 14px;
+  padding-bottom:7px;
+  border-bottom:1px solid var(--line);
+}
+.dck-front.dck-front .dck-form-section > b {
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:var(--tx-3);
+}
+.dck-front.dck-front .dck-form-section > span {
+  font-size:12px;
+  color:var(--tx-4);
+}
+/* La premiere section d'un formulaire ne doit pas decoller du bord haut. */
+.dck-front.dck-front .dck-form-section:first-child { margin-top:0; }
+
 /* ── Espacements ────────────────────────────────────────────── */
 .dck-front.dck-front .form-group { margin-bottom:18px; }
 .dck-front.dck-front .p-20 { padding:20px !important; }
@@ -3487,3 +3512,162 @@ body.sidebar-toggled .dck-chrome.dck-chrome .dck-user,
 }
 
 .dck-chrome.dck-chrome button.dck-pop__item { font-size:13.5px; }
+
+
+/* ══════════════════════════════════════════════════════════════
+   3. PIECES HERITEES NON COUVERTES
+   Cinq familles de classes que main.css habille encore a sa
+   facon et qu'aucune regle dck- ne rattrapait. Elles n'ont pas
+   de classe dck-, elles etaient donc passees au travers de
+   l'audit precedent — mais elles s'affichent bien a l'ecran.
+
+   La double classe .dck-front.dck-front porte la specificite a
+   (0,2,1), au-dessus des (0,1,0) de main.css. Les couleurs sont
+   ecrites en jetons, qui sont redefinis sous .dark-theme : le
+   theme sombre suit donc sans regle supplementaire.
+   ══════════════════════════════════════════════════════════════ */
+
+/* 3a. Petits boutons — maquette .btn-sm
+   Presents dans les barres d'action des listes et des onglets. */
+
+.dck-front.dck-front .btn-sm,
+.dck-front.dck-front .btn-group-sm > .btn {
+  padding:6px 11px;
+  font-size:12.5px;
+  line-height:1.35;
+  border-radius:var(--r-sm);
+}
+
+.dck-front.dck-front .btn-sm svg,
+.dck-front.dck-front .btn-sm i { width:13px; height:13px; font-size:13px; }
+
+/* 3b. Pagination — maquette .pager
+   Bootstrap rend une <ul class="pagination"> avec des .page-item /
+   .page-link ; la maquette utilise des boutons. On transpose la
+   facture sans toucher au balisage produit par Laravel. */
+
+.dck-front.dck-front .pagination {
+  display:flex;
+  gap:4px;
+  margin:0;
+  padding:0;
+  list-style:none;
+}
+
+.dck-front.dck-front .pagination .page-item { margin:0; }
+
+.dck-front.dck-front .pagination .page-link {
+  display:grid;
+  place-items:center;
+  min-width:31px;
+  height:31px;
+  padding:0 8px;
+  border:1px solid var(--line);
+  border-radius:7px;
+  background:var(--surface);
+  font-family:var(--f-num);
+  font-size:12.5px;
+  color:var(--tx-2);
+  box-shadow:none;
+}
+
+.dck-front.dck-front .pagination .page-link:hover {
+  background:var(--surface-3);
+  border-color:var(--line);
+  color:var(--tx);
+}
+
+.dck-front.dck-front .pagination .page-link:focus-visible {
+  outline:2px solid var(--act);
+  outline-offset:2px;
+  box-shadow:none;
+}
+
+.dck-front.dck-front .pagination .page-item.active .page-link {
+  background:var(--act);
+  border-color:var(--act);
+  color:var(--act-tx);
+  font-weight:600;
+}
+
+.dck-front.dck-front .pagination .page-item.disabled .page-link {
+  opacity:.4;
+  cursor:not-allowed;
+  background:var(--surface);
+  color:var(--tx-4);
+}
+
+/* 3c. Barres de progression — maquette .bar
+   Visibles sur l'avancement des diligences et le temps de la
+   semaine. Bootstrap empile .progress (rail) et .progress-bar
+   (remplissage), ce qui correspond au .bar > i de la maquette. */
+
+.dck-front.dck-front .progress {
+  height:6px;
+  border-radius:var(--r-full);
+  background:var(--surface-3);
+  overflow:hidden;
+  box-shadow:none;
+}
+
+.dck-front.dck-front .progress-bar {
+  height:100%;
+  border-radius:var(--r-full);
+  background:var(--tx);
+  box-shadow:none;
+  transition:width .6s cubic-bezier(.2,.7,.3,1);
+}
+
+/* Les variantes de couleur de Bootstrap sont ramenees aux jetons
+   de statut, pour que l'avancement se lise comme les pastilles. */
+.dck-front.dck-front .progress-bar.bg-success { background:var(--ok); }
+.dck-front.dck-front .progress-bar.bg-warning { background:var(--warn); }
+.dck-front.dck-front .progress-bar.bg-danger  { background:var(--err); }
+.dck-front.dck-front .progress-bar.bg-primary { background:var(--tx); }
+.dck-front.dck-front .progress-bar.bg-grey    { background:var(--line-strong); }
+
+/* 3d. Boutons d'appreciation des commentaires
+   Deux boutons pouce leve / pouce baisse sous chaque commentaire
+   de tache. Aucun style ne les couvrait : ils sortaient en bouton
+   Bootstrap brut. */
+
+.dck-front.dck-front .comment-like {
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  padding:3px 9px;
+  border:1px solid var(--line);
+  border-radius:var(--r-full);
+  background:var(--surface);
+  font-size:12px;
+  color:var(--tx-3);
+  transition:background .15s, color .15s, border-color .15s;
+}
+
+.dck-front.dck-front .comment-like:hover {
+  background:var(--surface-3);
+  border-color:var(--line-strong);
+  color:var(--tx);
+}
+
+.dck-front.dck-front .comment-like.active {
+  background:var(--surface-3);
+  border-color:var(--line-strong);
+  color:var(--tx);
+  font-weight:600;
+}
+
+/* 3e. Rangee des widgets historiques du tableau de bord
+   collaborateur. Ces widgets ne s'affichent que si l'un d'eux
+   reste actif dans les reglages ; sans cette regle, leur rangee
+   n'avait aucun espacement propre sous le bloc de pilotage. */
+
+.dck-front.dck-front .emp-dash-detail { margin-top:14px; }
+
+.dck-front.dck-front .emp-dash-detail .card,
+.dck-front.dck-front .emp-dash-detail .bg-white {
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  background:var(--surface);
+  box-shadow:none;
+}
