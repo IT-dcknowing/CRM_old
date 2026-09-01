@@ -1,5 +1,17 @@
 .login_section{
     min-height: calc(100vh - 56px);
+    // Centre verticalement le formulaire et supprime tout debordement lateral.
+    display: flex;
+    align-items: center;
+    overflow-x: hidden;
+
+    @include media-breakpoint-down(sm){
+        // Sur mobile, flux normal : le contenu respire et reste accessible.
+        display: block;
+        min-height: 0;
+        padding-top: 1.5rem !important;
+        padding-bottom: 1.5rem !important;
+    }
 }
 .login_header{
     box-shadow: 0 1px 0 0 $grey;
@@ -16,11 +28,16 @@
     }
 }
 .login_box{
-    width: 452px;
+    // Largeur fluide plafonnee : evite le debordement horizontal dans la colonne.
+    width: 100%;
+    max-width: 452px;
+    margin-left: auto;
+    margin-right: auto;
     padding: 30px 30px;
 
     @include media-breakpoint-down(sm){
-        width: 95%;
+        max-width: 100%;
+        padding: 20px 18px;
     }
 
     h3{
@@ -96,4 +113,12 @@
     text-decoration: underline;
     font-size: 12px;
     justify-content: left;
+}
+
+/* Les libellés des boutons d'authentification s'affichent tels qu'ils sont
+   traduits, sans capitalisation automatique de chaque mot
+   (ex. « Envoyer le lien de réinitialisation » et non « ... Le Lien De ... »). */
+.login_box .btn-primary,
+.login_box .btn-secondary {
+    text-transform: none;
 }

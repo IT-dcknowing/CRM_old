@@ -15850,6 +15850,17 @@ input[type=number] {
 }
 .login_section {
   min-height: calc(100vh - 56px);
+  display: flex;
+  align-items: center;
+  overflow-x: hidden;
+}
+@media (max-width: 767.98px) {
+  .login_section {
+    display: block;
+    min-height: 0;
+    padding-top: 1.5rem !important;
+    padding-bottom: 1.5rem !important;
+  }
 }
 
 .login_header {
@@ -15866,12 +15877,16 @@ input[type=number] {
 }
 
 .login_box {
-  width: 452px;
+  width: 100%;
+  max-width: 452px;
+  margin-left: auto;
+  margin-right: auto;
   padding: 30px 30px;
 }
 @media (max-width: 767.98px) {
   .login_box {
-    width: 95%;
+    max-width: 100%;
+    padding: 20px 18px;
   }
 }
 .login_box h3 {
@@ -19502,3 +19517,11 @@ body.dark-theme .card-body::-webkit-scrollbar-thumb {
 }
 
 /*# sourceMappingURL=main.css.map*/
+
+/* Les libellés des boutons d'authentification s'affichent tels qu'ils sont
+   traduits, sans capitalisation automatique de chaque mot
+   (ex. « Envoyer le lien de réinitialisation » et non « ... Le Lien De ... »). */
+.login_box .btn-primary,
+.login_box .btn-secondary {
+    text-transform: none;
+}
