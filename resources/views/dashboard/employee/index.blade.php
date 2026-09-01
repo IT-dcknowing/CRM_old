@@ -70,7 +70,7 @@
             <div class="row pt-4">
                 <div class="col-md-12">
                     <x-alert type="info" icon="info-circle">
-                        <a href="{{ route('leaves.show', $checkTodayLeave->id) }}" class="openRightModal text-dark-grey">
+                        <a href="{{ (Route::has('leaves.show') ? route('leaves.show', $checkTodayLeave->id) : '') }}" class="openRightModal text-dark-grey">
                             <u>@lang('messages.youAreOnLeave') </u>
                         </a>
                     </x-alert>
@@ -80,7 +80,7 @@
             <div class="row pt-4">
                 <div class="col-md-12">
                     <x-alert type="info" icon="info-circle">
-                        <a href="{{ route('holidays.show', $checkTodayHoliday->id) }}" class="openRightModal text-dark-grey">
+                        <a href="{{ (Route::has('holidays.show') ? route('holidays.show', $checkTodayHoliday->id) : '') }}" class="openRightModal text-dark-grey">
                             <u>@lang('messages.holidayToday')</u>
                         </a>
                     </x-alert>
@@ -285,7 +285,7 @@
                                                 <label class="f-12 text-dark-grey mb-12 " for="usr">
                                                     @lang('modules.dashboard.totalOpenTickets') </label>
                                                 <p class="mb-0 f-18 f-w-500">
-                                                    <a href="{{ route('tickets.index') . '?agent=me&status=open' }}"
+                                                    <a href="{{ (Route::has('tickets.index') ? route('tickets.index') : '') . '?agent=me&status=open' }}"
                                                         class="text-dark">{{ $totalOpenTickets }}</a>
                                                 </p>
                                             </span>
@@ -587,7 +587,7 @@
             var getEventDetail = function(id,type) {
                 if(type == 'ticket')
                 {
-                    var url = "{{ route('tickets.show', ':id') }}";
+                    var url = "{{ (Route::has('tickets.show') ? route('tickets.show', ':id') : '') }}";
                         url = url.replace(':id', id);
                         window.location = url;
                         return true;
@@ -605,13 +605,13 @@
                         var url = "{{ route('tasks.show', ':id') }}";
                         break;
                     case 'event':
-                        var url = "{{ route('events.show', ':id') }}";
+                        var url = "{{ (Route::has('events.show') ? route('events.show', ':id') : '') }}";
                         break;
                     case 'holiday':
-                        var url = "{{ route('holidays.show', ':id') }}";
+                        var url = "{{ (Route::has('holidays.show') ? route('holidays.show', ':id') : '') }}";
                         break;
                     case 'leave':
-                        var url = "{{ route('leaves.show', ':id') }}";
+                        var url = "{{ (Route::has('leaves.show') ? route('leaves.show', ':id') : '') }}";
                         break;
                     default:
                         return 0;
@@ -702,7 +702,7 @@
         });
 
         $('#clock-in').click(function() {
-            const url = "{{ route('attendances.clock_in_modal') }}";
+            const url = "{{ (Route::has('attendances.clock_in_modal') ? route('attendances.clock_in_modal') : '') }}";
             $(MODAL_LG + ' ' + MODAL_HEADING).html('...');
             $.ajaxModal(MODAL_LG, url);
         });
@@ -711,7 +711,7 @@
             var id = $(this).data('shift-schedule-id');
             var date = $(this).data('shift-schedule-date');
             var shiftId = $(this).data('shift-id');
-            var url = "{{ route('shifts-change.edit', ':id') }}?date="+date+"&shift_id="+shiftId;
+            var url = "{{ (Route::has('shifts-change.edit') ? route('shifts-change.edit', ':id') : '') }}?date="+date+"&shift_id="+shiftId;
             url = url.replace(':id', id);
 
             $(MODAL_DEFAULT + ' ' + MODAL_HEADING).html('...');
@@ -719,14 +719,14 @@
         });
 
         $('#view-shifts').click(function() {
-            const url = "{{ route('employee-shifts.index') }}";
+            const url = "{{ (Route::has('employee-shifts.index') ? route('employee-shifts.index') : '') }}";
             $(MODAL_XL + ' ' + MODAL_HEADING).html('...');
             $.ajaxModal(MODAL_XL, url);
         });
 
         @if (!is_null($currentClockIn))
             $('#clock-out').click(function() {
-                var url = "{{ route('attendances.show_clocked_hours') }}?aid={{ $currentClockIn->id }}";
+                var url = "{{ (Route::has('attendances.show_clocked_hours') ? route('attendances.show_clocked_hours') : '') }}?aid={{ $currentClockIn->id }}";
 
                 $(MODAL_DEFAULT + ' ' + MODAL_HEADING).html('...');
                 $.ajaxModal(MODAL_LG, url);
@@ -741,7 +741,7 @@
                 var currentLongitude = document.getElementById("current-longitude").value;
 
                 $.easyAjax({
-                    url: "{{ route('attendances.update_clock_in') }}",
+                    url: "{{ (Route::has('attendances.update_clock_in') ? route('attendances.update_clock_in') : '') }}",
                     type: "GET",
                     data: {
                         currentLatitude: currentLatitude,

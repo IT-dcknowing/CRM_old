@@ -33,6 +33,7 @@
         </x-menu-item>
     @endif
 
+    {{-- [MODULE RETIRE] Notes
     <x-menu-item icon="journal-text" :text="__('Notes')" :link="route('notes.index')">
         <x-slot name="iconPath">
             <path d="M5 10.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5zm0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z" />
@@ -40,9 +41,11 @@
             <path d="M1 5v-.5a.5.5 0 0 1 1 0V5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1zm0 3v-.5a.5.5 0 0 1 1 0V8h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1zm0 3v-.5a.5.5 0 0 1 1 0v.5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1z" />
         </x-slot>
     </x-menu-item>
+    --}}
 
     <!-- NAV ITEM - HR COLLAPASE MENU -->
     
+    {{-- [MODULE RETIRE] Leads / Deals
     @if (!in_array('client', user_roles()) && (in_array('leads', user_modules())) && (($sidebarUserPermissions['view_lead'] != 5 && $sidebarUserPermissions['view_lead'] != 'none') || ($sidebarUserPermissions['view_deals'] != 5 && $sidebarUserPermissions['view_deals'] != 'none')))
         <x-menu-item icon="person" :text="__('app.menu.lead')">
             <x-slot name="iconPath">
@@ -61,6 +64,7 @@
             @endif
         </x-menu-item>
     @endif
+    --}}
     
     @if (!in_array('client', user_roles()) && in_array('clients', user_modules()) && $sidebarUserPermissions['view_clients'] != 5 && $sidebarUserPermissions['view_clients'] != 'none')
         @if (!in_array('apporteurs', user_roles()))
@@ -88,6 +92,7 @@
     @endif
  
     <!-- NAV ITEM - HR COLLAPASE MENU -->
+    @if (false) {{-- [MODULE RETIRE] Ressources humaines (employes, conges, presences, jours feries, services, departements, appreciations) --}}
     @if(!in_array('apporteurs', user_roles()))
         @if (!in_array('client', user_roles()) && (in_array('employees', user_modules()) || in_array('leaves', user_modules()) || in_array('attendance', user_modules()) || in_array('holidays', user_modules())) && ($sidebarUserPermissions['view_employees'] != 5 || $sidebarUserPermissions['view_leave'] != 5 || $sidebarUserPermissions['view_attendance'] != 5 || $sidebarUserPermissions['view_holiday'] != 5) && ($sidebarUserPermissions['view_employees'] != 'none' || $sidebarUserPermissions['view_leave'] != 'none' || $sidebarUserPermissions['view_attendance'] != 'none' || $sidebarUserPermissions['view_holiday'] != 'none' || $sidebarUserPermissions['view_shift_roster'] != 'none'))
             <x-menu-item icon="people" :text="__('app.menu.hr')">
@@ -133,6 +138,7 @@
             </x-menu-item>
         @endif
     @endif
+    @endif
 
     <!-- MENU CLIENT -->
     @if (in_array('client', user_roles()))
@@ -142,6 +148,7 @@
                 <path d="M6.5 1A1.5 1.5 0 0 0 5 2.5V3H1.5A1.5 1.5 0 0 0 0 4.5v8A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-8A1.5 1.5 0 0 0 14.5 3H11v-.5A1.5 1.5 0 0 0 9.5 1h-3zm0 1h3a.5.5 0 0 1 .5.5V3H6v-.5a.5.5 0 0 1 .5-.5zm1.886 6.914L15 7.151V12.5a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5V7.15l6.614 1.764a1.5 1.5 0 0 0 .772 0zM1.5 4h13a.5.5 0 0 1 .5.5v1.616L8.129 7.948a.5.5 0 0 1-.258 0L1 6.116V4.5a.5.5 0 0 1 .5-.5z"/>
             </x-slot>
         </x-menu-item>
+        {{-- [MODULE RETIRE] Espace client : Comptabilite et Gestion, Formation, Fiscalite, Autres services, Factures
         <x-menu-item class="message-menu" icon="chat-left-text" :link="route('projects.comptaGestion')" :text="__('Comptabilité et Gestion')">
             <x-slot name="iconPath">
                 <path d="M5.757 1.071a.5.5 0 0 1 .172.686L3.383 6h9.234L10.07 1.757a.5.5 0 1 1 .858-.514L13.783 6H15a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1v4.5a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 1 13.5V9a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h1.217L5.07 1.243a.5.5 0 0 1 .686-.172zM2 9v4.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V9H2zM1 7v1h14V7H1zm3 3a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0v-3A.5.5 0 0 1 4 10zm2 0a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0v-3A.5.5 0 0 1 6 10zm2 0a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0v-3A.5.5 0 0 1 8 10zm2 0a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0v-3a.5.5 0 0 1 .5-.5zm2 0a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0v-3a.5.5 0 0 1 .5-.5z" />
@@ -167,6 +174,7 @@
                 <path d="M4 10.781c.148 1.667 1.513 2.85 3.591 3.003V15h1.043v-1.216c2.27-.179 3.678-1.438 3.678-3.3 0-1.59-.947-2.51-2.956-3.028l-.722-.187V3.467c1.122.11 1.879.714 2.07 1.616h1.47c-.166-1.6-1.54-2.748-3.54-2.875V1H7.591v1.233c-1.939.23-3.27 1.472-3.27 3.156 0 1.454.966 2.483 2.661 2.917l.61.162v4.031c-1.149-.17-1.94-.8-2.131-1.718H4zm3.391-3.836c-1.043-.263-1.6-.825-1.6-1.616 0-.944.704-1.641 1.8-1.828v3.495l-.2-.05zm1.591 1.872c1.287.323 1.852.859 1.852 1.769 0 1.097-.826 1.828-2.2 1.939V8.73l.348.086z" />
             </x-slot>
         </x-menu-item>
+        --}}
     @endif
 
     <!-- MENU APPORTEURS -->
@@ -203,14 +211,18 @@
                     @endif
                     
                     @if (in_array('tasks', user_modules()) && $sidebarUserPermissions['view_tasks'] != 5 && $sidebarUserPermissions['view_tasks'] != 'none')
-                        <x-sub-menu-item :link="route('tasks.index')" :text="__('app.menu.tasks')" />
+                        {{-- Vue par defaut du module Taches : le tableau kanban.
+                             La vue liste reste accessible via son icone dans la barre d'outils. --}}
+                        <x-sub-menu-item :link="route('taskboards.index')" :text="__('app.menu.tasks')" />
                     @endif
+                    {{-- [MODULE RETIRE] Etats Financiers et Formation (timelogs)
                     @if (in_array('timelogs', user_modules()) && $sidebarUserPermissions['view_timelogs'] != 5 && $sidebarUserPermissions['view_timelogs'] != 'none')
                         <x-sub-menu-item :link="route('projects.etatFinanciers')" :text="__('Etats Financiers')" />
                     @endif
                     @if (in_array('timelogs', user_modules()) && $sidebarUserPermissions['view_timelogs'] != 5 && $sidebarUserPermissions['view_timelogs'] != 'none')
                         <x-sub-menu-item :link="route('timelogs.index')" :text="__('Formation')" />
                     @endif
+                    --}}
                     <!-- NAV ITEM - CUSTOM MODULES  -->
                     @foreach ($worksuitePlugins as $item)
                         @includeIf(strtolower($item) . '::sections.work.sidebar')
@@ -220,6 +232,7 @@
         @endif
 
     <!-- NAV ITEM - FINANCE COLLAPASE MENU -->
+        @if (false) {{-- [MODULE RETIRE] Finance (propositions, devis, factures, paiements, avoirs, depenses, comptes bancaires) --}}
         @if ((in_array('estimates', user_modules()) || in_array('invoices', user_modules()) || in_array('payments', user_modules()) || in_array('expenses', user_modules()) || in_array('bankaccount', user_modules())) && ($sidebarUserPermissions['view_estimates'] != 5 || $sidebarUserPermissions['view_invoices'] != 5 || $sidebarUserPermissions['view_payments'] != 5 || $sidebarUserPermissions['view_expenses'] != 5 || $sidebarUserPermissions['view_lead_proposals'] != 5 || $sidebarUserPermissions['view_bankaccount'] != 5) && ($sidebarUserPermissions['view_estimates'] != 'none' || $sidebarUserPermissions['view_invoices'] != 'none' || $sidebarUserPermissions['view_payments'] != 'none' || $sidebarUserPermissions['view_expenses'] != 'none' || $sidebarUserPermissions['view_lead_proposals'] != 'none' || $sidebarUserPermissions['view_bankaccount'] != 'none'))
             <x-menu-item icon="cash-coin" :active="($currentRouteName === 'payments.index')"
                         :text="__('app.menu.finance')">
@@ -259,9 +272,11 @@
                 </div>
             </x-menu-item>
         @endif
+        @endif
     @endif  
 
     <!-- NAV ITEM - PRODUCTS -->
+    {{-- [MODULE RETIRE] Produits
     @if (!in_array('purchase', user_modules()) && in_array('products', user_modules()) && $sidebarUserPermissions['view_product'] != 5 && $sidebarUserPermissions['view_product'] != 'none')
         @if(!in_array('apporteurs', user_roles()))    
             <x-menu-item icon="basket" :text="__('app.menu.products')" :link="route('products.index')">
@@ -272,8 +287,10 @@
             </x-menu-item>
         @endif
     @endif
+    --}}
 
     <!-- NAV ITEM - PRODUCTS -->
+    {{-- [MODULE RETIRE] Commandes
     @if (in_array('orders', user_modules()) && $sidebarUserPermissions['view_order'] != 5 && $sidebarUserPermissions['view_order'] != 'none')
         <x-menu-item icon="cart3" :text="__('app.menu.orders')" :link="route('orders.index')">
             <x-slot name="iconPath">
@@ -282,8 +299,10 @@
             </x-slot>
         </x-menu-item>
     @endif
+    --}}
 
     <!-- NAV ITEM - TICKETS -->
+    {{-- [MODULE RETIRE] Tickets
     @if (in_array('tickets', user_modules()) && $sidebarUserPermissions['view_tickets'] != 5 && $sidebarUserPermissions['view_tickets'] != 'none')
         <x-menu-item icon="headset" :text="__('app.menu.tickets')" :link="route('tickets.index')">
             <x-slot name="iconPath">
@@ -292,8 +311,10 @@
             </x-slot>
         </x-menu-item>
     @endif    
+    --}}
     @if(!in_array('apporteurs', user_roles()))
     <!-- NAV ITEM - EVENTS -->
+        {{-- [MODULE RETIRE] Evenements
         @if (in_array('events', user_modules()) && $sidebarUserPermissions['view_events'] != 5 && $sidebarUserPermissions['view_events'] != 'none')
             <x-menu-item icon="calendar-event" :text="__('app.menu.events')" :link="route('events.index')">
                 <x-slot name="iconPath">
@@ -304,8 +325,10 @@
                 </x-slot>
             </x-menu-item>
         @endif
+        --}}
 
     <!-- NAV ITEM - MESSAGES -->
+        {{-- [MODULE RETIRE] Messagerie
         @if (in_array('messages', user_modules()))
             @if ((message_setting()->allow_client_admin == 'yes' || message_setting()->allow_client_employee == 'yes') && in_array('client', user_roles()))
                 <x-menu-item class="message-menu" icon="chat-left-text" :text="__('app.menu.messages')"
@@ -329,8 +352,10 @@
                 </x-menu-item>
             @endif
         @endif
+        --}}
     @endif
     <!-- NAV ITEM - GDPR -->
+    {{-- [MODULE RETIRE] RGPD
     @if (in_array('client', user_roles()) && $gdpr->enable_gdpr)
         <x-menu-item icon="lock" :text="__('app.menu.gdpr')" :link="route('gdpr.index')">
             <x-slot name="iconPath">
@@ -339,9 +364,11 @@
             </x-slot>
         </x-menu-item>
     @endif
+    --}}
     @if (!in_array('client', user_roles()))
     <!-- NAV ITEM - NOTICES -->
         @if(!in_array('apporteurs', user_roles()))
+            {{-- [MODULE RETIRE] Tableau d affichage
             @if (in_array('notices', user_modules()) && $sidebarUserPermissions['view_notice'] != 5 && $sidebarUserPermissions['view_notice'] != 'none')
                 <x-menu-item icon="clipboard" :text="__('app.menu.noticeBoard')" :link="route('notices.index')">
                     <x-slot name="iconPath">
@@ -352,8 +379,10 @@
                     </x-slot>
                 </x-menu-item>
             @endif
+            --}}
         
             <!-- Knowledge base -->
+            {{-- [MODULE RETIRE] Base de connaissances
             @if (in_array('knowledgebase', user_modules()) && isset($sidebarUserPermissions['view_knowledgebase']) && $sidebarUserPermissions['view_knowledgebase'] != 5)
             <x-menu-item icon="note" :text="__('app.menu.knowledgebase')" :link="route('knowledgebase.index')">
                 <x-slot name="iconPath">
@@ -373,10 +402,12 @@
                 </x-slot>
             </x-menu-item>
             @endif
+            --}}
             <!-- Knowledge base -->
         @endif
     @endif
     <!-- NAV ITEM - NOTES -->
+    {{-- [MODULE RETIRE] Notes client
     @if (in_array('client', user_roles()) && $sidebarUserPermissions['view_client_note'] != 5)
         <x-menu-item icon="journal-text" :text="__('app.menu.notes')" :link="route('client-notes.index')">
             <x-slot name="iconPath">
@@ -389,6 +420,7 @@
             </x-slot>
         </x-menu-item>
     @endif
+    --}}
 
     <!-- NAV ITEM - CUSTOM MODULES  -->
     @foreach ($worksuitePlugins as $item)
@@ -408,6 +440,7 @@
                     <x-sub-menu-item :link="route('task-report.index')" :text="__('app.menu.taskReport')" />
                 @endif
 
+                {{-- [MODULE RETIRE] Rapports hors taches (temps, finance, revenus/depenses, conges, presences, depenses, leads, ventes)
                 @if ($sidebarUserPermissions['view_time_log_report'] == 4 && $sidebarUserPermissions['view_time_log_report'] != 'none' && in_array('timelogs', user_modules()))
                     <x-sub-menu-item :link="route('time-log-report.index')"
                                      :text="__('app.menu.timeLogReport')" />
@@ -444,6 +477,7 @@
                     <x-sub-menu-item :link="route('sales-report.index')"
                                      :text="__('app.menu.salesReport')" />
                 @endif
+                --}}
             </div>
         </x-menu-item>
     @endif

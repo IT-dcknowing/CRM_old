@@ -664,7 +664,7 @@
     });
 </script>
 
-@if (in_array('messages', user_modules()))
+@if (false) {{-- [MODULE RETIRE] Messagerie : notification de nouveau message --}}
     <script>
         function newMessageNotificationPlay() {
             var audio = new Audio("{{ asset('message-notification.mp3') }}");

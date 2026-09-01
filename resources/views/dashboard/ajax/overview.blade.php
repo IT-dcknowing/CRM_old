@@ -33,7 +33,7 @@
 
     @if (in_array('invoices', user_modules()) && in_array('total_unpaid_invoices', $activeWidgets))
         <div class="col-xl-3 col-lg-6 col-md-6 mb-3">
-            <a href="{{ route('invoices.index') . '?status=pending' }}">
+            <a href="{{ (Route::has('invoices.index') ? route('invoices.index') : '') . '?status=pending' }}">
                 <x-cards.widget :title="__('modules.dashboard.totalUnpaidInvoices')"
                                 :value="$counts->totalUnpaidInvoices" icon="file-invoice">
                 </x-cards.widget>
@@ -43,7 +43,7 @@
 
     @if (in_array('timelogs', user_modules()) && in_array('total_hours_logged', $activeWidgets))
         <div class="col-xl-3 col-lg-6 col-md-6">
-            <a href="{{ route('time-log-report.index') }}">
+            <a href="{{ (Route::has('time-log-report.index') ? route('time-log-report.index') : '') }}">
                 <x-cards.widget :title="__('modules.dashboard.totalHoursLogged')" :value="$counts->totalHoursLogged"
                                 icon="clock">
                 </x-cards.widget>
@@ -63,7 +63,7 @@
 
     @if (in_array('attendance', user_modules()) && in_array('total_today_attendance', $activeWidgets))
         <div class="col-xl-3 col-lg-6 col-md-6">
-            <a href="{{ route('attendances.index') }}">
+            <a href="{{ (Route::has('attendances.index') ? route('attendances.index') : '') }}">
                 <x-cards.widget :title="__('modules.dashboard.totalTodayAttendance')"
                                 :value="$counts->totalTodayAttendance.'/'.$counts->totalEmployees"
                                 icon="calendar-check">
@@ -74,7 +74,7 @@
 
     @if (in_array('tickets', user_modules()) && in_array('total_unresolved_tickets', $activeWidgets))
         <div class="col-xl-3 col-lg-6 col-md-6">
-            <a href="{{ route('tickets.index') . '?status=open' }}">
+            <a href="{{ (Route::has('tickets.index') ? route('tickets.index') : '') . '?status=open' }}">
                 <x-cards.widget :title="__('modules.tickets.totalUnresolvedTickets')"
                                 :value="floor($counts->totalOpenTickets)" icon="ticket-alt">
                 </x-cards.widget>
@@ -123,7 +123,7 @@
                             </td>
                             <td align="right" class="pr-20">
                                 <div class="task_view">
-                                    <a href="{{ route('leaves.show', [$item->id]) }}"
+                                    <a href="{{ (Route::has('leaves.show') ? route('leaves.show', [$item->id]) : '') }}"
                                        class="taskView openRightModal">@lang('app.view')</a>
                                     <div class="dropdown">
                                         <a class="task_view_more d-flex align-items-center justify-content-center dropdown-toggle"
@@ -177,7 +177,7 @@
                                          alt="{{ $item->requester->name }}" title="{{ $item->requester->name }}">
                                 </div>
                             </td>
-                            <td><a href="{{ route('tickets.show', $item->ticket_number) }}"
+                            <td><a href="{{ (Route::has('tickets.show') ? route('tickets.show', $item->ticket_number) : '') }}"
                                    class="text-darkest-grey">{{ $item->subject }}</a>
                                 <br/>
                                 <span class="f-10 text-lightest mt-1">{{ $item->requester->name }}</span>
@@ -266,7 +266,7 @@
                         <tr>
                             <td class="pl-20">
                                 <h5 class="f-13 text-darkest-grey"><a
-                                        href="{{ route('deals.show', [$item->id]) }}">{{ $item->client_name_salutation }}</a>
+                                        href="{{ (Route::has('deals.show') ? route('deals.show', [$item->id]) : '') }}">{{ $item->client_name_salutation }}</a>
                                 </h5>
                                 <div class="text-muted">{{ $item->company_name }}</div>
                             </td>
@@ -379,7 +379,7 @@
             var type = 'single';
         }
         let searchQuery = "?leave_action=" + action + "&leave_id=" + leaveId + "&type=" + type;
-        let url = "{{ route('leaves.show_approved_modal') }}" + searchQuery;
+        let url = "{{ (Route::has('leaves.show_approved_modal') ? route('leaves.show_approved_modal') : '') }}" + searchQuery;
 
         $(MODAL_LG + ' ' + MODAL_HEADING).html('...');
         $.ajaxModal(MODAL_LG, url);
@@ -394,7 +394,7 @@
                 var type = 'single';
             }
         let searchQuery = "?leave_action=" + action + "&leave_id=" + leaveId + "&type=" + type;
-        let url = "{{ route('leaves.show_reject_modal') }}" + searchQuery;
+        let url = "{{ (Route::has('leaves.show_reject_modal') ? route('leaves.show_reject_modal') : '') }}" + searchQuery;
 
         $(MODAL_LG + ' ' + MODAL_HEADING).html('...');
         $.ajaxModal(MODAL_LG, url);
