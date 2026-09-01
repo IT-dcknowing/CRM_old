@@ -1,5 +1,5 @@
 <!-- HEADER START -->
-<header class="main-header clearfix bg-white" id="header">
+<header class="main-header clearfix bg-white dck-chrome" id="header">
 
 
     <!-- NAVBAR LEFT(MOBILE MENU COLLAPSE) START-->
@@ -98,7 +98,7 @@
                         </a>
                         <!-- DROPDOWN - INFORMATION -->
                         <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuLink" tabindex="0">
-                            @if (in_array('projects', user_modules()) && (add_project_permission() == 'all' || add_project_permission() == 'added'))
+                            @if (in_array('projects', user_modules()) && Route::has('projects.create') && (add_project_permission() == 'all' || add_project_permission() == 'added'))
                                 <a class="dropdown-item f-14 text-dark openRightModal"
                                    href="{{ route('projects.create') }}">
                                     <i class="fa fa-plus f-w-500 mr-2 f-11"></i>
@@ -106,7 +106,7 @@
                                 </a>
                             @endif
 
-                            @if (in_array('tasks', user_modules()) && (add_tasks_permission() == 'all' || add_tasks_permission() == 'added'))
+                            @if (in_array('tasks', user_modules()) && Route::has('tasks.create') && (add_tasks_permission() == 'all' || add_tasks_permission() == 'added'))
                                 <a class="dropdown-item f-14 text-dark openRightModal"
                                    href="{{ route('tasks.create') }}">
                                     <i class="fa fa-plus f-w-500 mr-2 f-11"></i>
@@ -114,7 +114,7 @@
                                 </a>
                             @endif
 
-                            @if (in_array('clients', user_modules()) && (add_clients_permission() == 'all' || add_clients_permission() == 'added'))
+                            @if (in_array('clients', user_modules()) && Route::has('clients.create') && (add_clients_permission() == 'all' || add_clients_permission() == 'added'))
                                 <a class="dropdown-item f-14 text-dark openRightModal"
                                    href="{{ route('clients.create') }}">
                                     <i class="fa fa-plus f-w-500 mr-2 f-11"></i>
@@ -122,7 +122,7 @@
                                 </a>
                             @endif
 
-                            @if (in_array('employees', user_modules()) && (add_employees_permission() == 'all' || add_employees_permission() == 'added'))
+                            @if (in_array('employees', user_modules()) && Route::has('employees.create') && (add_employees_permission() == 'all' || add_employees_permission() == 'added'))
                                 <a class="dropdown-item f-14 text-dark openRightModal"
                                    href="{{ route('employees.create') }}">
                                     <i class="fa fa-plus f-w-500 mr-2 f-11"></i>
@@ -130,7 +130,7 @@
                                 </a>
                             @endif
 
-                            @if (in_array('payments', user_modules()) && (add_payments_permission() == 'all' || add_payments_permission() == 'added'))
+                            @if (in_array('payments', user_modules()) && Route::has('payments.create') && (add_payments_permission() == 'all' || add_payments_permission() == 'added'))
                                 <a class="dropdown-item f-14 text-dark openRightModal"
                                    href="{{ route('payments.create') }}">
                                     <i class="fa fa-plus f-w-500 mr-2 f-11"></i>
@@ -138,7 +138,7 @@
                                 </a>
                             @endif
 
-                            @if (in_array('tickets', user_modules()) && (add_tickets_permission() == 'all' || add_tickets_permission() == 'added'))
+                            @if (in_array('tickets', user_modules()) && Route::has('tickets.create') && (add_tickets_permission() == 'all' || add_tickets_permission() == 'added'))
                                 <a class="dropdown-item f-14 text-dark openRightModal"
                                    href="{{ route('tickets.create') }}">
                                     <i class="fa fa-plus f-w-500 mr-2 f-11"></i>

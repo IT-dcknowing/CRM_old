@@ -145,17 +145,40 @@ class ContractsDataTable extends BaseDataTable
 })
 
             ->editColumn('start_date', function ($row) {
-                return $row->start_date->translatedFormat($this->company->date_format);
+                return '<span class="dck-date">'
+                    . $row->start_date->translatedFormat($this->company->date_format) . '</span>';
             })
             ->editColumn('end_date', function ($row) {
+                // Aucune date de fin : contrat a duree indeterminee
                 if (is_null($row->end_date)) {
-                    return '--';
+                    return '<span class="dck-badge is-wait">' . __('modules.contracts.noEndDate') . '</span>';
                 }
 
-                return $row->end_date == null ? $row->end_date : $row->end_date->translatedFormat($this->company->date_format);
+                $date = $row->end_date->translatedFormat($this->company->date_format);
+
+                // Meme seuil que ContractController::index() : 7 jours
+                $aujourdhui = now()->startOfDay();
+                $limite = now()->timezone($this->company->timezone)->addDays(7)->startOfDay();
+
+                if ($row->end_date->lt($aujourdhui)) {
+                    $ton = 'is-err';
+                    $etat = __('modules.contracts.expired');
+                } elseif ($row->end_date->lt($limite)) {
+                    $ton = 'is-warn';
+                    $etat = __('modules.contracts.aboutToExpire');
+                } else {
+                    $ton = 'is-ok';
+                    $etat = __('modules.contracts.active');
+                }
+
+                return '<div class="dck-cell-stack">'
+                    . '<span class="dck-date">' . $date . '</span>'
+                    . '<span class="dck-badge ' . $ton . '">' . $etat . '</span>'
+                    . '</div>';
             })
             ->editColumn('amount', function ($row) {
-                return currency_format($row->amount, $row->currency->id);
+                return '<span class="dck-amount">'
+                    . currency_format($row->amount, $row->currency->id) . '</span>';
             })
             ->addColumn('client_name', function ($row) {
                 if ($row->client) {
@@ -186,12 +209,17 @@ class ContractsDataTable extends BaseDataTable
                 }
             })
             ->editColumn('contract_number', function ($row) {
-                return '<a href="' . route('contracts.show', [$row->id]) . '" class="text-darkest-grey">' . $row->contract_number . '</a>';
+                return '<a href="' . route('contracts.show', [$row->id]) . '" class="dck-ref">'
+                    . $row->contract_number . '</a>';
             })
             ->addIndexColumn()
             ->smart(false)
             ->setRowId(fn($row) => 'row-' . $row->id)
-            ->rawColumns(array_merge(['project_name', 'action', 'client.name', 'check', 'subject', 'contract_number'], $customFieldColumns));
+            ->rawColumns(array_merge(
+                ['project_name', 'action', 'client.name', 'check', 'subject', 'contract_number',
+                    'start_date', 'end_date', 'amount'],
+                $customFieldColumns
+            ));
     }
 
     /**

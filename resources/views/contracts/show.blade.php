@@ -36,7 +36,7 @@
 @endpush
 
 @section('content')
-    <div class="content-wrapper border-top-0 client-detail-wrapper">
+    <div class="content-wrapper border-top-0 client-detail-wrapper dck-front">
         @include($view)
     </div>
 
