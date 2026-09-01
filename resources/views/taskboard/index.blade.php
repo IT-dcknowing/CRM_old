@@ -183,7 +183,7 @@ $addTaskPermission = user()->permission('add_tasks');
 @section('content')
 
     <!-- CONTENT WRAPPER START -->
-    <div class="w-task-board-box px-4 py-2 bg-white">
+    <div class="w-task-board-box px-4 py-2 bg-white dck-front">
         <!-- Add Task Export Buttons Start -->
         <div class="d-grid d-lg-flex d-md-flex action-bar my-3">
 

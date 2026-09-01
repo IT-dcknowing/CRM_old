@@ -426,6 +426,7 @@ class TaskBoardController extends AccountBaseController
             ->select('tasks.*')
             ->where('tasks.board_column_id', $request->columnId)
             ->orderBy('column_priority', 'asc')
+            ->orderBy('tasks.id', 'desc')
             ->groupBy('tasks.id');
 
         if (!in_array('admin', user_roles())) {

@@ -39,12 +39,20 @@ use App\Models\EmployeeShift;
  */
 trait EmployeeDashboard
 {
+    use PilotageDiligences;
+    use EspaceCollaborateur;
+
 
     /**
      */
     public function employeeDashboard()
     {
         $user = user();
+
+        // Bloc « Mon tableau de bord » conforme a dck-flow-task :
+        // ses taches, sa semaine, ses diligences, les annonces. Les
+        // indicateurs de portefeuille restent sur l'ecran administrateur.
+        $this->chargerEspaceCollaborateur($user->id);
 
         $completedTaskColumn = TaskboardColumn::completeColumn();
         $showClockIn = attendance_setting();

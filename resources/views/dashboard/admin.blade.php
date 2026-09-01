@@ -27,7 +27,7 @@
 @section('filter-section')
     <!-- FILTER START -->
     <!-- DASHBOARD HEADER START -->
-    <div class="d-flex filter-box project-header bg-white dashboard-header">
+    <div class="d-flex filter-box project-header bg-white dashboard-header dck-front">
 
         <div class="mobile-close-overlay w-100 h-100" id="close-client-overlay"></div>
         <div class="project-menu d-lg-flex" id="mob-client-detail">
@@ -136,7 +136,7 @@
 @section('content')
 
     <!-- CONTENT WRAPPER START -->
-    <div class="px-4 py-0 py-lg-3  border-top-0 admin-dashboard">
+    <div class="px-4 py-0 py-lg-3  border-top-0 admin-dashboard dck-front">
         @include($view)
     </div>
     <!-- CONTENT WRAPPER END -->

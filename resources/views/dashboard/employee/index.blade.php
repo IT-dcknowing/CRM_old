@@ -64,7 +64,8 @@
 
 @section('content')
     <!-- CONTENT WRAPPER START -->
-    <div class="px-4 py-2 border-top-0 emp-dashboard">
+    <div class="px-4 py-2 border-top-0 emp-dashboard dck-front">
+
         <!-- WELOCOME START -->
         @if (!is_null($checkTodayLeave))
             <div class="row pt-4">
@@ -231,6 +232,20 @@
             <!-- CLOCK IN CLOCK OUT END -->
         </div>
         <!-- WELOCOME END -->
+
+        {{-- Bloc de pilotage, place apres le bandeau de bienvenue et de
+             pointage : l'ecran se lit alors de haut en bas, du contexte
+             personnel vers l'activite. Restreint aux diligences dont le
+             collaborateur est membre (voir PilotageDiligences). --}}
+        @include('dashboard.employee.mon-espace')
+
+        {{-- Les widgets historiques ne sont affiches que si au moins un
+             reste actif. Leurs deux conteneurs — la rangee emp-dash-detail
+             et la colonne de droite — n'ont aucune condition propre : sans
+             cette garde, ils laisseraient une zone vide sous le bloc de
+             pilotage. Rallumer un widget depuis les reglages fait
+             reapparaitre la section. --}}
+        @if (count($activeWidgets) > 0)
          <!-- EMPLOYEE DASHBOARD DETAIL START -->
          <div class="row emp-dash-detail">
             <!-- EMP DASHBOARD INFO NOTICES START -->
@@ -435,6 +450,7 @@
             <!-- EMP DASHBOARD TASKS PROJECTS EVENTS END -->
         </div>
         <!-- EMPLOYEE DASHBOARD DETAIL END -->
+        @endif
 
     </div>
     <!-- CONTENT WRAPPER END -->
