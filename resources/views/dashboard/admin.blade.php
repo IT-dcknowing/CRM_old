@@ -51,7 +51,7 @@
                        ajax="false"/>
             @endif
 
-            @if ($viewHRDashboard == 'all' && (in_array('employees', user_modules()) || in_array('leaves', user_modules()) || in_array('attendance', user_modules())))
+            @if (false) {{-- [MODULE RETIRE] Onglet RH du tableau de bord --}}
                 <x-tab :href="route('dashboard.advanced').'?tab=hr'" :text="__('app.menu.hr')" class="hr" ajax="false"/>
             @endif
 
