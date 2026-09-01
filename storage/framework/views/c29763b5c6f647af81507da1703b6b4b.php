@@ -1,0 +1,2 @@
+<img src="<?php echo e(asset('flags/4x3/' . strtolower($country->iso) . '.svg')); ?>" class="w-15 ml-" alt="<?php echo e($country->iso); ?>"  title="<?php echo e($country->nicename); ?>" data-toggle="tooltip">
+<?php /**PATH /home/cp2255957p00/public_html/tacheflux/resources/views/components/flag.blade.php ENDPATH**/ ?>

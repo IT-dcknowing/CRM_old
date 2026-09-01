@@ -1,0 +1,1 @@
+<p><?php echo $text; ?></p><?php /**PATH /home/cp2255957p00/public_html/tacheflux/resources/views/vendor/mail/html/text.blade.php ENDPATH**/ ?>
