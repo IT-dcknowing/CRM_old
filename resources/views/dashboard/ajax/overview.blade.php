@@ -74,7 +74,7 @@
         </div>
     @endif
 
-    @if (in_array('attendance', user_modules()) && in_array('total_today_attendance', $activeWidgets))
+    @if (false) {{-- [KPI RETIRE] Presence du jour : indicateur hors des trois modules retenus --}}
         <div class="col-xl-3 col-lg-6 col-md-6">
             <a href="{{ (Route::has('attendances.index') ? route('attendances.index') : '') }}">
                 <x-cards.widget :title="__('modules.dashboard.totalTodayAttendance')"
@@ -116,7 +116,7 @@
         </div>
     @endif
 
-    @if (in_array('leaves', user_modules()) && in_array('settings_leaves', $activeWidgets))
+    @if (false) {{-- [KPI RETIRE] Conges en attente : indicateur hors des trois modules retenus --}}
         <div class="col-sm-12 col-lg-6 mt-3">
             <x-cards.data
                 :title="__('modules.leaves.pendingLeaves').' <i class=\'fa fa-question-circle\' data-toggle=\'popover\' data-placement=\'top\' data-content=\''.__('app.from').' '.$startDate->translatedFormat(company()->date_format).' '.__('app.to').' '.$endDate->translatedFormat(company()->date_format).'\' data-trigger=\'hover\'></i>'"

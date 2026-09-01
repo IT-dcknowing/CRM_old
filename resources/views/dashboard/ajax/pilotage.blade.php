@@ -32,8 +32,10 @@
         </div>
     @endif
 
-    {{-- ── Indicateurs ────────────────────────────────────────── --}}
-    <div class="dck-grid dck-g4">
+    {{-- ── Indicateurs ─────────────────────────────────────────
+         Limites aux trois modules du coeur de metier : taches,
+         diligences et contrats. --}}
+    <div class="dck-grid dck-g3">
         <a class="dck-kpi2" href="{{ route('tasks.index') }}">
             <div class="dck-kpi2__top">
                 <span class="dck-kpi2__ico"><i class="bi bi-check2-square"></i></span>
@@ -66,14 +68,6 @@
             <div class="dck-kpi2__sub">{{ $k->contratsBientot }} arrivent à échéance</div>
         </a>
 
-        <div class="dck-kpi2">
-            <div class="dck-kpi2__top">
-                <span class="dck-kpi2__ico"><i class="bi bi-people"></i></span>
-                <span class="dck-kpi2__lab">@lang('Collaborateurs')</span>
-            </div>
-            <div class="dck-kpi2__val">{{ $k->collaborateurs }}</div>
-            <div class="dck-kpi2__sub">actifs dans le cabinet</div>
-        </div>
     </div>
 
     {{-- ── Charge de travail et repartition ───────────────────── --}}

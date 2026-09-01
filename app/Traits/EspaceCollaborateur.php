@@ -54,30 +54,6 @@ trait EspaceCollaborateur
     }
 
     /**
-     * Solde de conges, tous types confondus.
-     * La colonne leaves_remaining est portee par la table pivot des
-     * types de conges attribues a l'utilisateur.
-     */
-    protected function espaceCongesRestants(int $userId): ?int
-    {
-        if (!DB::getSchemaBuilder()->hasTable('leave_types')) {
-            return null;
-        }
-
-        $solde = DB::table('leave_types')
-            ->where('company_id', company()->id)
-            ->sum('no_of_leaves');
-
-        $pris = DB::table('leaves')
-            ->where('user_id', $userId)
-            ->where('status', 'approved')
-            ->whereYear('leave_date', now()->year)
-            ->count();
-
-        return max(0, (int) $solde - (int) $pris);
-    }
-
-    /**
      * Taches terminees par le collaborateur depuis le debut du mois.
      */
     protected function espaceTermineesCeMois(int $userId): int
@@ -137,7 +113,6 @@ trait EspaceCollaborateur
     protected function chargerEspaceCollaborateur(int $userId): void
     {
         $this->espaceDiligences     = $this->espaceDiligences($userId);
-        $this->espaceConges         = $this->espaceCongesRestants($userId);
         $this->espaceTermineesMois  = $this->espaceTermineesCeMois($userId);
         $this->espaceSemaine        = $this->espaceSemaine($userId);
     }

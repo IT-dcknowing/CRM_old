@@ -1,13 +1,17 @@
 {{--
-    « Mon tableau de bord » — conforme a l'ecran mon-espace de la
-    maquette dck-flow-task : quatre indicateurs, les taches du moment,
-    la semaine pointee, les diligences, les annonces et la presence.
+    « Mon tableau de bord » — derive de l'ecran mon-espace de la
+    maquette dck-flow-task : trois indicateurs, les taches du moment,
+    la semaine pointee, les diligences et les annonces.
+
+    Les indicateurs sont volontairement limites aux trois modules du
+    coeur de metier — taches, diligences, contrats. L'indicateur de
+    conges et la carte de presence ont ete retires.
 
     Les donnees viennent d'EmployeeDashboard, qui les preparait deja
     pour les widgets historiques — pendingTasks, inProcessTasks,
-    dueTasks, notices, weekWiseTimelogs, currentClockIn — completees
-    par EspaceCollaborateur pour l'avancement des diligences, le solde
-    de conges et les taches terminees du mois. Aucune requete ici.
+    dueTasks, notices, weekWiseTimelogs — completees par
+    EspaceCollaborateur pour l'avancement des diligences et les taches
+    terminees du mois. Aucune requete ici.
 --}}
 
 @php
@@ -32,8 +36,10 @@
         </div>
     @endif
 
-    {{-- ── Indicateurs ────────────────────────────────────────── --}}
-    <div class="dck-grid dck-g4">
+    {{-- ── Indicateurs ─────────────────────────────────────────
+         Limites aux trois modules du coeur de metier : taches,
+         diligences et contrats. --}}
+    <div class="dck-grid dck-g3">
         <a class="dck-kpi2" href="{{ route('tasks.index') }}">
             <div class="dck-kpi2__top">
                 <span class="dck-kpi2__ico"><i class="bi bi-check2-square"></i></span>
@@ -60,15 +66,6 @@
             <div class="dck-kpi2__val">{{ $totalProjects ?? 0 }}</div>
             <div class="dck-kpi2__sub">dont vous êtes membre</div>
         </a>
-
-        <div class="dck-kpi2">
-            <div class="dck-kpi2__top">
-                <span class="dck-kpi2__ico"><i class="bi bi-calendar4-week"></i></span>
-                <span class="dck-kpi2__lab">@lang('Congés restants')</span>
-            </div>
-            <div class="dck-kpi2__val">{{ is_null($espaceConges ?? null) ? '—' : $espaceConges }}</div>
-            <div class="dck-kpi2__sub">jours sur l'exercice {{ now()->year }}</div>
-        </div>
     </div>
 
     {{-- ── Mes taches et ma semaine ───────────────────────────── --}}
@@ -140,8 +137,8 @@
         </div>
     </div>
 
-    {{-- ── Diligences, annonces et presence ───────────────────── --}}
-    <div class="dck-grid dck-g3">
+    {{-- ── Diligences et annonces ─────────────────────────────── --}}
+    <div class="dck-grid dck-g2">
 
         <div class="dck-c">
             <div class="dck-c__head">
@@ -185,25 +182,6 @@
                 @empty
                     <p class="dck-vide2">@lang('Aucune annonce.')</p>
                 @endforelse
-            </div>
-        </div>
-
-        <div class="dck-c">
-            <div class="dck-c__head">
-                <div>
-                    <h3>@lang('Ma présence')</h3>
-                    <div class="dck-c__sub">{{ now()->translatedFormat('d/m/Y') }}</div>
-                </div>
-            </div>
-            <div class="dck-c__body dck-pres">
-                <div>
-                    <div class="dck-pres__l">@lang('Arrivée')</div>
-                    <b>{{ isset($currentClockIn) && $currentClockIn ? $currentClockIn->clock_in_time->timezone(company()->timezone)->format('H:i') : '—' }}</b>
-                </div>
-                <div>
-                    <div class="dck-pres__l">@lang('Temps effectué')</div>
-                    <b>{{ $totalTimeFormatted ?? '—' }}</b>
-                </div>
             </div>
         </div>
     </div>
