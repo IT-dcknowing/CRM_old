@@ -58,6 +58,7 @@ class ClientController extends AccountBaseController
 
     use ImportExcel;
     use EmployeeActivityTrait;
+    use \App\Traits\PilotageClients;
 
     public function __construct()
     {
@@ -108,6 +109,7 @@ class ClientController extends AccountBaseController
                 ->join('contracts', 'users.id', '=', 'contracts.client_id')
                 ->select('users.*', 'contracts.*')
                 ->first();
+            $this->cliKpis = $this->clientsIndicateurs();
         }
 
         return $dataTable->render('clients.index', $this->data);

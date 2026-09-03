@@ -109,22 +109,22 @@
         {{-- Indicateurs. Les trois compteurs sont deja calcules par
              ContractController::index() : aucune requete n'est ajoutee. --}}
         <div class="dck-grid dck-grid--4">
-            <x-dck.kpi icone="bi-file-earmark-text"
+            <x-dck.kpi icone="bi-file-earmark-text" cle="total"
                        :libelle="__('modules.contracts.totalContracts')"
                        :valeur="$contractCounts"
                        :sous="__('app.all')" />
 
-            <x-dck.kpi icone="bi-check2-circle" ton="ok"
+            <x-dck.kpi icone="bi-check2-circle" ton="ok" cle="actifs"
                        :libelle="__('modules.contracts.active')"
                        :valeur="max($contractCounts - $expiredCounts, 0)"
                        :sous="__('app.active')" />
 
-            <x-dck.kpi icone="bi-hourglass-split" ton="warn"
+            <x-dck.kpi icone="bi-hourglass-split" ton="warn" cle="bientot"
                        :libelle="__('modules.contracts.aboutToExpire')"
                        :valeur="$aboutToExpireCounts"
                        :sous="__('app.days') . ' : 7'" />
 
-            <x-dck.kpi icone="bi-exclamation-triangle" ton="err"
+            <x-dck.kpi icone="bi-exclamation-triangle" ton="err" cle="expires"
                        :libelle="__('modules.contracts.expired')"
                        :valeur="$expiredCounts"
                        :sous="__('modules.contracts.expired')" />
@@ -305,12 +305,27 @@
                         success: function(response) {
                             if (response.status == "success") {
                                 showTable();
+                                majCompteurs(response.compteurs);
                             }
                         }
                     });
                 }
             });
         });
+
+        /* Met a jour les cartes de comptage sans recharger l'ecran.
+           Le controleur renvoie les nouvelles valeurs avec la reponse de
+           suppression ; sans cela le total restait fige jusqu'au prochain
+           chargement de la page. */
+        function majCompteurs(compteurs) {
+            if (!compteurs) { return; }
+
+            Object.keys(compteurs).forEach(function (cle) {
+                const cible = document.querySelector('[data-kpi="' + cle + '"]');
+
+                if (cible) { cible.textContent = compteurs[cle]; }
+            });
+        }
 
         const applyQuickAction = () => {
             var rowdIds = $("#contracts-table input:checkbox:checked").map(function() {

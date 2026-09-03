@@ -279,6 +279,10 @@ $viewUnassignedTasksPermission = user()->permission('view_unassigned_tasks');
                     <div class="select-status mr-3 d-none quick-action-field" id="change-status-action">
                         <select name="status" class="form-control select-picker">
                             @foreach ($taskBoardStatus as $status)
+                                {{-- « En attente d'approbation » est reserve a l'administrateur :
+                                     l'option est retiree de l'action groupee. Le controleur refuse
+                                     de toute facon la transition, l'interface ne fait que l'annoncer. --}}
+                                @continue($status->slug == 'waiting_approval' && !in_array('admin', user_roles()))
                                 <option value="{{ $status->id }}">{{ $status->slug == 'completed' || $status->slug == 'incomplete' ? __('app.' . $status->slug) : $status->column_name }}</option>
                             @endforeach
                         </select>

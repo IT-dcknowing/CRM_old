@@ -12,7 +12,7 @@
 
     <h3 class="heading-h1 mb-3">{{ $task->heading }}</h3>
     <div class="row dck-front">
-        <div class="col-sm-9">
+        <div class="col-lg-9">
             <div class="card bg-white border-0 b-shadow-4">
                 <div class="card-header bg-white  border-bottom-grey  justify-content-between p-20">
                     <div class="row">
@@ -427,7 +427,7 @@
 
         </div>
 
-        <div class="col-sm-3">
+        <div class="col-lg-3">
             <x-cards.data>
                 @if (($taskSettings->status == 'yes' && in_array('client', user_roles())) || in_array('admin', user_roles()) || in_array('employee', user_roles()))
                     <p class="f-w-500"><i class="fa fa-circle mr-1 text-yellow"

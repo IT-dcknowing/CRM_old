@@ -114,7 +114,9 @@
                     <input type="hidden" id="current-latitude" name="current_latitude">
                     <input type="hidden" id="current-longitude" name="current_longitude">
 
-                    <span id="dashboard-clock">{!! now()->timezone(company()->timezone)->translatedFormat(company()->time_format) . '</span><span class="f-10 font-weight-normal">' . now()->timezone(company()->timezone)->translatedFormat('l') . '</span>' !!}
+                    {{-- Date complete plutot que le seul jour de la semaine :
+                         « jeudi 03 septembre 2026 » au lieu de « jeudi ». --}}
+                    <span id="dashboard-clock">{!! now()->timezone(company()->timezone)->translatedFormat(company()->time_format) . '</span><span class="f-10 font-weight-normal">' . now()->timezone(company()->timezone)->translatedFormat('l d F Y') . '</span>' !!}
 
                     @if (!is_null($currentClockIn))
                         <span class="f-11 font-weight-normal text-lightest">
@@ -168,23 +170,26 @@
 
 
                 @endphp
-                @if (in_array('attendance', user_modules()))
-                    @if(!in_array('apporteurs', user_roles()))
-                        @if (is_null($currentClockIn) && $checkJoiningDate == true || (is_null($currentClockIn) && $flagbtn == false))
-                            <button type="button" class="btn-primary rounded f-15 ml-4" id="clock-in"
-                                @if (($cannotLogin || !is_null($msg)) && ($user->isAdmin($user->id) || $user->isEmployee($user->id)))
-                                    disabled
-                                    data-toggle="tooltip" data-placement="top" title="{{__($msg)}}"
-                                @endif
-                            ><i
-                            class="icons icon-login mr-2"></i>@lang('modules.attendance.clock_in')</button>
-                        @endif
+                {{-- [BOUTONS RETIRES] Pointage d'arrivee et de depart.
+                     Le module de presence continue de fonctionner : seuls
+                     les boutons disparaissent de l'espace personnel. Le JS
+                     associe teste l'existence de l'element avant de s'y
+                     accrocher, il reste donc sans effet. --}}
+                @if (false)
+                    @if (is_null($currentClockIn) && $checkJoiningDate == true || (is_null($currentClockIn) && $flagbtn == false))
+                        <button type="button" class="btn-primary rounded f-15 ml-4" id="clock-in"
+                            @if (($cannotLogin || !is_null($msg)) && ($user->isAdmin($user->id) || $user->isEmployee($user->id)))
+                                disabled
+                                data-toggle="tooltip" data-placement="top" title="{{__($msg)}}"
+                            @endif
+                        ><i
+                        class="icons icon-login mr-2"></i>@lang('modules.attendance.clock_in')</button>
                     @endif
-                @endif
 
-                @if (!is_null($currentClockIn) && is_null($currentClockIn->clock_out_time) || (!is_null($currentClockIn) && $flagbtn == true))
-                    <button type="button" class="btn-danger rounded f-15 ml-4" id="clock-out"><i
-                            class="icons icon-login mr-2"></i>@lang('modules.attendance.clock_out')</button>
+                    @if (!is_null($currentClockIn) && is_null($currentClockIn->clock_out_time) || (!is_null($currentClockIn) && $flagbtn == true))
+                        <button type="button" class="btn-danger rounded f-15 ml-4" id="clock-out"><i
+                                class="icons icon-login mr-2"></i>@lang('modules.attendance.clock_out')</button>
+                    @endif
                 @endif
 
                 @if (in_array('admin', user_roles()))

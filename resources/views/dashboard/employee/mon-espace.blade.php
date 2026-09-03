@@ -106,40 +106,9 @@
             </div>
         </div>
 
-        <div class="dck-c">
-            <div class="dck-c__head">
-                <div>
-                    <h3>@lang('Ma semaine')</h3>
-                    <div class="dck-c__sub">Heures pointées</div>
-                </div>
-            </div>
-            <div class="dck-c__body">
-                @php
-                    $jours = collect($espaceSemaine ?? []);
-                    $maxMin = max(1, (int) $jours->max('minutes'));
-                    $totalMin = (int) $jours->sum('minutes');
-                @endphp
-                @forelse ($jours as $j)
-                    <div class="dck-bl">
-                        <span class="dck-bl__j">{{ $j['jour']->translatedFormat('D j') }}</span>
-                        <span class="dck-bar"><i style="width:{{ round(100 * $j['minutes'] / $maxMin) }}%"></i></span>
-                        <span class="dck-bl__v">{{ intdiv($j['minutes'], 60) }} h {{ str_pad($j['minutes'] % 60, 2, '0', STR_PAD_LEFT) }}</span>
-                    </div>
-                @empty
-                    <p class="dck-vide2">@lang('Aucune heure pointée cette semaine.')</p>
-                @endforelse
-
-                <div class="dck-total">
-                    <span>@lang('Total de la semaine')</span>
-                    <b>{{ intdiv($totalMin, 60) }} h {{ str_pad($totalMin % 60, 2, '0', STR_PAD_LEFT) }}</b>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- ── Diligences et annonces ─────────────────────────────── --}}
-    <div class="dck-grid dck-g2">
-
+        {{-- « Mes diligences » occupe la colonne laissee libre par le
+             retrait de « Ma semaine » : les deux cartes se lisent
+             desormais cote a cote. --}}
         <div class="dck-c">
             <div class="dck-c__head">
                 <div><h3>@lang('Mes diligences')</h3></div>
@@ -166,24 +135,7 @@
             </div>
         </div>
 
-        <div class="dck-c">
-            <div class="dck-c__head">
-                <div><h3>@lang('Annonces')</h3></div>
-            </div>
-            <div class="dck-c__body dck-pile">
-                @forelse (($notices ?? collect())->take(3) as $n)
-                    <div class="dck-an">
-                        <span class="dck-an__p"></span>
-                        <div>
-                            <b>{{ $n->heading }}</b>
-                            <div class="dck-an__d">{{ $n->created_at->translatedFormat('d/m/Y') }}</div>
-                        </div>
-                    </div>
-                @empty
-                    <p class="dck-vide2">@lang('Aucune annonce.')</p>
-                @endforelse
-            </div>
-        </div>
+        {{-- [BLOC RETIRE] Annonces --}}
     </div>
 
 </div>

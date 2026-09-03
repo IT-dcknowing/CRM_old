@@ -890,6 +890,10 @@ Route::group(['middleware' => 'auth', 'prefix' => 'account'], function () {
         Route::post('mark-read', [NotificationController::class , 'markRead'])->name('mark_single_notification_read');
         Route::post('mark_notification_read', [NotificationController::class , 'markAllRead'])->name('mark_notification_read');
 
+        // Recherche transversale de l'en-tete : taches, diligences et clients
+        // en une seule requete. Declaree avant la resource pour que
+        // « search/resultats » ne soit pas pris pour « search/{id} ».
+        Route::get('search/resultats', [SearchController::class, 'resultats'])->name('search.resultats');
         Route::resource('search', SearchController::class);
 
         // Remove in v 5.2.5

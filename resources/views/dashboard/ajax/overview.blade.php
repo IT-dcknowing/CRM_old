@@ -13,7 +13,23 @@
     @include('dashboard.ajax.pilotage')
 @endisset
 
-<div class="row">
+{{-- Rangee de widgets heritee du theme. Elle est pilotee par la table
+     dashboard_widgets, aujourd'hui vide : aucune carte ne s'affiche et
+     le conteneur ne laissait qu'un vide sous les indicateurs. Il n'est
+     donc rendu que si au moins une carte doit y figurer. --}}
+@php
+    $rangeeHeritee = collect([
+        ['clients', 'total_clients'],
+        ['employees', 'total_employees'],
+        ['projects', 'total_projects'],
+        ['invoices', 'unpaid_invoices'],
+        ['timelogs', 'total_hours_logged'],
+        ['tasks', 'pending_tasks'],
+        ['tickets', 'total_unresolved_tickets'],
+    ])->contains(fn ($p) => in_array($p[0], user_modules()) && in_array($p[1], $activeWidgets));
+@endphp
+
+<div class="row" @unless ($rangeeHeritee) hidden @endunless>
     @if (in_array('clients', user_modules()) && in_array('total_clients', $activeWidgets))
         <div class="col-xl-3 col-lg-6 col-md-6 mb-3">
             <a href="{{ route('clients.index') }}">
@@ -100,19 +116,23 @@
 <div class="row">
     @if (in_array('payments', user_modules()) && in_array('recent_earnings', $activeWidgets))
         <div class="col-sm-12 col-lg-6 mt-3">
+            @if (false) {{-- [BLOC RETIRE] Recettes : retire du tableau de bord, donnees conservees --}}
             <x-cards.data
                 :title="__('app.income').' <i class=\'fa fa-question-circle\' data-toggle=\'popover\' data-placement=\'top\' data-content=\''.__('app.from').' '.$startDate->translatedFormat(company()->date_format).' '.__('app.to').' '.$endDate->translatedFormat(company()->date_format).'\' data-trigger=\'hover\'></i>'">
                 <x-bar-chart id="task-chart1" :chartData="$earningChartData" height="300"></x-bar-chart>
             </x-cards.data>
+            @endif
         </div>
     @endif
 
     @if (in_array('timelogs', user_modules()) && in_array('timelogs', $activeWidgets))
         <div class="col-sm-12 col-lg-6 mt-3">
+            @if (false) {{-- [BLOC RETIRE] Feuille de temps : retire du tableau de bord, donnees conservees --}}
             <x-cards.data
                 :title="__('app.menu.timeLogs').' <i class=\'fa fa-question-circle\' data-toggle=\'popover\' data-placement=\'top\' data-content=\''.__('app.from').' '.$startDate->translatedFormat(company()->date_format).' '.__('app.to').' '.$endDate->translatedFormat(company()->date_format).'\' data-trigger=\'hover\'></i>'">
                 <x-line-chart id="task-chart2" :chartData="$timlogChartData" height="300"></x-line-chart>
             </x-cards.data>
+            @endif
         </div>
     @endif
 
@@ -226,6 +246,7 @@
 
     @if (in_array('tasks', user_modules()) && in_array('overdue_tasks', $activeWidgets))
         <div class="col-sm-12 col-lg-6 mt-3">
+            @if (false) {{-- [BLOC RETIRE] Taches en attente : retire du tableau de bord, donnees conservees --}}
             <x-cards.data
                 :title="__('modules.dashboard.totalPendingTasks').' <i class=\'fa fa-question-circle\' data-toggle=\'popover\' data-placement=\'top\' data-content=\''.__('app.from').' '.$startDate->translatedFormat(company()->date_format).' '.__('app.to').' '.$endDate->translatedFormat(company()->date_format).'\' data-trigger=\'hover\'></i>'"
                 padding="false" otherClasses="h-200">
@@ -266,6 +287,7 @@
                     @endforelse
                 </x-table>
             </x-cards.data>
+            @endif
         </div>
     @endif
 
@@ -308,6 +330,7 @@
 
     @if (in_array('projects', user_modules()) && in_array('project_activity_timeline', $activeWidgets))
         <div class="col-sm-12 col-lg-6 mt-3">
+            @if (false) {{-- [BLOC RETIRE] Journal d'activite des diligences : retire du tableau de bord, donnees conservees --}}
             <x-cards.data
                 :title="__('modules.dashboard.projectActivityTimeline').' <i class=\'fa fa-question-circle\' data-toggle=\'popover\' data-placement=\'top\' data-content=\''.__('app.from').' '.$startDate->translatedFormat(company()->date_format).' '.__('app.to').' '.$endDate->translatedFormat(company()->date_format).'\' data-trigger=\'hover\'></i>'"
                 padding="false"
@@ -341,11 +364,13 @@
                     </div><!-- card end -->
                 @endforelse
             </x-cards.data>
+            @endif
         </div>
     @endif
 
     @if (in_array('employees', user_modules()) && in_array('user_activity_timeline', $activeWidgets))
         <div class="col-sm-12 col-lg-6 mt-3">
+            @if (false) {{-- [BLOC RETIRE] Journal d'activite des utilisateurs : retire du tableau de bord, donnees conservees --}}
             <x-cards.data
                 :title="__('modules.dashboard.userActivityTimeline').' <i class=\'fa fa-question-circle\' data-toggle=\'popover\' data-placement=\'top\' data-content=\''.__('app.from').' '.$startDate->translatedFormat(company()->date_format).' '.__('app.to').' '.$endDate->translatedFormat(company()->date_format).'\' data-trigger=\'hover\'></i>'"
                 padding="false"
@@ -379,6 +404,7 @@
                     </div><!-- card end -->
                 @endforelse
             </x-cards.data>
+            @endif
         </div>
     @endif
 </div>
