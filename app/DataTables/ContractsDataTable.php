@@ -194,12 +194,23 @@ class ContractsDataTable extends BaseDataTable
 
             })
             ->editColumn('client.name', function ($row) {
+                /* Le client peut avoir ete supprime : la liste montre alors
+                   le contrat sans sa fiche, plutot que de le faire
+                   disparaitre. Sans cette garde, l'affichage tombait sur
+                   « image_url on null » et le tableau entier refusait de
+                   se charger. */
+                if (is_null($row->client)) {
+                    return '<span class="text-lightest f-13">' . __('Client supprimé') . '</span>';
+                }
+
+                $raison = optional($row->client->clientDetails)->company_name;
+
                 return '<div class="media align-items-center">
                     <a href="' . route('clients.show', [$row->client_id]) . '">
                     <img src="' . $row->client->image_url . '" class="mr-2 taskEmployeeImg rounded-circle" alt="' . $row->client->name . '" title="' . $row->client->name . '"></a>
                     <div class="media-body">
                     <h5 class="mb-0 f-13 text-darkest-grey"><a href="' . route('clients.show', [$row->client_id]) . '">' . $row->client->name . '</a></h5>
-                    <p class="mb-0 f-13 text-dark-grey">' . $row->client->clientDetails->company_name . '</p>
+                    <p class="mb-0 f-13 text-dark-grey">' . ($raison ?: '') . '</p>
                     </div>
                   </div>';
             })
@@ -256,9 +267,14 @@ class ContractsDataTable extends BaseDataTable
                 'project.clientdetails'
             ]
         )->with('contractType', 'client', 'signature', 'client.clientDetails')
-            ->join('users', 'users.id', '=', 'contracts.client_id')
-            ->join('client_details', 'users.id', '=', 'client_details.user_id')
-            ->join('client_categories', 'client_details.category_id', '=', 'client_categories.id')
+            /* Jointures a gauche, et non fermees : un contrat dont le client
+               a ete supprime, ou dont la fiche client n'a pas de categorie,
+               disparaissait de la liste alors qu'il restait compte dans le
+               total affiche au-dessus. Le tableau annonçait ainsi plus de
+               contrats qu'il n'en montrait. */
+            ->leftJoin('users', 'users.id', '=', 'contracts.client_id')
+            ->leftJoin('client_details', 'users.id', '=', 'client_details.user_id')
+            ->leftJoin('client_categories', 'client_details.category_id', '=', 'client_categories.id')
             ->select('contracts.*','client_categories.category_name');
 
         if ($startDate !== null && $endDate !== null) {

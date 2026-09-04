@@ -27,6 +27,7 @@ use App\Models\TaskLabelList;
 use App\Models\ProjectTimeLog;
 use App\Models\TaskboardColumn;
 use App\Traits\ProjectProgress;
+use App\Traits\ApprobationTache;
 use App\Models\ProjectMilestone;
 use App\Events\TaskReminderEvent;
 use App\DataTables\TasksDataTable;
@@ -42,6 +43,7 @@ class TaskController extends AccountBaseController
 {
 
     use ProjectProgress;
+    use ApprobationTache;
 
     public function __construct()
     {
@@ -214,6 +216,11 @@ class TaskController extends AccountBaseController
         );
 
         $taskBoardColumn = TaskboardColumn::where('slug', $status)->first();
+
+        // Entrer dans « En attente d'approbation » ou en sortir reste
+        // reserve a l'arbitre, quelle que soit la permission change_status.
+        $this->verifierTransitionApprobation($task, $taskBoardColumn);
+
         $task->board_column_id = $taskBoardColumn->id;
 
         if ($task->status === 'completed' && $status !== 'completed') {
@@ -847,9 +854,14 @@ class TaskController extends AccountBaseController
 
         if ($request->has('board_column_id')) {
 
+            $taskBoardColumn = TaskboardColumn::findOrFail($request->board_column_id);
+
+            // Meme regle que sur le tableau : le formulaire d'edition ne
+            // doit pas offrir un contournement de l'etape d'approbation.
+            $this->verifierTransitionApprobation($task, $taskBoardColumn);
+
             $task->board_column_id = $request->board_column_id;
             $task->approval_send = 0;
-            $taskBoardColumn = TaskboardColumn::findOrFail($request->board_column_id);
 
             if ($taskBoardColumn->slug == 'completed') {
                 $task->completed_on = now()->format('Y-m-d');
@@ -1221,8 +1233,13 @@ class TaskController extends AccountBaseController
     public function sendApproval(Request $request)
     {
 
-        $task = Task::findOrFail($request->taskId);
+        $task = Task::with('users', 'project')->findOrFail($request->taskId);
         $taskBoardColumn = TaskboardColumn::where('slug', 'waiting_approval')->first();
+
+        // Cette route n'exigeait aucun droit : n'importe quel compte
+        // authentifie pouvait y envoyer n'importe quelle tache par son id.
+        // La demande reste ouverte aux personnes concernees par la tache.
+        $this->verifierDemandeApprobation($task);
 
         $task->approval_send = $request->isApproval ?? 0;
         $task->board_column_id = $taskBoardColumn->id;
@@ -1291,8 +1308,13 @@ class TaskController extends AccountBaseController
     public function storeStatusReason(ActionTask $request)
     {
 
-        $task = Task::findOrFail($request->taskId);
+        $task = Task::with('project')->findOrFail($request->taskId);
         $taskBoardColumn = TaskboardColumn::where('slug', $request->taskStatus)->first();
+
+        // Sortie de « En attente d'approbation » avec motif : c'est l'arbitrage
+        // lui-meme, donc reserve a l'administrateur.
+        $this->verifierTransitionApprobation($task, $taskBoardColumn);
+
         $task->board_column_id = $taskBoardColumn->id;
         $task->approval_send = 0;
         $task->save();

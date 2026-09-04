@@ -15,6 +15,7 @@
     'valeur'  => '0',
     'sous'    => null,
     'ton'     => null,
+    'cle'     => null,
 ])
 
 <div class="dck-kpi">
@@ -25,7 +26,10 @@
         <span class="dck-kpi__lab">{{ $libelle }}</span>
     </div>
 
-    <div class="dck-kpi__val">{{ $valeur }}</div>
+    {{-- « cle » permet a une page de reactualiser la valeur sans recharger
+         l'ecran, apres une suppression par exemple. Sans cet attribut, le
+         rendu est strictement inchange. --}}
+    <div class="dck-kpi__val" @if ($cle) data-kpi="{{ $cle }}" @endif>{{ $valeur }}</div>
 
     @if ($sous)
         <div class="dck-kpi__sub">{{ $sous }}</div>

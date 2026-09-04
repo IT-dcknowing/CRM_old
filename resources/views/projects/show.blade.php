@@ -28,13 +28,8 @@ $projectArchived = $project->trashed();
          d'onglet, le script remplace tout .content-wrapper. --}}
     <div class="dck-detail-head dck-front">
 
-        <a href="{{ route('projects.index') }}" class="dck-back">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M19 12H5M12 19l-7-7 7-7" />
-            </svg>
-            @lang('app.menu.projects')
-        </a>
+        <x-dck.back :href="route('projects.index')"
+                    :libelle="__('app.dckBack.projects')" :barre="false" />
 
         <div class="dck-page-head">
             <div class="dck-page-head__txt">

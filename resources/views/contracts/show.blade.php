@@ -1,6 +1,10 @@
 @extends('layouts.app')
 
 @section('filter-section')
+
+    {{-- Retour a la liste. Place dans filter-section et non dans
+         content : le changement d'onglet remplace .content-wrapper. --}}
+    <x-dck.back :href="route('contracts.index')" :libelle="__('app.dckBack.contracts')" />
     <!-- FILTER START -->
     <!-- PROJECT HEADER START -->
     <div class="d-flex filter-box project-header bg-white">

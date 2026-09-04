@@ -13,8 +13,6 @@
 
                 <div class="row p-20">
 
-                        <x-dck.form-section :titre="__('app.dckSection.identification')" />
-
                         <!-- OBJET DU CONTRAT : champ obligatoire cote validation
                              (StoreRequest : 'subject' => 'required'). Il etait masque,
                              ce qui bloquait la creation hors modele. -->
@@ -96,8 +94,6 @@
                         </div>
                     </div>
 
-                    <x-dck.form-section :titre="__('app.dckSection.amount')" />
-
                     <div class="col-md-6 col-lg-3">
                         <x-forms.label class="mb-12" fieldId="amount"
                                        :fieldLabel="__('modules.contracts.contractValue')"
@@ -132,8 +128,6 @@
                     </div>
                     <!-- CURRENCY END -->
 
-                    <x-dck.form-section :titre="__('app.dckSection.period')" />
-
                     <div class="col-md-6 col-lg-5">
                         <x-forms.datepicker fieldId="start_date" fieldRequired="true"
                                             :fieldLabel="__('modules.projects.startDate')" fieldName="start_date"
@@ -156,8 +150,6 @@
                                           fieldName="without_duedate" fieldId="without_duedate" fieldValue="yes"/>
                     </div>
 
-                    <x-dck.form-section :titre="__('app.dckSection.content')" />
-
                     <div class="col-md-12">
                         <div class="form-group my-3">
                             <x-forms.label fieldId="description" :fieldLabel="__('app.description')">
@@ -176,8 +168,6 @@
                      postal_code, alternate_address et note : les champs
                      existaient en base mais restaient inaccessibles a la saisie. --}}
                 <div class="row p-20">
-
-                    <x-dck.form-section :titre="__('app.dckSection.signatory')" />
 
 
                     <div class="col-md-6 col-lg-4">
@@ -237,10 +227,6 @@
                             {{ $contract->description ?? '' }}
                         </x-forms.textarea>
                     </div>
-                        @if (isset($fields) && count($fields) > 0)
-                            <x-dck.form-section :titre="__('app.dckSection.customFields')"
-                                                :note="__('app.dckSection.customFieldsNote')" />
-                        @endif
                         <x-forms.custom-field :fields="$fields" class="col-md-12"></x-forms.custom-field>
                 </div>
 

@@ -99,15 +99,24 @@
 
                 <div class="dck-pop__sep"></div>
 
+                {{-- [ENTREES RETIREES] Mon profil et Parametres : le module
+                     Parametres porte deja « Parametres de profil » et « Les
+                     parametres de securite ». Trois chemins menaient au meme
+                     endroit.
                 @if (!in_array('client', user_roles()))
                     <a class="dck-pop__item" href="{{ route('employees.show', user()->id) }}">
                         <i class="bi bi-person"></i>@lang('Mon profil')
                     </a>
                 @endif
+                --}}
 
+                {{-- [ENTREE RETIREE] Parametres : la barre laterale porte deja
+                     son propre acces, en bas du menu. Deux chemins vers le meme
+                     ecran n'apportaient rien.
                 <a class="dck-pop__item" href="{{ route('profile-settings.index') }}">
                     <i class="bi bi-gear"></i>@lang('Paramètres')
                 </a>
+                --}}
 
                 {{-- Le libelle porte le for= de l'interrupteur, reste cache :
                      cliquer l'entree declenche donc le gestionnaire existant,

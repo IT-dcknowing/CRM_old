@@ -41,12 +41,12 @@
                        class="overview" ajax="false"/>
             @endif
 
-            @if (in_array('projects', user_modules()) && $viewProjectDashboard == 'all')
+            @if (false) {{-- [ONGLET RETIRE] Diligence : son suivi passe par le module lui-meme --}}
                 <x-tab :href="route('dashboard.advanced').'?tab=project'" :text="__('app.project')" class="project"
                        ajax="false"/>
             @endif
 
-            @if (in_array('clients', user_modules()) && $viewClientDashboard == 'all')
+            @if (false) {{-- [ONGLET RETIRE] Client --}}
                 <x-tab :href="route('dashboard.advanced').'?tab=client'" :text="__('app.client')" class="client"
                        ajax="false"/>
             @endif
@@ -60,7 +60,7 @@
                        ajax="false"/>
             @endif
 
-            @if ($viewFinanceDashboard == 'all' && (in_array('invoices', user_modules()) || in_array('estimates', user_modules()) || in_array('leads', user_modules())))
+            @if (false) {{-- [ONGLET RETIRE] Finances --}}
                 <x-tab :href="route('dashboard.advanced').'?tab=finance'" :text="__('app.menu.finance')" class="finance"
                        ajax="false"/>
             @endif

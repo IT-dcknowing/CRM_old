@@ -119,30 +119,34 @@
                          :link="route('projects.index')" />
         @endif
 
+        @if (in_array('employees', user_modules()) && $sidebarUserPermissions['view_employees'] != 5 && $sidebarUserPermissions['view_employees'] != 'none')
+            <x-menu-item dck="users" icon="people" :text="__('app.menu.employees')"
+                         :link="route('employees.index')" />
+        @endif
+
+        {{-- ═══ GESTION ═══════════════════════════════════════════
+             Les contrats sont ranges avec les clients : ils portent la
+             relation commerciale, pas la production quotidienne. --}}
+        <li class="dck-sect" aria-hidden="true">Gestion</li>
+
         @if (in_array('contracts', user_modules()) && $sidebarUserPermissions['view_contract'] != 5 && $sidebarUserPermissions['view_contract'] != 'none')
             <x-menu-item dck="file" icon="file-earmark-text" :text="__('app.menu.contracts')"
                          :link="route('contracts.index')" />
         @endif
-
-        {{-- [MODULE RETIRE] Section Relations : Clients et Employes.
-             Les ecrans restent accessibles par leur URL, seules les
-             entrees de menu sont retirees.
-
-        <li class="dck-sect" aria-hidden="true">Relations</li>
 
         @if (in_array('clients', user_modules()) && $sidebarUserPermissions['view_clients'] != 5 && $sidebarUserPermissions['view_clients'] != 'none')
             <x-menu-item dck="building" icon="building" :text="__('app.menu.clients')"
                          :link="route('clients.index')" />
         @endif
 
-        @if (in_array('employees', user_modules()) && $sidebarUserPermissions['view_employees'] != 5 && $sidebarUserPermissions['view_employees'] != 'none')
-            <x-menu-item dck="users" icon="people" :text="__('app.menu.employees')"
-                         :link="route('employees.index')" />
-        @endif
-        --}}
+        {{-- ═══ ANALYSE ═══════════════════════════════════════════ --}}
+        <li class="dck-sect" aria-hidden="true">Analyse</li>
 
-        {{-- ═══ GESTION ═══════════════════════════════════════════ --}}
-        <li class="dck-sect" aria-hidden="true">Gestion</li>
+        {{-- [MODULE RETIRE] Permissions et conges, Ma presence, Annonces,
+             Services et produits, Situations fiscales.
+             Les ecrans restent accessibles par leur URL ; seules les
+             entrees de menu sont retirees. La section Gestion ne porte
+             donc plus que les rapports.
 
         @if (Route::has('leaves.index') && in_array('leaves', user_modules()) && $sidebarUserPermissions['view_leave'] != 5 && $sidebarUserPermissions['view_leave'] != 'none')
             <x-menu-item dck="calendar" icon="calendar-event" :text="__('Permissions et congés')"
@@ -164,7 +168,6 @@
                          :link="(Route::has('products.index') ? route('products.index') : null)" />
         @endif
 
-        {{-- [MODULE RETIRE] Situations fiscales
         @if (in_array('clients', user_modules()) && $sidebarUserPermissions['view_clients'] != 5 && $sidebarUserPermissions['view_clients'] != 'none')
             <x-menu-item dck="scale" icon="file-earmark-ruled" :text="__('Situations fiscales')"
                          :link="route('clients.fiscale')" />

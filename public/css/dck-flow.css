@@ -450,6 +450,462 @@
   font-weight:600;
 }
 
+/* ══════════════════════════════════════════════════════════════
+   FENETRE DE CONFIRMATION (SweetAlert)
+
+   Elle s'ouvre depuis 256 ecrans differents. La mise en forme est donc
+   faite ici, une fois, plutot que dans chaque appel.
+
+   Les regles ne sont pas scopees sous .dck-front : SweetAlert attache
+   sa fenetre directement au <body>, hors de tout conteneur applicatif.
+   ══════════════════════════════════════════════════════════════ */
+.swal2-popup {
+  width:min(430px, 92vw) !important;
+  padding:28px 26px 22px !important;
+  border-radius:14px !important;
+  background:#fff !important;
+  box-shadow:0 8px 12px -6px rgba(16,24,40,.08), 0 24px 48px -12px rgba(16,24,40,.22) !important;
+  font-family:'Public Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+}
+
+.swal2-container.swal2-backdrop-show { background:rgba(16,24,40,.55) !important; }
+
+/* Icone : un disque discret, pas le grand cercle par defaut */
+.swal2-icon {
+  width:46px !important;
+  height:46px !important;
+  margin:0 auto 16px !important;
+  border-width:2px !important;
+}
+.swal2-icon .swal2-icon-content { font-size:24px !important; }
+.swal2-icon.swal2-warning {
+  border-color:#F2C9C6 !important;
+  background:#FDF1F0 !important;
+  color:#B42318 !important;
+}
+.swal2-icon.swal2-success { border-color:#CBE0A8 !important; background:#F2F8E9 !important; }
+.swal2-icon.swal2-info    { border-color:#B3DDF7 !important; background:#EFF8FF !important; }
+
+.swal2-title {
+  padding:0 !important;
+  font-size:18px !important;
+  font-weight:700 !important;
+  line-height:1.35 !important;
+  color:#111827 !important;
+}
+.swal2-html-container {
+  margin:9px 0 0 !important;
+  font-size:14px !important;
+  line-height:1.55 !important;
+  color:#4B5563 !important;
+}
+
+/* Actions : annuler d'abord, action a droite, largeurs egales */
+.swal2-actions {
+  display:flex !important;
+  gap:10px !important;
+  width:100% !important;
+  margin:24px 0 0 !important;
+}
+.swal2-actions button.btn {
+  flex:1 1 0 !important;
+  min-height:40px !important;
+  margin:0 !important;
+  padding:0 16px !important;
+  border-radius:8px !important;
+  font-size:14px !important;
+  font-weight:600 !important;
+  border:1px solid transparent !important;
+  transition:background-color .14s ease, border-color .14s ease !important;
+}
+.swal2-actions .swal2-cancel.btn {
+  order:1;
+  background:#fff !important;
+  border-color:#D1D5DB !important;
+  color:#374151 !important;
+}
+.swal2-actions .swal2-cancel.btn:hover { background:#F3F4F6 !important; }
+.swal2-actions .swal2-confirm.btn {
+  order:2;
+  background:#000 !important;
+  color:#fff !important;
+}
+.swal2-actions .swal2-confirm.btn:hover { background:#1F2937 !important; }
+
+/* Une confirmation de suppression porte l'icone « warning » : son bouton
+   d'action passe alors au rouge. La couleur annonce ce qui va se passer,
+   au lieu de laisser le meme bouton noir que pour une action anodine.
+   Navigateurs sans :has() — le bouton reste noir, sans rien casser. */
+.swal2-popup:has(.swal2-icon.swal2-warning) .swal2-actions .swal2-confirm.btn {
+  background:#B42318 !important;
+}
+.swal2-popup:has(.swal2-icon.swal2-warning) .swal2-actions .swal2-confirm.btn:hover {
+  background:#912018 !important;
+}
+
+.swal2-popup .swal2-close { color:#9CA3AF !important; box-shadow:none !important; }
+.swal2-popup .swal2-close:hover { color:#374151 !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  .swal2-popup, .swal2-container { animation:none !important; }
+}
+
+/* ── Bandeau de filtres, retire de l'affichage ──────────────────
+   Non pas « display:none » : plusieurs ecrans lisent en JavaScript les
+   valeurs de ces champs pour construire leurs requetes, et un element
+   masque de cette facon ne repond plus a certaines mesures. On le sort
+   du flux visuel en le laissant dans le document.
+   Cette regle n'est pas scopee : le bandeau vit hors des conteneurs
+   .dck-front, sur toutes les pages. */
+.dck-filtres-caches {
+  position:absolute !important;
+  width:1px;
+  height:1px;
+  margin:-1px;
+  padding:0;
+  overflow:hidden;
+  clip:rect(0 0 0 0);
+  clip-path:inset(50%);
+  white-space:nowrap;
+  border:0;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   MODULE PARAMETRES
+
+   Vingt-neuf ecrans partagent quatre composants : la barre laterale,
+   ses entrees, la carte de contenu et la barre d'actions. Les mettre
+   en forme ici suffit donc a habiller tout le module.
+
+   Les selecteurs ne sont pas scopes sous .dck-front : ces classes
+   n'existent que dans les parametres, et les vues concernees ne
+   portent pas ce conteneur.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Colonne de navigation ──────────────────────────────────── */
+.settings-sidebar {
+  background:#fff !important;
+  border-right:1px solid #E5E7EB;
+}
+
+/* Champ de recherche des reglages */
+.settings-sidebar form { border-bottom:1px solid #E5E7EB !important; }
+.settings-sidebar .input-group {
+  height:36px;
+  border:1px solid #E5E7EB !important;
+  border-radius:8px !important;
+  background:#F9FAFB;
+  overflow:hidden;
+}
+.settings-sidebar .input-group:focus-within {
+  border-color:#D1D5DB !important;
+  background:#fff;
+}
+.settings-sidebar .input-group-text { background:transparent !important; padding-right:4px; }
+.settings-sidebar #search-setting-menu {
+  background:transparent !important;
+  font-size:13.5px !important;
+  box-shadow:none !important;
+}
+
+/* Entrees du menu : le filet sous chaque ligne cede la place a des
+   pastilles arrondies, comme dans le menu principal. */
+.settings-menu { padding:8px 10px !important; }
+.settings-menu li { margin-bottom:1px; }
+.settings-menu li a {
+  display:block;
+  padding:9px 12px !important;
+  border:0 !important;
+  border-radius:8px;
+  font-size:13.5px !important;
+  font-weight:500;
+  color:#374151 !important;
+  transition:background-color .14s ease, color .14s ease;
+}
+.settings-menu li a:hover {
+  background:#F3F4F6;
+  color:#111827 !important;
+  text-decoration:none;
+}
+.settings-menu li.active a,
+.settings-menu li[class~="active"] a {
+  background:#000 !important;
+  color:#fff !important;
+  font-weight:600;
+}
+
+/* ── Carte de contenu ───────────────────────────────────────── */
+.settings-box { background:transparent !important; }
+.settings-box .s-b-inner {
+  border:1px solid #E5E7EB !important;
+  border-radius:12px !important;
+  box-shadow:none !important;
+}
+
+/* En-tete de la carte */
+.settings-box .s-b-inner > .s-b-n-header,
+.settings-box .s-b-inner > div:first-child {
+  border-radius:12px 12px 0 0;
+}
+.settings-box .s-b-inner h4,
+.settings-box .s-b-inner .card-title {
+  font-size:17px !important;
+  font-weight:700 !important;
+  color:#111827 !important;
+}
+
+/* Onglets internes de la carte */
+.settings-box .nav-tabs { border-bottom:1px solid #E5E7EB !important; }
+.settings-box .nav-tabs .nav-link {
+  padding:11px 2px !important;
+  margin-right:22px;
+  border:0 !important;
+  border-bottom:2px solid transparent !important;
+  border-radius:0 !important;
+  color:#6B7280 !important;
+  font-size:13.5px !important;
+  font-weight:500;
+  background:transparent !important;
+}
+.settings-box .nav-tabs .nav-link:hover { color:#111827 !important; }
+.settings-box .nav-tabs .nav-link.active {
+  color:#111827 !important;
+  font-weight:600;
+  border-bottom-color:#000 !important;
+}
+
+/* Champs de formulaire, alignes sur le reste de l'application */
+.settings-box .form-control,
+.settings-box .select-picker + .dropdown-toggle {
+  min-height:38px;
+  border-radius:8px !important;
+  border-color:#D1D5DB !important;
+  font-size:13.5px !important;
+}
+.settings-box .form-control:focus {
+  border-color:#000 !important;
+  box-shadow:0 0 0 3px rgba(0,0,0,.06) !important;
+}
+.settings-box label,
+.settings-box .f-14.text-dark-grey {
+  font-size:13px !important;
+  font-weight:600 !important;
+  color:#374151 !important;
+}
+
+/* Barre d'actions en pied de carte */
+.settings-box .s-b-n-content + div,
+.settings-box .setting-form-actions {
+  border-top:1px solid #E5E7EB;
+}
+.settings-box .btn-primary {
+  border-radius:8px !important;
+  font-weight:600;
+}
+
+@media (max-width: 991px) {
+  .settings-sidebar { border-right:0; }
+}
+
+/* ── Liste des taches : mise en forme des cellules ──────────────
+   Le tableau est produit par TasksDataTable ; on n'en modifie pas le
+   rendu, on met seulement en forme ce qu'il emet. */
+
+/* Reference de la tache, en chiffres tabulaires et discrete */
+.dck-front.dck-front #tasks-table td .task-short-code,
+.dck-front.dck-front #tasks-table td a[href*="/tasks/"] > .text-lightest {
+  font-family:var(--f-num);
+  font-size:11.5px;
+  color:var(--tx-4);
+}
+
+/* Pastille de statut : la puce ronde et son libelle forment un badge */
+.dck-front.dck-front #tasks-table .disabled-select,
+.dck-front.dck-front #tasks-table td > span > .fa-circle {
+  vertical-align:middle;
+}
+.dck-front.dck-front #tasks-table .disabled-select {
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:3px 10px;
+  border-radius:var(--r-full);
+  background:var(--surface-3);
+  color:var(--tx-2);
+  font-size:12px;
+  font-weight:500;
+  white-space:nowrap;
+}
+
+/* Selecteur de statut : allege, il ne doit pas ressembler a un champ */
+.dck-front.dck-front #tasks-table select.select-status,
+.dck-front.dck-front #tasks-table td select.form-control {
+  height:28px !important;
+  padding:0 26px 0 10px !important;
+  border-radius:var(--r-full) !important;
+  border-color:var(--line) !important;
+  background-color:var(--surface-2) !important;
+  font-size:12px !important;
+}
+
+/* Dates depassees : la couleur porte l'alerte, pas une icone */
+.dck-front.dck-front #tasks-table .text-red,
+.dck-front.dck-front #tasks-table td .text-danger {
+  color:var(--err) !important;
+  font-weight:600;
+}
+.dck-front.dck-front #tasks-table td { font-size:13px; vertical-align:middle; }
+
+/* Intitule de la tache : c'est la colonne que l'oeil doit trouver */
+.dck-front.dck-front #tasks-table td a.openRightModal,
+.dck-front.dck-front #tasks-table td a[href*="/tasks/"] {
+  font-weight:600;
+  color:var(--tx);
+}
+.dck-front.dck-front #tasks-table td a.openRightModal:hover { color:var(--act); }
+
+/* ── Carte de tache, disposition de la maquette ─────────────── */
+.dck-front.dck-front .dck-tk {
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  padding:12px 13px 11px;
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-left:3px solid var(--dck-prio, var(--line-strong));
+  border-radius:10px;
+  cursor:grab;
+  transition:border-color .14s ease, box-shadow .14s ease, transform .14s ease;
+}
+.dck-front.dck-front .dck-tk:hover {
+  border-color:var(--line-strong);
+  border-left-color:var(--dck-prio, var(--line-strong));
+  box-shadow:0 1px 2px rgba(16,24,40,.05), 0 6px 14px -8px rgba(16,24,40,.16);
+  transform:translateY(-1px);
+}
+.dck-front.dck-front .dck-tk.move-disable { cursor:default; }
+
+/* Reference et priorite */
+.dck-front.dck-front .dck-tk__top {
+  display:flex;
+  align-items:center;
+  gap:9px;
+}
+.dck-front.dck-front .dck-tk__ref {
+  font-family:var(--f-num);
+  font-size:11px;
+  color:var(--tx-4);
+  letter-spacing:.02em;
+}
+.dck-front.dck-front .dck-tk__prio {
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  font-size:11px;
+  font-weight:600;
+  color:var(--dck-prio);
+}
+/* Le trait vertical qui precede le libelle de priorite */
+.dck-front.dck-front .dck-tk__prio::before {
+  content:'';
+  width:2px;
+  height:11px;
+  border-radius:1px;
+  background:var(--dck-prio);
+}
+.dck-front.dck-front .dck-tk__prive {
+  margin-left:auto;
+  font-size:10px;
+  color:var(--tx-4);
+}
+
+/* Intitule */
+.dck-front.dck-front .dck-tk__titre {
+  display:block;
+  /* La colonne du tableau porte « white-space:nowrap » (main.css) pour
+     empecher ses en-tetes de se casser ; sans ce rappel le titre en
+     herite et sort de la carte sur une seule ligne. */
+  white-space:normal;
+  overflow-wrap:anywhere;
+  font-size:13.5px;
+  font-weight:600;
+  line-height:1.4;
+  color:var(--tx);
+  text-decoration:none;
+}
+.dck-front.dck-front .dck-tk__titre:hover { color:var(--act); text-decoration:none; }
+
+/* Etiquettes */
+.dck-front.dck-front .dck-tk__etiq { display:flex; flex-wrap:wrap; gap:5px; }
+.dck-front.dck-front .dck-tk__etiq span {
+  white-space:normal;
+  padding:1px 7px;
+  border-radius:var(--r-full);
+  font-size:10.5px;
+  font-weight:500;
+  color:#fff;
+}
+
+/* Intervenants, compteurs, echeance */
+.dck-front.dck-front .dck-tk__bas {
+  display:flex;
+  align-items:center;
+  gap:9px;
+  min-width:0;
+}
+/* Les avatars se chevauchent legerement : un ecart negatif n'existe pas
+   en CSS, on decale donc chaque pastille sauf la premiere. Le groupe
+   accepte de se comprimer pour que l'echeance reste dans la carte. */
+.dck-front.dck-front .dck-tk__qui {
+  display:flex;
+  min-width:0;
+  flex-shrink:1;
+  overflow:hidden;
+}
+.dck-front.dck-front .dck-tk__qui > * + * { margin-left:-4px; }
+.dck-front.dck-front .dck-tk__av {
+  display:grid;
+  place-items:center;
+  width:22px;
+  height:22px;
+  margin-right:-5px;
+  border:1.5px solid var(--surface);
+  border-radius:50%;
+  background:var(--surface-3);
+  color:var(--tx-2);
+  font-family:var(--f-num);
+  font-size:9.5px;
+  font-weight:600;
+}
+.dck-front.dck-front .dck-tk__av.is-plus { background:var(--surface-2); color:var(--tx-4); }
+
+.dck-front.dck-front .dck-tk__meta {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-shrink:0;
+  font-family:var(--f-num);
+  font-size:11px;
+  color:var(--tx-4);
+}
+.dck-front.dck-front .dck-tk__meta span {
+  display:inline-flex;
+  align-items:center;
+  gap:3px;
+}
+
+.dck-front.dck-front .dck-tk__ech {
+  margin-left:auto;
+  flex-shrink:0;
+  font-family:var(--f-num);
+  font-size:11.5px;
+  color:var(--tx-3);
+  white-space:nowrap;
+}
+.dck-front.dck-front .dck-tk__ech.is-late  { color:var(--err); font-weight:600; }
+.dck-front.dck-front .dck-tk__ech.is-today { color:var(--ok); font-weight:600; }
+
 /* Carte de tache */
 .dck-front.dck-front .b-p-tasks .card,
 .dck-front.dck-front .no-task-card {
@@ -709,12 +1165,24 @@
 .dck-front.dck-front .dck-badge.is-err  { color:var(--err);  background:var(--err-bg);  border-color:var(--err-line); }
 .dck-front.dck-front .dck-badge.is-wait { color:var(--tx-3); background:var(--surface-3); border-color:var(--line); }
 
-/* Declencheur du menu d'actions de ligne */
+/* Declencheur du menu d'actions de ligne.
+   La largeur etait figee a 30 px, taille juste pour le bouton a icone
+   seule mais trop etroite des qu'il porte un libelle : « Choix », dans
+   la colonne Radiation des clients, en debordait. « min-width » garde
+   le carre pour les icones seules et laisse le bouton s'elargir quand
+   il contient du texte. */
 .dck-front.dck-front .task_view_more {
-  width:30px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  min-width:30px;
   height:30px;
+  padding:0 8px;
   border-radius:var(--r-sm);
   color:var(--tx-3);
+  font-size:12.5px;
+  white-space:nowrap;
   transition:background-color .14s ease, color .14s ease;
 }
 .dck-front.dck-front .task_view_more:hover { background:var(--surface-3); color:var(--tx); }
@@ -984,6 +1452,215 @@ body.sidebar-toggled .dck-chrome.dck-chrome .dck-sect,
   font-weight:600;
   letter-spacing:-.02em;
   color:var(--tx) !important;
+}
+
+/* ── Champ de recherche de l'en-tete ────────────────────────── */
+.dck-chrome.dck-chrome .dck-search {
+  align-items:center;
+  gap:8px;
+  width:min(360px, 34vw);
+  height:36px;
+  margin-right:14px;
+  padding:0 11px;
+  background:var(--surface-2);
+  border:1px solid var(--line);
+  border-radius:var(--r-sm);
+  transition:border-color .14s ease, background-color .14s ease;
+}
+.dck-chrome.dck-chrome .dck-search:focus-within {
+  background:var(--surface);
+  border-color:var(--line-strong);
+}
+.dck-chrome.dck-chrome .dck-search__ico {
+  flex:0 0 auto;
+  font-size:14px;
+  color:var(--tx-4);
+}
+.dck-chrome.dck-chrome .dck-search__input {
+  flex:1 1 auto;
+  min-width:0;
+  height:100%;
+  border:0;
+  outline:0;
+  background:transparent;
+  font-size:13.5px;
+  color:var(--tx);
+}
+.dck-chrome.dck-chrome .dck-search__input::placeholder { color:var(--tx-4); }
+/* La croix native de Chrome doublonnerait avec le raccourci affiche. */
+.dck-chrome.dck-chrome .dck-search__input::-webkit-search-cancel-button { display:none; }
+.dck-chrome.dck-chrome .dck-search__kbd {
+  flex:0 0 auto;
+  padding:2px 6px;
+  border:1px solid var(--line);
+  border-radius:4px;
+  background:var(--surface);
+  color:var(--tx-4);
+  font-family:var(--f-num);
+  font-size:10.5px;
+  line-height:1.5;
+}
+@media (max-width:1100px) {
+  .dck-chrome.dck-chrome .dck-search { width:220px; }
+  .dck-chrome.dck-chrome .dck-search__kbd { display:none; }
+}
+
+/* ── Page de resultats de recherche ─────────────────────────── */
+.dck-front.dck-front .dck-res { margin-bottom:16px; }
+.dck-front.dck-front .dck-res__form {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:18px;
+  padding:0 12px;
+  height:44px;
+  background:var(--surface);
+  border:1px solid var(--line-strong);
+  border-radius:var(--r-sm);
+}
+.dck-front.dck-front .dck-res__form > i { color:var(--tx-4); }
+.dck-front.dck-front .dck-res__form input {
+  flex:1 1 auto;
+  min-width:0;
+  height:100%;
+  border:0;
+  outline:0;
+  background:transparent;
+  font-size:14px;
+  color:var(--tx);
+}
+.dck-front.dck-front .dck-res__form input::-webkit-search-cancel-button { display:none; }
+
+.dck-front.dck-front .dck-res__item {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:11px 12px;
+  border:1px solid var(--line);
+  border-radius:var(--r-sm);
+  background:var(--surface);
+  text-decoration:none;
+  transition:border-color .14s ease, background-color .14s ease;
+}
+.dck-front.dck-front .dck-res__item:hover {
+  border-color:var(--line-strong);
+  background:var(--surface-2);
+  text-decoration:none;
+}
+.dck-front.dck-front .dck-res__ico {
+  flex:0 0 auto;
+  display:grid;
+  place-items:center;
+  width:32px;
+  height:32px;
+  border-radius:var(--r-sm);
+  background:var(--surface-3);
+  color:var(--tx-3);
+  font-size:14px;
+}
+.dck-front.dck-front .dck-res__txt { flex:1 1 auto; min-width:0; }
+.dck-front.dck-front .dck-res__txt b {
+  display:block;
+  font-size:14px;
+  font-weight:600;
+  color:var(--tx);
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.dck-front.dck-front .dck-res__txt small {
+  display:block;
+  margin-top:2px;
+  font-family:var(--f-num);
+  font-size:11.5px;
+  color:var(--tx-4);
+}
+.dck-front.dck-front .dck-res__badge {
+  flex:0 0 auto;
+  padding:3px 9px;
+  border-radius:var(--r-full);
+  font-size:11.5px;
+  font-weight:600;
+  white-space:nowrap;
+}
+
+/* ── Bascule de theme de l'en-tete ──────────────────────────── */
+.dck-chrome.dck-chrome .dck-theme {
+  border:0;
+  background:transparent;
+  font-size:16px;
+  cursor:pointer;
+}
+
+/* ── Bouton « Creer » ───────────────────────────────────────── */
+.dck-chrome.dck-chrome .dck-creer-li { margin-left:6px; }
+.dck-chrome.dck-chrome .dck-creer {
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  height:36px;
+  padding:0 15px;
+  border:0;
+  border-radius:var(--r-sm);
+  background:var(--act);
+  color:var(--act-tx);
+  font-size:13.5px;
+  font-weight:600;
+  cursor:pointer;
+  white-space:nowrap;
+  transition:background-color .14s ease;
+}
+.dck-chrome.dck-chrome .dck-creer:hover { background:var(--act-hover); }
+.dck-chrome.dck-chrome .dck-creer:focus-visible {
+  outline:2px solid var(--act);
+  outline-offset:2px;
+}
+/* La fleche de Bootstrap ferait doublon avec le signe plus. */
+.dck-chrome.dck-chrome .dck-creer.dropdown-toggle::after { display:none; }
+.dck-chrome.dck-chrome .dck-creer i { font-size:14px; }
+
+.dck-chrome.dck-chrome .dck-creer__menu {
+  min-width:232px;
+  padding:7px;
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  background:var(--surface);
+  box-shadow:0 4px 6px -2px rgba(16,24,40,.05), 0 12px 20px -4px rgba(16,24,40,.12);
+}
+.dck-chrome.dck-chrome .dck-creer__lab {
+  padding:7px 10px 8px;
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--tx-4);
+}
+.dck-chrome.dck-chrome .dck-creer__item {
+  display:flex;
+  align-items:center;
+  gap:11px;
+  padding:9px 10px;
+  border-radius:var(--r-sm);
+  color:var(--tx-2);
+  font-size:13.5px;
+  text-decoration:none;
+  transition:background-color .12s ease, color .12s ease;
+}
+.dck-chrome.dck-chrome .dck-creer__item:hover {
+  background:var(--surface-3);
+  color:var(--tx);
+  text-decoration:none;
+}
+.dck-chrome.dck-chrome .dck-creer__item i {
+  font-size:15px;
+  color:var(--tx-3);
+  width:17px;
+  text-align:center;
+}
+
+@media (max-width:640px) {
+  .dck-chrome.dck-chrome .dck-creer span { display:none; }
+  .dck-chrome.dck-chrome .dck-creer { padding:0 11px; }
 }
 
 /* Boutons a icone */
@@ -1321,6 +1998,19 @@ button {
   align-items:center;
   gap:7px;
 }
+
+/* Bandeau ne contenant que le lien de retour, sur les fiches qui n'ont
+   pas d'en-tete propre (employe, contrat, client). Plus ras que le
+   .dck-detail-head complet, qui doit loger un titre. */
+.dck-detail-head--seul {
+  padding:12px 22px 0;
+}
+.dck-detail-head--seul .dck-back { margin-bottom:10px; }
+
+/* Dans l'enveloppe d'une tache, le lien est pose directement dans le
+   contenu : il lui faut sa propre respiration. */
+.dck-front .content-wrapper > .dck-back,
+.content-wrapper.dck-front > .dck-back { margin:2px 0 14px; }
 
 .dck-back {
   display:inline-flex;
@@ -2590,9 +3280,31 @@ button {
 }
 
 .dck-front.dck-front .dck-grid { display:grid; gap:16px; }
+/* Cinq indicateurs cote a cote : le padding est resserre par rapport
+   aux cartes larges, sans quoi les libelles passent a la ligne. */
+.dck-front.dck-front .dck-g5  { grid-template-columns:repeat(5, 1fr); }
+.dck-front.dck-front .dck-g5 > .dck-kpi2 { padding:15px 14px; }
+.dck-front.dck-front .dck-g5 .dck-kpi2__lab {
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.dck-front.dck-front .dck-g5 .dck-kpi2__sub {
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
 .dck-front.dck-front .dck-g4  { grid-template-columns:repeat(4, 1fr); }
 .dck-front.dck-front .dck-g3  { grid-template-columns:repeat(3, 1fr); }
 .dck-front.dck-front .dck-g23 { grid-template-columns:2fr 1fr; }
+
+/* Le total d'un rapport « en cours / total » : plus discret que la
+   valeur qu'il accompagne, sans rompre l'alignement des chiffres. */
+.dck-front.dck-front .dck-kpi2__tot {
+  font-size:.62em;
+  font-weight:500;
+  color:var(--tx-3);
+}
 
 /* ── Bandeau d'alerte ───────────────────────────────────────── */
 
@@ -2902,14 +3614,22 @@ button {
 
 /* ── Adaptation aux petits ecrans ───────────────────────────── */
 
+/* Cinq indicateurs ne tiennent pas cote a cote sous 1400 px : la rangee
+   passe a trois, puis a deux, puis a une seule colonne. */
+@media (max-width:1280px) {
+  .dck-front.dck-front .dck-g5 { grid-template-columns:repeat(3, 1fr); }
+}
+
 @media (max-width:1200px) {
   .dck-front.dck-front .dck-g23,
   .dck-front.dck-front .dck-g3 { grid-template-columns:1fr; }
-  .dck-front.dck-front .dck-g4 { grid-template-columns:repeat(2, 1fr); }
+  .dck-front.dck-front .dck-g4,
+  .dck-front.dck-front .dck-g5 { grid-template-columns:repeat(2, 1fr); }
 }
 
 @media (max-width:560px) {
-  .dck-front.dck-front .dck-g4 { grid-template-columns:1fr; }
+  .dck-front.dck-front .dck-g4,
+  .dck-front.dck-front .dck-g5 { grid-template-columns:1fr; }
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -3671,3 +4391,118 @@ body.sidebar-toggled .dck-chrome.dck-chrome .dck-user,
   background:var(--surface);
   box-shadow:none;
 }
+
+/* ── Fiche collaborateur ────────────────────────────────────────
+   Les quatre indicateurs de l'en-tete, puis le repli qui contient
+   les informations administratives. */
+
+.dck-front.dck-front .dck-emp-kpi {
+  padding:14px 0 4px !important;
+  background:transparent !important;
+}
+
+/* Une grille plutot qu'un « justify-content:between » : les quatre
+   colonnes gardent la meme largeur quel que soit le nombre de
+   chiffres, et se replient a deux sur les petits ecrans. */
+.dck-front.dck-front .dck-emp-kpi__row {
+  display:grid;
+  grid-template-columns:repeat(4, minmax(0, 1fr));
+  gap:10px;
+}
+
+.dck-front.dck-front .dck-emp-kpi__c {
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+  min-width:0;
+  padding:9px 11px;
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  background:var(--surface-2);
+}
+
+.dck-front.dck-front .dck-emp-kpi__c label {
+  margin:0;
+  font-size:11px;
+  line-height:1.3;
+  color:var(--tx-4);
+  overflow-wrap:anywhere;
+}
+
+.dck-front.dck-front .dck-emp-kpi__c p {
+  margin:0;
+  font-family:var(--f-num);
+  font-size:21px;
+  font-weight:600;
+  line-height:1.1;
+  color:var(--tx);
+}
+
+.dck-front.dck-front .dck-emp-kpi__u {
+  font-size:13px;
+  font-weight:500;
+  color:var(--tx-4);
+}
+
+.dck-front.dck-front .dck-emp-kpi__vide { color:var(--tx-4); }
+
+/* Un retard se signale, il ne se devine pas. */
+.dck-front.dck-front .dck-emp-kpi__c.is-alerte {
+  border-color:var(--err-line);
+  background:var(--err-bg);
+}
+.dck-front.dck-front .dck-emp-kpi__c.is-alerte p { color:var(--err); }
+
+.dck-front.dck-front .dck-emp-kpi__note {
+  margin:9px 0 0;
+  font-size:11.5px;
+  color:var(--tx-4);
+}
+
+@media (max-width:640px) {
+  .dck-front.dck-front .dck-emp-kpi__row {
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ── Repli des informations complementaires ─────────────────── */
+
+.dck-front.dck-front .dck-emp-plus {
+  margin:2px 0 10px;
+  border-top:1px solid var(--line);
+  padding-top:10px;
+}
+
+.dck-front.dck-front .dck-emp-plus > summary {
+  cursor:pointer;
+  list-style:none;
+  display:flex;
+  align-items:center;
+  gap:7px;
+  font-size:13px;
+  font-weight:600;
+  color:var(--tx-3);
+  user-select:none;
+}
+
+.dck-front.dck-front .dck-emp-plus > summary::-webkit-details-marker { display:none; }
+
+/* Chevron dessine en CSS : pas de dependance a une police d'icones
+   pour un simple indicateur d'ouverture. */
+.dck-front.dck-front .dck-emp-plus > summary::before {
+  content:"";
+  width:6px;
+  height:6px;
+  border-right:1.6px solid currentColor;
+  border-bottom:1.6px solid currentColor;
+  transform:rotate(-45deg);
+  transition:transform .15s ease;
+}
+
+.dck-front.dck-front .dck-emp-plus[open] > summary::before {
+  transform:rotate(45deg);
+}
+
+.dck-front.dck-front .dck-emp-plus > summary:hover { color:var(--act); }
+
+.dck-front.dck-front .dck-emp-plus__corps { padding-top:12px; }

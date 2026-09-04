@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use App\Models\Project;
+use App\Models\Task;
 use App\Models\TaskboardColumn;
 use Illuminate\Support\Facades\DB;
 
@@ -61,6 +62,76 @@ trait PilotageCabinet
             ->distinct()
             ->count('users.id');
 
+        /* Volume du mois et taux de cloture : calcules sur les seules
+           taches, les diligences etant exclues du calcul de productivite. */
+        $mois = DB::table('tasks')
+            ->selectRaw('COUNT(*) as total')
+            ->selectRaw('SUM(board_column_id = ?) as terminees', [$termine->id])
+            ->where('company_id', $id)
+            ->whereNull('deleted_at')
+            ->where('is_private', 0)
+            ->where('created_at', '>=', now()->startOfMonth())
+            ->first();
+
+        $totalMois = (int) $mois->total;
+        $finiesMois = (int) $mois->terminees;
+
+        /* Taux de cloture sur l'ensemble des taches, et non sur le seul
+           mois courant : un taux calcule sur le mois est vide les premiers
+           jours et n'a aucune valeur de pilotage. Les diligences restent
+           exclues, comme le demande la specification. */
+        $global = DB::table('tasks')
+            ->selectRaw('COUNT(*) as total')
+            ->selectRaw('SUM(board_column_id = ?) as terminees', [$termine->id])
+            ->where('company_id', $id)
+            ->whereNull('deleted_at')
+            ->where('is_private', 0)
+            ->first();
+
+        $totalGlobal = (int) $global->total;
+
+        /* Backlog : ce qui attend d'etre pris en charge, c'est-a-dire les
+           colonnes d'entree du tableau, hors travail deja engage. */
+        $backlog = DB::table('tasks')
+            ->join('taskboard_columns', 'taskboard_columns.id', '=', 'tasks.board_column_id')
+            ->whereIn('taskboard_columns.slug', ['to_do', 'incomplete'])
+            ->where('tasks.company_id', $id)
+            ->whereNull('tasks.deleted_at')
+            ->where('tasks.is_private', 0)
+            ->count();
+
+        $clients = DB::table('users')
+            ->join('role_user', 'role_user.user_id', '=', 'users.id')
+            ->join('roles', 'roles.id', '=', 'role_user.role_id')
+            ->where('roles.name', 'client')
+            ->where('users.status', 'active')
+            ->where('users.company_id', $id)
+            ->distinct()
+            ->count('users.id');
+
+        /* Respect des echeances et delai de traitement.
+           Les deux se lisent sur les taches cloturees qui portaient une
+           echeance : « completed_on » donne la date de cloture reelle. */
+        $delais = DB::table('tasks')
+            ->where('company_id', $id)
+            ->whereNull('deleted_at')
+            ->where('board_column_id', $termine->id)
+            ->whereNotNull('completed_on')
+            ->selectRaw('AVG(DATEDIFF(completed_on, DATE(created_at))) AS delai')
+            ->selectRaw('SUM(due_date IS NOT NULL AND completed_on <= DATE(due_date)) AS aTemps')
+            ->selectRaw('SUM(due_date IS NOT NULL) AS avecEcheance')
+            ->first();
+
+        $avecEcheance = (int) ($delais->avecEcheance ?? 0);
+
+        /* Valeur du portefeuille : contrats encore en cours, c'est-a-dire
+           sans date de fin ou dont la date n'est pas passee. */
+        $portefeuille = DB::table('contracts')
+            ->where('company_id', $id)
+            ->where(fn ($q) => $q->whereNull('end_date')->orWhereDate('end_date', '>=', now()))
+            ->selectRaw('SUM(original_amount) AS montant, COUNT(*) AS n')
+            ->first();
+
         return (object) [
             'tachesOuvertes'  => (int) $taches->ouvertes,
             'tachesRecentes'  => (int) $taches->recentes,
@@ -69,6 +140,22 @@ trait PilotageCabinet
             'contrats'        => (int) $contrats->total,
             'contratsBientot' => (int) $contrats->bientot,
             'collaborateurs'  => $collaborateurs,
+            'tachesMois'      => $totalMois,
+            'tachesFiniesMois' => $finiesMois,
+            'tauxTaches'      => $totalGlobal > 0 ? (int) round(100 * $global->terminees / $totalGlobal) : null,
+            'tachesTotal'     => $totalGlobal,
+            'tachesFinies'    => (int) $global->terminees,
+            'backlog'         => $backlog,
+            'clients'         => $clients,
+
+            'delaiMoyen'      => is_null($delais->delai) ? null : round((float) $delais->delai, 1),
+            'respect'         => $avecEcheance > 0
+                ? (int) round(100 * $delais->aTemps / $avecEcheance)
+                : null,
+            'respectATemps'   => (int) ($delais->aTemps ?? 0),
+            'respectTotal'    => $avecEcheance,
+            'portefeuille'    => (float) ($portefeuille->montant ?? 0),
+            'portefeuilleN'   => (int) ($portefeuille->n ?? 0),
         ];
     }
 
@@ -131,16 +218,52 @@ trait PilotageCabinet
     }
 
     /** Diligences ouvertes dont l'echeance tombe dans moins de 45 jours. */
-    protected function cabinetDiligencesASurveiller(int $limite = 5)
+    /**
+     * Collaborateurs ayant cloture le plus de taches sur le trimestre.
+     *
+     * La fenetre est volontairement large : sur un mois, le classement
+     * tient a deux ou trois taches et change tous les jours.
+     */
+    protected function cabinetTopCollaborateurs(int $limite = 5)
     {
-        return Project::with('client:id,name')
-            ->select('id', 'project_name', 'client_id', 'deadline', 'completion_percent')
+        $termine = TaskboardColumn::completeColumn();
+
+        return DB::table('task_users')
+            ->join('tasks', 'tasks.id', '=', 'task_users.task_id')
+            ->join('users', 'users.id', '=', 'task_users.user_id')
+            ->whereNull('tasks.deleted_at')
+            ->where('tasks.company_id', company()->id)
+            ->where('tasks.board_column_id', $termine->id)
+            ->whereDate('tasks.updated_at', '>=', now()->subDays(90))
+            ->selectRaw('users.id, users.name, COUNT(*) AS n')
+            ->groupBy('users.id', 'users.name')
+            ->orderByDesc('n')
+            ->limit($limite)
+            ->get();
+    }
+
+    /**
+     * Taches critiques : celles dont l'echeance approche ou est passee,
+     * et qui ne sont ni terminees ni classees incompletes.
+     *
+     * Le bloc portait auparavant sur les diligences. Il suit desormais
+     * les taches, seule maille sur laquelle une action est possible :
+     * une diligence ne se traite pas, ses taches si.
+     */
+    protected function cabinetTachesASurveiller(int $limite = 6)
+    {
+        $closes = TaskboardColumn::where('company_id', company()->id)
+            ->whereIn('slug', ['completed', 'incomplete'])
+            ->pluck('id');
+
+        return Task::with(['boardColumn:id,column_name,label_color', 'users:id,name'])
+            ->select('id', 'heading', 'due_date', 'board_column_id', 'priority')
             ->where('company_id', company()->id)
             ->whereNull('deleted_at')
-            ->where('status', '<>', 'terminée')
-            ->whereNotNull('deadline')
-            ->where('deadline', '<=', now()->addDays(45))
-            ->orderBy('deadline')
+            ->whereNotIn('board_column_id', $closes)
+            ->whereNotNull('due_date')
+            ->where('due_date', '<=', now()->addDays(15))
+            ->orderBy('due_date')
             ->limit($limite)
             ->get();
     }
@@ -169,7 +292,8 @@ trait PilotageCabinet
         $this->cabIndicateurs  = $this->cabinetIndicateurs();
         $this->cabCharge       = $this->cabinetChargeTravail();
         $this->cabRepartition  = $this->cabinetRepartitionTaches();
-        $this->cabASurveiller  = $this->cabinetDiligencesASurveiller();
+        $this->cabASurveiller  = $this->cabinetTachesASurveiller();
         $this->cabTauxCloture  = $this->cabinetTauxCloture();
+        $this->cabTopCollab    = $this->cabinetTopCollaborateurs();
     }
 }

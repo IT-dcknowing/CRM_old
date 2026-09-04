@@ -186,7 +186,7 @@ class TaskBoardController extends AccountBaseController
                     $q->select(DB::raw('count(distinct tasks.id)'));
                 }])
                 ->with(['tasks' => function ($q) use ($startDate, $endDate, $request) {
-                    $q->withCount(['subtasks', 'completedSubtasks', 'comments'])
+                    $q->withCount(['subtasks', 'completedSubtasks', 'comments', 'files'])
                         ->leftJoin('projects', 'projects.id', '=', 'tasks.project_id')
                         ->leftJoin('users as client', 'client.id', '=', 'projects.client_id');
 
