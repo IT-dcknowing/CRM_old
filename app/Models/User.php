@@ -758,7 +758,19 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
                 ->all();
         }
 
-        return self::$permissionsLues[$this->id][$permission] ?? false;
+        // Une permission absente vaut « none », et non false.
+        //
+        // Quinze gardes du projet comparent ce retour a 'none'. Avec false,
+        // la comparaison lache echouait des deux cotes : « false == 'none' »
+        // est faux, donc abort_403 ne se declenchait pas ; et
+        // « false != 'none' » est vrai, donc les blocs reserves aux ayants
+        // droit s'executaient. Un compte client sans aucune permission
+        // accedait ainsi a la liste complete des contrats du cabinet.
+        //
+        // Aucun appelant ne s'appuie sur la valeur falsy : les negations
+        // du projet portent toutes sur une comparaison, jamais sur le
+        // retour brut.
+        return self::$permissionsLues[$this->id][$permission] ?? 'none';
 
     }
 
