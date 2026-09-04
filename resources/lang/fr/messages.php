@@ -1,14 +1,12 @@
 <?php
 
 /*
- * Messages d'interface : confirmations, succes, erreurs, etats vides.
+ * Traductions francaises du cabinet.
  *
- * Traductions francaises locales — voir l'avertissement dans auth.php.
- * Ce dossier est exclu par le .gitignore : rien ne part en production.
- * Toute cle absente retombe automatiquement sur l'anglais.
- *
- * Les longues infobulles d'aide des modules retires (conges, equipes,
- * facturation, affaires) ne sont pas traduites : elles ne s'affichent plus.
+ * Ces fichiers SONT suivis par git (.gitignore : « !resources/lang/fr/ ») et
+ * partent donc en production, ou ils prennent le pas sur les fichiers livres
+ * avec l'application. Toute cle absente ici retombe automatiquement sur
+ * l'anglais (config/app.php : fallback_locale = 'eng').
  */
 
 return [
@@ -367,5 +365,9 @@ return [
     'viewKey' => 'Cliquez ici pour voir la clé',
     'showHidePurchaseCode' => 'Afficher ou masquer le code d’achat',
     'changePurchaseCode' => 'Modifier le code d’achat',
+
+    'probationEndDate'         => 'Indiquez la date de fin de la période d\'essai, à partir de laquelle l\'employé fera définitivement partie du cabinet.',
+    'noticePeriodStartDate'    => 'Indiquez la date à laquelle commence le préavis de l\'employé avant son départ du cabinet.',
+    'noticePeriodEndDate'      => 'Si la date de fin de préavis est future, l\'employé sera automatiquement marqué inactif à cette date. Si la date de sortie est vide, elle sera renseignée en conséquence.',
 
 ];

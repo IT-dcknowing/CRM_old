@@ -1,12 +1,12 @@
 <?php
 
 /*
- * Noms des modules affiches dans Parametres > Modules, et libelles des
- * actions liees aux modules.
+ * Traductions francaises du cabinet.
  *
- * Traductions francaises locales — voir l'avertissement dans auth.php.
- * Ce dossier est exclu par le .gitignore : rien ne part en production.
- * Toute cle absente retombe automatiquement sur l'anglais.
+ * Ces fichiers SONT suivis par git (.gitignore : « !resources/lang/fr/ ») et
+ * partent donc en production, ou ils prennent le pas sur les fichiers livres
+ * avec l'application. Toute cle absente ici retombe automatiquement sur
+ * l'anglais (config/app.php : fallback_locale = 'eng').
  */
 
 return [
@@ -531,6 +531,84 @@ return [
         'configureEmailSetting' => 'La configuration e-mail est nécessaire pour notifier les utilisateurs des diligences, tâches, etc.',
         'crontSetup' => 'Configurer la tâche planifiée (cron)',
         'cronSetupInfo' => 'La tâche planifiée est nécessaire aux rappels et aux traitements en arrière-plan.',
+    ],
+
+    'client' => [
+        'profileInfo'    => 'Informations du dossier',
+        'companyName'    => 'Raison sociale',
+
+        'salutation'               => 'Civilité',
+        'cell'                     => 'Téléphone portable',
+        'officePhoneNumber'        => 'Téléphone du bureau',
+        'clientCanLogin'           => 'Connexion autorisée ?',
+        'clientOtherDetails'       => 'Autres informations',
+        'generateRandomPassword'   => 'Générer un mot de passe aléatoire',
+    ],
+
+    'employees' => [
+        'profile'        => 'Profil',
+        'fullName'       => 'Nom complet',
+
+        'addNewEmployee'           => 'Ajouter un employé',
+        'accountDetails'           => 'Informations du compte',
+        'employeeName'             => 'Nom de l\'employé',
+        'employeeEmail'            => 'E-mail de l\'employé',
+        'employeeId'               => 'Matricule',
+        'employeeIdInfo'           => 'Le matricule est l\'identifiant unique attribué à chaque employé',
+        'employeeIdHelp'           => '<p>Identifiant unique qui vous sert à repérer vos employés au sein du cabinet.</p><p>Pour les employés créés par <b>Invitation</b>, un matricule est généré automatiquement ; vous pourrez le modifier ensuite.</p>',
+        'gender'                   => 'Sexe',
+        'dateOfBirth'              => 'Date de naissance',
+        'maritalStatus'            => 'Situation familiale',
+        'marriageAnniversaryDate'  => 'Date d\'anniversaire de mariage',
+        'reportingTo'              => 'Responsable hiérarchique',
+        'employmentType'           => 'Type de contrat',
+        'joiningDate'              => 'Date d\'entrée',
+        'hourlyRate'               => 'Taux horaire',
+        'probationEndDate'         => 'Fin de la période d\'essai',
+        'noticePeriodStartDate'    => 'Début du préavis',
+        'noticePeriodEndDate'      => 'Fin du préavis',
+        'contractEndDate'          => 'Date de fin de contrat',
+        'internshipEndDate'        => 'Date de fin de stage',
+        'slackUsername'            => 'Identifiant Slack',
+    ],
+
+    'emailSettings' => [
+        'emailNotifications'       => 'Recevoir les notifications par e-mail ?',
+    ],
+
+    'profile' => [
+        'companyLogo'    => 'Logo de la société',
+
+        'profilePicture'           => 'Photo de profil',
+    ],
+
+    'invoices' => [
+        'currency'                 => 'Devise',
+    ],
+
+    'timeLogs' => [
+        'endDate'                  => 'Date de fin',
+    ],
+
+    'taskCategory' => [
+        'addTaskCategory'          => 'Ajouter une catégorie',
+    ],
+
+    'taskLabel' => [
+        'addLabel'                 => 'Ajouter une étiquette',
+    ],
+
+    'events' => [
+        'repeat'                   => 'Répéter',
+        'repeatEvery'              => 'Répéter tous les',
+        'cycles'                   => 'Cycles',
+    ],
+
+    'stripeCustomerAddress' => [
+        'city'                     => 'Ville',
+        'state'                    => 'Région',
+        'country'                  => 'Pays',
+        'postalCode'               => 'Code postal',
     ],
 
 ];

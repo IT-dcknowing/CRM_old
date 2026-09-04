@@ -1,14 +1,12 @@
 <?php
 
 /*
- * Traductions francaises locales.
+ * Traductions francaises du cabinet.
  *
- * Le serveur de production possede ses propres fichiers de langue,
- * bien plus complets. Ce dossier n'est pas suivi par Git
- * (voir .gitignore : resources/lang/*), il ne partira donc jamais
- * en production et n'ecrasera rien.
- *
- * Toute cle absente ici retombe automatiquement sur l'anglais.
+ * Ces fichiers SONT suivis par git (.gitignore : « !resources/lang/fr/ ») et
+ * partent donc en production, ou ils prennent le pas sur les fichiers livres
+ * avec l'application. Toute cle absente ici retombe automatiquement sur
+ * l'anglais (config/app.php : fallback_locale = 'eng').
  */
 
 return [

@@ -10,11 +10,6 @@
         height: 120px;
         object-fit: cover;
     }
-    .appreciation-count {
-        top: -6px;
-        right: 10px;
-    }
-
 </style>
 @php
 
@@ -32,7 +27,6 @@ if ($viewPermission == 'all'
 
 @php
 $editEmployeePermission = user()->permission('edit_employees');
-$viewAppreciationPermission = user()->permission('view_appreciation');
 @endphp
 
 <div class="d-lg-flex">
@@ -275,20 +269,6 @@ $viewAppreciationPermission = user()->permission('view_appreciation');
 
                     <div class="col-xl-5 col-lg-5">
 
-                        @if ($showFullProfile)
-                            <x-cards.data class="mb-4" :title="__('modules.appreciations.appreciation')">
-                                @forelse ($employee->appreciationsGrouped as $item)
-                                <div class="float-left position-relative mb-2" style="width: 50px" data-toggle="tooltip" data-original-title="@if(isset($item->award->title)){{  $item->award->title }} @endif">
-                                    @if(isset($item->award->awardIcon->icon))
-                                        <x-award-icon :award="$item->award" />
-                                    @endif
-                                    <span class="position-absolute badge badge-secondary rounded-circle border-additional-grey appreciation-count">{{ $item->no_of_awards }}</span>
-                                </div>
-                                @empty
-                                    <x-cards.no-record icon="medal" :message="__('messages.noRecordFound')" />
-                                @endforelse
-                            </x-cards.data>
-                        @endif
 
                         <x-cards.data class="mb-4">
                             <div class="d-flex justify-content-between">

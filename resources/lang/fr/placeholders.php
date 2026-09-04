@@ -1,14 +1,12 @@
 <?php
 
 /*
- * Textes indicatifs des champs de formulaire (attribut placeholder).
+ * Traductions francaises du cabinet.
  *
- * Traductions francaises locales — voir l'avertissement dans auth.php.
- * Ce dossier est exclu par le .gitignore : rien ne part en production.
- * Toute cle absente retombe automatiquement sur l'anglais.
- *
- * Les exemples ont ete adaptes au contexte ivoirien (noms, adresses,
- * indicatif +225) plutot que traduits litteralement.
+ * Ces fichiers SONT suivis par git (.gitignore : « !resources/lang/fr/ ») et
+ * partent donc en production, ou ils prennent le pas sur les fichiers livres
+ * avec l'application. Toute cle absente ici retombe automatiquement sur
+ * l'anglais (config/app.php : fallback_locale = 'eng').
  */
 
 return [

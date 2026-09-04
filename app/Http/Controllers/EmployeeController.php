@@ -33,8 +33,6 @@ use App\Models\LeaveType;
 use App\Models\Module;
 use App\Models\Notification;
 use App\Models\Passport;
-use App\Models\ProjectTimeLog;
-use App\Models\ProjectTimeLogBreak;
 use App\Models\Role;
 use App\Models\RoleUser;
 use App\Models\Skill;
@@ -610,7 +608,6 @@ class EmployeeController extends AccountBaseController
 
         $this->employee = User::with('leaveTypes.leaveType')->withoutGlobalScope(ActiveScope::class)
             ->withOut('clientDetails')
-            ->withCount(['member', 'agents', 'openTasks'])
             ->findOrFail($id);
 
 
@@ -935,20 +932,6 @@ class EmployeeController extends AccountBaseController
      *
      * @return array
      */
-    public function ticketChartData($id)
-    {
-        $labels = ['open', 'pending', 'resolved', 'closed'];
-        $data['labels'] = [__('app.open'), __('app.pending'), __('app.resolved'), __('app.closed')];
-        $data['colors'] = ['#D30000', '#FCBD01', '#2CB100', '#1d82f5'];
-        $data['values'] = [];
-
-        foreach ($labels as $label) {
-            $data['values'][] = Ticket::where('agent_id', $id)->where('status', $label)->count();
-        }
-
-        return $data;
-    }
-
     public function byDepartment($id)
     {
         $users = User::withoutGlobalScope(ActiveScope::class)->join('employee_details', 'employee_details.user_id', '=', 'users.id');

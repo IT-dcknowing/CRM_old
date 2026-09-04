@@ -1,15 +1,12 @@
 <?php
 
 /*
- * Traductions francaises locales — voir l'avertissement dans auth.php.
+ * Traductions francaises du cabinet.
  *
- * Ce dossier est exclu par le .gitignore (resources/lang/*) : il ne part
- * pas en production, ou les fichiers de langue du serveur font foi.
- *
- * Toute cle absente retombe automatiquement sur l'anglais : ajouter une
- * traduction ici ne peut donc rien casser.
- *
- * Vocabulaire DC-KNOWING : le module « projects » s'appelle « Diligences ».
+ * Ces fichiers SONT suivis par git (.gitignore : « !resources/lang/fr/ ») et
+ * partent donc en production, ou ils prennent le pas sur les fichiers livres
+ * avec l'application. Toute cle absente ici retombe automatiquement sur
+ * l'anglais (config/app.php : fallback_locale = 'eng').
  */
 
 return [
@@ -988,6 +985,17 @@ return [
         'contractFollowUp' => 'Suivi contractuel',
         'personalStatus'   => 'Situation personnelle',
         'accountAccess'    => 'Compte et accès',
+    ],
+
+    'contractDetails'          => 'Détails du contrat',
+    'openInNewTab'             => 'Ouvrir dans un nouvel onglet',
+
+    'dckBack' => [
+        'tasks'        => 'Retour aux tâches',
+        'projects'     => 'Retour aux diligences',
+        'employees'    => 'Retour aux employés',
+        'contracts'    => 'Retour aux contrats',
+        'clients'      => 'Retour aux clients',
     ],
 
 ];

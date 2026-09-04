@@ -10,7 +10,6 @@ $viewEmployeeProjects = user()->permission('view_employee_projects');
 $manageEmergencyContact = user()->permission('manage_emergency_contact');
 $manageRolePermissionSetting = user()->permission('manage_role_permission_setting');
 $viewDocumentPermission = user()->permission('view_documents');
-$viewIncrementPermission = user()->permission('view_increment_promotion');
 @endphp
 
 @php
@@ -29,6 +28,10 @@ if ($viewPermission == 'all'
 @endphp
 
 @section('filter-section')
+
+    {{-- Retour a la liste. Place dans filter-section et non dans
+         content : le changement d'onglet remplace .content-wrapper. --}}
+    <x-dck.back :href="route('employees.index')" :libelle="__('app.dckBack.employees')" />
     <!-- FILTER START -->
     <!-- PROJECT HEADER START -->
 
@@ -67,18 +70,6 @@ if ($viewPermission == 'all'
                     @if ($showFullProfile && ($manageEmergencyContact == 'all' || $employee->id == user()->id))
                         <li>
                             <x-tab :href="route('employees.show', $employee->id) . '?tab=emergency-contacts'" :text="__('modules.emergencyContact.emergencyContact')" class="emergency-contacts" />
-                        </li>
-                    @endif
-
-                    @if ($viewIncrementPermission != 'none')
-                        <li>
-                            <x-tab :href="route('employees.show', $employee->id) . '?tab=increment-promotions'" :text="__('modules.incrementPromotion.incrementPromotions')" class="increment-promotions" />
-                        </li>
-                    @endif
-
-                    @if ($showFullProfile && !in_array('client', user_roles()))
-                        <li>
-                            <x-tab :href="route('employees.show', $employee->id) . '?tab=appreciation'" :text="__('app.menu.appreciation')" class="appreciation" />
                         </li>
                     @endif
 

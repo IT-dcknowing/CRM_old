@@ -1325,4 +1325,11 @@ return array(
         'personalStatus'   => 'Personal status',
         'accountAccess'    => 'Account and access',
     ],
+    'dckBack' => [
+        'tasks'        => 'Back to tasks',
+        'projects'     => 'Back to engagements',
+        'employees'    => 'Back to employees',
+        'contracts'    => 'Back to contracts',
+        'clients'      => 'Back to clients',
+    ],
 );

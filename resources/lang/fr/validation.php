@@ -1,14 +1,12 @@
 <?php
 
 /*
- * Messages de validation en francais — traductions locales.
+ * Traductions francaises du cabinet.
  *
- * Le serveur de production possede ses propres fichiers de langue.
- * Ce dossier est exclu par le .gitignore (resources/lang/*) : il ne
- * partira pas en production et n'ecrasera rien.
- *
- * Seules les regles les plus courantes sont traduites ici ; toute cle
- * absente retombe automatiquement sur l'anglais.
+ * Ces fichiers SONT suivis par git (.gitignore : « !resources/lang/fr/ ») et
+ * partent donc en production, ou ils prennent le pas sur les fichiers livres
+ * avec l'application. Toute cle absente ici retombe automatiquement sur
+ * l'anglais (config/app.php : fallback_locale = 'eng').
  */
 
 return [

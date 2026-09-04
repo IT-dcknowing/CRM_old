@@ -1999,6 +1999,19 @@ button {
   gap:7px;
 }
 
+/* Bandeau ne contenant que le lien de retour, sur les fiches qui n'ont
+   pas d'en-tete propre (employe, contrat, client). Plus ras que le
+   .dck-detail-head complet, qui doit loger un titre. */
+.dck-detail-head--seul {
+  padding:12px 22px 0;
+}
+.dck-detail-head--seul .dck-back { margin-bottom:10px; }
+
+/* Dans l'enveloppe d'une tache, le lien est pose directement dans le
+   contenu : il lui faut sa propre respiration. */
+.dck-front .content-wrapper > .dck-back,
+.content-wrapper.dck-front > .dck-back { margin:2px 0 14px; }
+
 .dck-back {
   display:inline-flex;
   align-items:center;
