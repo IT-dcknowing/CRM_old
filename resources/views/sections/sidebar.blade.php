@@ -17,7 +17,6 @@
                     <div class="sidebar-brand-name">
                         <h1 class="mb-0 f-16 f-w-500 text-white-shade mt-0" data-placement="bottom" data-toggle="tooltip"
                             data-original-title="{{ $appName }}">{{ $appName }}
-                            <i class="icon-arrow-down icons pl-2"></i>
                         </h1>
                         <div class="mb-0 position-relative pro-name">
                             <span class="bg-light-green rounded-circle"></span>
@@ -40,11 +39,16 @@
                         </h1>
                     </div>
                     <!-- SIDEBAR BRAND NAME END -->
-                    <!-- SIDEBAR BRAND LOGO START -->
-                    <div class="sidebar-brand-logo text-white-shade f-12">
-                        <i class="icon-arrow-down icons pl-2"></i>
+
+                    {{-- Marque carree, visible seulement quand la barre est repliee.
+                         Le repli ramene la barre a 60 px : le logo horizontal y
+                         serait ecrase et son texte coupe. On reutilise le favicon,
+                         qui est deja la version carree de la marque — inutile
+                         d'ajouter un reglage pour la meme image. --}}
+                    <div class="dck-marque">
+                        <img src="{{ companyOrGlobalSetting()->favicon_url }}"
+                             alt="{{ $appName }}">
                     </div>
-                    <!-- SIDEBAR BRAND LOGO END -->
                 @endif
             </div>
         </div>

@@ -174,11 +174,19 @@
         @endif
         --}}
 
-        @if (in_array('reports', user_modules()) && isset($sidebarUserPermissions['view_task_report']) && $sidebarUserPermissions['view_task_report'] == 4 && in_array('tasks', user_modules()))
-            {{-- Le module Rapports ne compte plus qu'un ecran actif :
-                 l'accordeon a donc laisse place a un lien direct. --}}
+        @if (in_array('reports', user_modules()) && in_array('tasks', user_modules())
+             && isset($sidebarUserPermissions['view_task_report'])
+             && in_array($sidebarUserPermissions['view_task_report'], [4, 2]))
+            {{-- 4 = « all », 2 = « owned ».
+
+                 Un droit complet ouvre le rapport detaille, qui montre
+                 tout le cabinet. Un collaborateur va directement au
+                 rapport hebdomadaire : c'est le seul des deux ecrans qui
+                 sache se restreindre a ses propres taches. --}}
             <x-menu-item dck="chart" icon="graph-up" :text="__('app.menu.reports')"
-                         :link="route('task-report.index')" />
+                         :link="$sidebarUserPermissions['view_task_report'] == 4
+                                ? route('task-report.index')
+                                : route('task-report.hebdomadaire')" />
         @endif
 
     @endif

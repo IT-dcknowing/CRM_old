@@ -826,6 +826,12 @@ Route::group(['middleware' => 'auth', 'prefix' => 'account'], function () {
         // Route::post('ticket-replies/edit-note/{id}', [TicketReplyController::class , 'editNote'])->name('ticket-replies.edit_note');
 
         Route::post('task-report-chart', [TaskReportController::class , 'taskChartData'])->name('task-report.chart');
+        Route::get('task-report/hebdomadaire', [TaskReportController::class, 'hebdomadaire'])
+            ->name('task-report.hebdomadaire');
+        Route::get('task-report/hebdomadaire/export', [TaskReportController::class, 'exportHebdomadaire'])
+            ->name('task-report.hebdomadaire.export');
+        Route::get('task-report/hebdomadaire/pdf', [TaskReportController::class, 'pdfHebdomadaire'])
+            ->name('task-report.hebdomadaire.pdf');
         Route::resource('task-report', TaskReportController::class);
 
         // Route::post('time-log-report-chart', [TimelogReportController::class , 'timelogChartData'])->name('time-log-report.chart');
