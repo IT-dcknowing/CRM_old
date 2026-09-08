@@ -87,6 +87,35 @@ class BaseNotification extends Notification implements ShouldQueue
     }
 
     /**
+     * Delai laisse aux fichiers Dropzone pour finir de monter avant le rendu.
+     *
+     * Porte par la file quand il y en a une : la requete HTTP rend la main
+     * immediatement. Sous le driver 'sync', la notification s'execute dans la
+     * requete et ce delai est ignore par Laravel — d'ou l'attente conservee
+     * par waitForUploads(), sans laquelle le mail partirait sans ses pieces.
+     */
+    const UPLOAD_GRACE_SECONDS = 10;
+
+    public function withDelay($notifiable, $channel = null)
+    {
+        if (config('queue.default') === 'sync') {
+            return null;
+        }
+
+        return now()->addSeconds(self::UPLOAD_GRACE_SECONDS);
+    }
+
+    /**
+     * Attente de repli, uniquement quand aucune file ne peut porter le delai.
+     */
+    protected function waitForUploads()
+    {
+        if (config('queue.default') === 'sync') {
+            sleep(self::UPLOAD_GRACE_SECONDS);
+        }
+    }
+
+    /**
      * URL publique du logo au format PNG pour les e-mails.
      *
      * Gmail, Outlook et Yahoo suppriment les images SVG : le logo servi a

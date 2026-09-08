@@ -32,8 +32,7 @@ class ProjectInitNotification extends BaseNotification
 
     public function toMail($notifiable): MailMessage
     {
-        // Attendre 10 secondes pour les fichiers
-        sleep(10);
+        $this->waitForUploads();
 
         // Recharger le projet
         $reloadedProject = Project::withoutGlobalScopes()

@@ -45,8 +45,13 @@ class ContractInitNotification extends BaseNotification
         $url = url()->temporarySignedRoute('front.contract.show', now()->addDays(GlobalSetting::SIGNED_ROUTE_EXPIRY), $this->contract->hash);
         $url = getDomainSpecificUrl($url, $this->company);
         
-        $date = $this->contract->created_at->translatedFormat('d F Y');
-        $contractNumber = $this->contract->formatContractNumber();
+        // La locale n'est posee que par build(), appele plus bas : sans la fixer
+        // ici, les mois sortent en anglais dans un gabarit ecrit en francais.
+        $locale = $this->company->locale ?: 'fr';
+        $date = $this->contract->created_at->locale($locale)->translatedFormat('d F Y');
+        // contract_number porte deja le prefixe, applique une seule fois par
+        // ContractObserver::creating(). Le reformater donnerait « CONT#CONT#642 ».
+        $contractNumber = $this->contract->contract_number;
         $contractTypeName = $this->contract->contractType->name ?? __('app.menu.contract');
 
         // Le lien de signature est une route signee : le gabarit affiche sa
@@ -54,6 +59,7 @@ class ContractInitNotification extends BaseNotification
         $expiryDays = GlobalSetting::SIGNED_ROUTE_EXPIRY;
         $expiryDate = now($this->company->timezone)
             ->addDays($expiryDays)
+            ->locale($locale)
             ->translatedFormat('d F Y');
 
         $data = [
@@ -92,7 +98,9 @@ class ContractInitNotification extends BaseNotification
      */
     public function toWhatsAppContent($notifiable)
     {
-        $contractNumber = $this->contract->formatContractNumber();
+        // contract_number porte deja le prefixe, applique une seule fois par
+        // ContractObserver::creating(). Le reformater donnerait « CONT#CONT#642 ».
+        $contractNumber = $this->contract->contract_number;
         $url = url()->temporarySignedRoute('front.contract.show', now()->addDays(GlobalSetting::SIGNED_ROUTE_EXPIRY), $this->contract->hash);
         $url = getDomainSpecificUrl($url, $this->company);
         
@@ -104,7 +112,9 @@ class ContractInitNotification extends BaseNotification
 
     public function toSmsContent()
     {
-        $contractNumber = $this->contract->formatContractNumber();
+        // contract_number porte deja le prefixe, applique une seule fois par
+        // ContractObserver::creating(). Le reformater donnerait « CONT#CONT#642 ».
+        $contractNumber = $this->contract->contract_number;
         return "Nouv. Contrat: {$this->contract->subject}\nRef: {$contractNumber}\nConsultez vos emails.";
     }
 }

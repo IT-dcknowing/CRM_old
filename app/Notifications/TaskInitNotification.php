@@ -38,8 +38,7 @@ class TaskInitNotification extends BaseNotification
 
     public function toMail($notifiable): MailMessage
     {
-        // Attendre 10 secondes pour laisser le temps aux fichiers de s'uploader (Dropzone)
-        sleep(10);
+        $this->waitForUploads();
 
         // Recharger la tâche pour assurer la fraîcheur et charger les rôles pour la détection du client
         $reloadedTask = Task::withoutGlobalScopes()->with(['project', 'boardColumn', 'company', 'users.roles', 'files'])->find($this->taskId);
