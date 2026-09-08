@@ -86,6 +86,74 @@ class BaseNotification extends Notification implements ShouldQueue
         return $build->from($companyEmail, $companyName)->replyTo($replyEmail, $replyName);
     }
 
+    /**
+     * URL publique du logo au format PNG pour les e-mails.
+     *
+     * Gmail, Outlook et Yahoo suppriment les images SVG : le logo servi a
+     * l'application ne peut donc pas etre reutilise tel quel dans un message.
+     * Deux rasterisations sont versionnees dans public/img/ : ce sont des
+     * ressources du code, pas des fichiers televerses.
+     *
+     * @param bool $onDark true pour la version blanche, posee sur un fond sombre
+     */
+    protected function emailLogoUrl($onDark = false)
+    {
+        $file = $onDark ? 'task-flow-email-blanc.png' : 'task-flow-email-sombre.png';
+
+        return getDomainSpecificUrl(asset('img/' . $file), $this->company);
+    }
+
+    /**
+     * Chemin local du logo PNG, pour embarquer l'image dans le message.
+     *
+     * L'URL publique depend de APP_URL : tant qu'elle ne pointe pas sur un
+     * domaine resolvable depuis Internet, l'image reste cassee chez le
+     * destinataire. Embarquer le fichier rend le logo independant de ce
+     * reglage — les gabarits retombent sur emailLogoUrl() si le fichier
+     * venait a manquer.
+     *
+     * @param bool $onDark true pour la version blanche, posee sur un fond sombre
+     */
+    protected function emailLogoPath($onDark = false)
+    {
+        $file = $onDark ? 'task-flow-email-blanc.png' : 'task-flow-email-sombre.png';
+
+        return public_path('img/' . $file);
+    }
+
+    /**
+     * Mention d'echeance affichee en pastille : « À remettre dans 4 jours »,
+     * « À remettre aujourd'hui », ou « En retard de 2 jours ».
+     *
+     * Retourne un libelle nul quand l'echeance est absente ou trop lointaine
+     * pour meriter une alerte : la pastille disparait alors du gabarit.
+     *
+     * @return array{label: string|null, overdue: bool}
+     */
+    protected function dueBadge($dueDate)
+    {
+        if (is_null($dueDate)) {
+            return ['label' => null, 'overdue' => false];
+        }
+
+        $due = $dueDate instanceof \Carbon\Carbon ? $dueDate->copy() : \Carbon\Carbon::parse($dueDate);
+        $days = (int) now()->startOfDay()->diffInDays($due->startOfDay(), false);
+
+        if ($days < 0) {
+            return ['label' => 'En retard de ' . abs($days) . ' ' . (abs($days) > 1 ? 'jours' : 'jour'), 'overdue' => true];
+        }
+
+        if ($days === 0) {
+            return ['label' => "À remettre aujourd'hui", 'overdue' => false];
+        }
+
+        if ($days <= 7) {
+            return ['label' => 'À remettre dans ' . $days . ' ' . ($days > 1 ? 'jours' : 'jour'), 'overdue' => false];
+        }
+
+        return ['label' => null, 'overdue' => false];
+    }
+
     protected function modifyUrl($url)
     {
         return getDomainSpecificUrl($url, $this->company);

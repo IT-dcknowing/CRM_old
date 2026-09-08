@@ -49,20 +49,32 @@ class ContractInitNotification extends BaseNotification
         $contractNumber = $this->contract->formatContractNumber();
         $contractTypeName = $this->contract->contractType->name ?? __('app.menu.contract');
 
+        // Le lien de signature est une route signee : le gabarit affiche sa
+        // date limite plutot que de laisser le destinataire la decouvrir expiree.
+        $expiryDays = GlobalSetting::SIGNED_ROUTE_EXPIRY;
+        $expiryDate = now($this->company->timezone)
+            ->addDays($expiryDays)
+            ->translatedFormat('d F Y');
+
+        $data = [
+            'companyName' => $this->company->company_name,
+            'logoUrlDark' => $this->emailLogoUrl(),
+            'logoPath' => $this->emailLogoPath(),
+            'recipientName' => $notifiable->name,
+            'subject' => $this->contract->subject ?: 'Contrat de service',
+            'contractType' => $contractTypeName,
+            'date' => $date,
+            'contractNumber' => $contractNumber,
+            'expiryDays' => $expiryDays,
+            'expiryDate' => $expiryDate,
+            'url' => $url,
+            'company' => $this->company,
+        ];
+
         return $this->build($notifiable)
-            ->subject('Nouveau Contrat : ' . ($this->contract->subject ?: $contractNumber))
-            ->view('emails.contract_init', [
-                'companyName' => $this->company->company_name,
-                'logo' => $this->company->logo_url,
-                'headerColor' => $this->company->header_color,
-                'recipientName' => $notifiable->name,
-                'subject' => $this->contract->subject ?: 'Contrat de service',
-                'contractType' => $contractTypeName,
-                'date' => $date,
-                'contractNumber' => $contractNumber,
-                'url' => $url,
-                'company' => $this->company,
-            ]);
+            ->subject('Contrat ' . $contractNumber . ' à signer avant le ' . $expiryDate)
+            ->view('emails.contract_init', $data)
+            ->text('emails.txt.contract_init', $data);
     }
 
     public function toArray($notifiable)
