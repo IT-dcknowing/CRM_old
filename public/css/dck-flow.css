@@ -4882,3 +4882,110 @@ body.dark-theme .dck-chrome.dck-chrome .dck-marque img {
 /* Au survol, la barre se redeploie : on rend la main a l'horizontal. */
 .sidebar-toggled .dck-chrome.dck-chrome .main-sidebar:hover .sidebar-brand-name { display:block; }
 .sidebar-toggled .dck-chrome.dck-chrome .main-sidebar:hover .dck-marque { display:none; }
+
+/* ══════════════════════════════════════════════════════════════
+   Importation massive de taches
+   ══════════════════════════════════════════════════════════════ */
+
+.dck-front.dck-front .dck-import { padding:20px 22px 26px; max-width:1000px; }
+
+.dck-front.dck-front .dck-import__tete { margin-bottom:20px; }
+.dck-front.dck-front .dck-import__tete h2 { margin:0 0 3px; font-size:20px; font-weight:600; }
+.dck-front.dck-front .dck-import__tete p { margin:0; font-size:13px; color:var(--tx-3); }
+
+.dck-front.dck-front .dck-import__etape {
+  display:flex; gap:14px; padding:18px;
+  background:var(--surface); border:1px solid var(--line);
+  border-radius:var(--r); margin-bottom:14px;
+}
+.dck-front.dck-front .dck-import__num {
+  flex:0 0 28px; width:28px; height:28px;
+  display:flex; align-items:center; justify-content:center;
+  border-radius:50%; background:var(--act); color:var(--act-tx);
+  font-family:var(--f-num); font-size:13px; font-weight:600;
+}
+.dck-front.dck-front .dck-import__corps { flex:1; min-width:0; }
+.dck-front.dck-front .dck-import__corps h3 { margin:2px 0 4px; font-size:14.5px; font-weight:600; }
+.dck-front.dck-front .dck-import__corps > p { margin:0 0 12px; font-size:13px; color:var(--tx-3); }
+
+.dck-front.dck-front .dck-import__b {
+  display:inline-flex; align-items:center; height:36px; padding:0 14px;
+  border:1px solid var(--line); border-radius:var(--r-sm);
+  background:var(--surface); color:var(--tx-2);
+  font-size:13px; font-weight:500; text-decoration:none; cursor:pointer;
+}
+.dck-front.dck-front .dck-import__b:hover { background:var(--surface-3); text-decoration:none; }
+.dck-front.dck-front .dck-import__b.is-principal {
+  background:var(--act); border-color:var(--act); color:var(--act-tx);
+}
+.dck-front.dck-front .dck-import__b.is-principal:hover { background:var(--act-hover); color:var(--act-tx); }
+.dck-front.dck-front .dck-import__b[disabled] { opacity:.6; cursor:default; }
+
+.dck-front.dck-front .dck-import__cols { width:100%; border-collapse:collapse; margin-top:14px; font-size:12.5px; }
+.dck-front.dck-front .dck-import__cols th {
+  text-align:left; padding:7px 9px; font-size:10.5px; text-transform:uppercase;
+  letter-spacing:.03em; color:var(--tx-4); background:var(--surface-2);
+  border-bottom:1px solid var(--line);
+}
+.dck-front.dck-front .dck-import__cols td { padding:7px 9px; border-bottom:1px solid var(--line); vertical-align:top; }
+
+.dck-front.dck-front .dck-import__depot { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+.dck-front.dck-front .dck-import__depot input[type=file] {
+  flex:1; min-width:200px; padding:7px 10px; font-size:13px;
+  border:1px solid var(--line); border-radius:var(--r-sm); background:var(--surface-2);
+}
+
+.dck-front.dck-front .dck-import__note { margin:12px 0 0; font-size:12px; color:var(--tx-4); }
+
+.dck-front.dck-front .dck-import__bilan {
+  display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:10px; margin-bottom:14px;
+}
+.dck-front.dck-front .dck-import__k {
+  display:flex; flex-direction:column; gap:3px; padding:11px 13px;
+  border:1px solid var(--line); border-radius:var(--r); background:var(--surface-2);
+}
+.dck-front.dck-front .dck-import__kl { font-size:11px; color:var(--tx-4); }
+.dck-front.dck-front .dck-import__kv { font-family:var(--f-num); font-size:22px; font-weight:600; }
+.dck-front.dck-front .dck-import__k.is-ok { background:var(--ok-bg); border-color:var(--ok-line); }
+.dck-front.dck-front .dck-import__k.is-ok .dck-import__kv { color:var(--ok); }
+.dck-front.dck-front .dck-import__k.is-err { background:var(--err-bg); border-color:var(--err-line); }
+.dck-front.dck-front .dck-import__k.is-err .dck-import__kv { color:var(--err); }
+
+.dck-front.dck-front .dck-import__msg {
+  padding:13px 15px; border-radius:var(--r); font-size:13px; margin-bottom:14px;
+  background:var(--surface-2); border:1px solid var(--line);
+}
+.dck-front.dck-front .dck-import__msg.is-err { background:var(--err-bg); border-color:var(--err-line); }
+.dck-front.dck-front .dck-import__msg p { margin:4px 0 0; color:var(--tx-2); }
+
+.dck-front.dck-front .dck-import__erreurs { margin:9px 0 0; padding-left:18px; }
+.dck-front.dck-front .dck-import__erreurs li { margin-bottom:3px; font-size:12.5px; }
+
+.dck-front.dck-front .dck-import__scroll { overflow-x:auto; border:1px solid var(--line); border-radius:var(--r); }
+.dck-front.dck-front .dck-import__tbl { width:100%; border-collapse:collapse; font-size:12.5px; }
+.dck-front.dck-front .dck-import__tbl th {
+  text-align:left; padding:8px 10px; font-size:10.5px; text-transform:uppercase;
+  letter-spacing:.03em; color:var(--tx-4); background:var(--surface-2);
+  border-bottom:1px solid var(--line); white-space:nowrap;
+}
+.dck-front.dck-front .dck-import__tbl td { padding:8px 10px; border-bottom:1px solid var(--line); }
+.dck-front.dck-front .dck-import__tbl tr:last-child td { border-bottom:0; }
+.dck-front.dck-front .dck-import__tbl tr.est-erreur { background:var(--err-bg); }
+.dck-front.dck-front .dck-import__n { font-family:var(--f-num); font-size:11.5px; white-space:nowrap; }
+
+.dck-front.dck-front .dck-import__p {
+  display:inline-block; padding:2px 8px; border-radius:var(--r-full);
+  font-size:11px; font-weight:600; border:1px solid var(--line); background:var(--surface-3);
+}
+.dck-front.dck-front .dck-import__p.is-ok { background:var(--ok-bg); border-color:var(--ok-line); color:var(--ok); }
+.dck-front.dck-front .dck-import__p.is-err { background:var(--err-bg); border-color:var(--err-line); color:var(--err); }
+.dck-front.dck-front .dck-import__p.is-req { background:var(--warn-bg); border-color:var(--warn-line); color:var(--warn); }
+
+.dck-front.dck-front .dck-import__valider {
+  display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin-top:16px;
+}
+
+@media (max-width:640px) {
+  .dck-front.dck-front .dck-import { padding:14px 12px 20px; }
+  .dck-front.dck-front .dck-import__bilan { grid-template-columns:1fr; }
+}

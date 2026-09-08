@@ -488,6 +488,18 @@ Route::group(['middleware' => 'auth', 'prefix' => 'account'], function () {
         }
         );
 
+        // Importation massive de taches. Declarees avant la ressource :
+
+        // « import » serait sinon pris pour l'identifiant d'une tache.
+
+        Route::get('tasks/import', [TaskController::class, 'importTask'])->name('tasks.import');
+
+        Route::get('tasks/import/modele', [TaskController::class, 'importTaskTemplate'])->name('tasks.import.modele');
+
+        Route::post('tasks/import/analyse', [TaskController::class, 'importTaskAnalyse'])->name('tasks.import.analyse');
+
+        Route::post('tasks/import/process', [TaskController::class, 'importTaskProcess'])->name('tasks.import.process');
+
         Route::resource('tasks', TaskController::class);
 
         // Holidays
@@ -896,7 +908,7 @@ Route::group(['middleware' => 'auth', 'prefix' => 'account'], function () {
         Route::post('mark-read', [NotificationController::class , 'markRead'])->name('mark_single_notification_read');
         Route::post('mark_notification_read', [NotificationController::class , 'markAllRead'])->name('mark_notification_read');
 
-        // Recherche transversale de l'en-tete : taches, diligences et clients
+        // Recherche transversale de l'en-tete : taches, projets et clients
         // en une seule requete. Declaree avant la resource pour que
         // « search/resultats » ne soit pas pris pour « search/{id} ».
         Route::get('search/resultats', [SearchController::class, 'resultats'])->name('search.resultats');

@@ -210,6 +210,15 @@ $addTaskPermission = user()->permission('add_tasks');
                     </x-forms.button-primary>
                 @endif
 
+                {{-- Importation massive, presente ici comme sur la liste :
+                     les deux ecrans montrent les memes taches, le bouton
+                     doit se trouver au meme endroit dans les deux. --}}
+                @if (user()->permission('add_tasks') == 'all')
+                    <x-forms.link-secondary :link="route('tasks.import')" icon="upload">
+                        @lang('Importer')
+                    </x-forms.link-secondary>
+                @endif
+
             </div>
 
             <div class="btn-group mt-2 mt-lg-0 mt-md-0 ml-0 ml-lg-3 ml-md-3" role="group">

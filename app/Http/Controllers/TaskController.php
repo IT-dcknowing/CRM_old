@@ -31,6 +31,9 @@ use App\Traits\ApprobationTache;
 use App\Models\ProjectMilestone;
 use App\Events\TaskReminderEvent;
 use App\DataTables\TasksDataTable;
+use App\Imports\TaskImport;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Traits\ImportationTaches;
 use App\DataTables\WaitingForApprovalDataTable;
 use Illuminate\Support\Facades\DB;
 use App\Models\ProjectTimeLogBreak;
@@ -42,6 +45,8 @@ use App\Events\TaskEvent;
 class TaskController extends AccountBaseController
 {
 
+
+    use ImportationTaches;
     use ProjectProgress;
     use ApprobationTache;
 
@@ -451,6 +456,113 @@ class TaskController extends AccountBaseController
     }
 
     // The function is called for duplicate code also
+    /**
+     * Ecran d'importation.
+     *
+     * Reserve aux droits complets : l'import cree des taches en nombre,
+     * et l'on ne veut pas qu'un compte limite a « added » contourne sa
+     * restriction par ce biais.
+     */
+    public function importTask()
+    {
+        abort_403(user()->permission('add_tasks') != 'all');
+
+        $this->colonnes = TaskImport::colonnes();
+        $this->pageTitle = __('Importer des tâches');
+        $this->view = 'tasks.ajax.import';
+
+        return view('tasks.create', $this->data);
+    }
+
+    /**
+     * Modele Excel officiel, avec une ligne d'exemple.
+     *
+     * Genere a la volee plutot que stocke : les statuts et les colonnes
+     * suivent ainsi la configuration reelle, sans fichier a maintenir.
+     */
+    public function importTaskTemplate()
+    {
+        abort_403(user()->permission('add_tasks') != 'all');
+
+        return Excel::download(
+            new \App\Exports\ModeleImportTaches(),
+            'modele-import-taches.xlsx'
+        );
+    }
+
+    /**
+     * Analyse le fichier et renvoie l'apercu, sans rien enregistrer.
+     */
+    public function importTaskAnalyse(Request $request)
+    {
+        abort_403(user()->permission('add_tasks') != 'all');
+
+        $request->validate(
+            ['import_file' => 'required|file|mimes:xlsx,xls,csv'],
+            [],
+            ['import_file' => __('Fichier')]
+        );
+
+        $chemin = $request->file('import_file')->getRealPath();
+        $resultat = $this->analyserFichierTaches($chemin);
+
+        /* Le fichier est conserve le temps de la confirmation : le
+           reanalyser evite de faire transiter les lignes par le
+           navigateur, et donc de leur faire confiance. */
+        $jeton = null;
+
+        if ($resultat->total > 0) {
+            $jeton = 'import-taches-' . user()->id . '-' . time() . '.'
+                . $request->file('import_file')->getClientOriginalExtension();
+
+            $request->file('import_file')->move(storage_path('app/imports-taches'), $jeton);
+        }
+
+        $this->resultat = $resultat;
+        $this->jeton = $jeton;
+
+        return Reply::dataOnly([
+            'status' => 'success',
+            'html' => view('tasks.ajax.import_apercu', $this->data)->render(),
+            'peutImporter' => $resultat->ok && $resultat->total > 0,
+        ]);
+    }
+
+    /**
+     * Cree les taches, apres une nouvelle analyse du fichier conserve.
+     */
+    public function importTaskProcess(Request $request)
+    {
+        abort_403(user()->permission('add_tasks') != 'all');
+
+        $jeton = basename((string) $request->jeton);
+        $chemin = storage_path('app/imports-taches/' . $jeton);
+
+        if (!$jeton || !is_file($chemin)) {
+            return Reply::error(__('Le fichier importé est introuvable. Recommencez.'));
+        }
+
+        /* Deuxieme analyse : l'apercu affiche n'est pas une autorisation,
+           et le fichier a pu changer entre-temps. */
+        $resultat = $this->analyserFichierTaches($chemin);
+
+        if (!$resultat->ok || $resultat->total === 0) {
+            @unlink($chemin);
+
+            return Reply::error($resultat->message
+                ?: __('Le fichier contient des erreurs. Corrigez-le avant de recommencer.'));
+        }
+
+        $creees = $this->creerTachesImportees($resultat->lignes);
+
+        @unlink($chemin);
+
+        return Reply::successWithData(
+            sprintf(__('%d tâches ont été importées.'), $creees),
+            ['creees' => $creees, 'redirectUrl' => route('tasks.index')]
+        );
+    }
+
     public function store(StoreTask $request)
     {
         $project = request('project_id') ?Project::findOrFail(request('project_id')) : null;
