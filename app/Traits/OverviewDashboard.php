@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\DB;
  */
 trait OverviewDashboard
 {
-    use PilotageDiligences;
+    use PilotageProjets;
     use PilotageCabinet;
 
 
