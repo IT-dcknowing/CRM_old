@@ -67,13 +67,25 @@
     {{-- Volet gauche : visuel et accroche. Masque sous 1024px. --}}
     <div class="auth-visual">
         @if ($globalSetting->login_background_url)
-            <img class="auth-visual__img" src="{{ $globalSetting->login_background_url }}" alt="">
+            {{-- Le WebP pese environ la moitie du JPEG a rendu identique. Le
+                 <img> reste la source de verite : si le WebP est absent du
+                 serveur, le navigateur retombe sur le JPEG sans rien casser.
+                 Le nom de fichier vient de la base, seule l'extension change. --}}
+            {{-- display:contents : .auth-visual est un conteneur flex, et
+                 <picture> y deviendrait une boite supplementaire. Ainsi il
+                 n'en cree aucune, la mise en page reste celle d'avant. --}}
+            <picture style="display: contents;">
+                <source type="image/webp"
+                        srcset="{{ preg_replace('/\.(jpe?g|png)$/i', '.webp', $globalSetting->login_background_url) }}">
+                <img class="auth-visual__img" src="{{ $globalSetting->login_background_url }}"
+                     alt="" width="2560" height="1709" decoding="async">
+            </picture>
         @endif
         <div class="auth-visual__veil"></div>
 
         <div class="auth-visual__body">
             <h1>Optimisez votre flux de travail quotidien.</h1>
-            <p>Rejoignez les professionnels qui gèrent leurs diligences et leurs tâches avec DC-KNOWING.</p>
+            <p>Rejoignez les professionnels qui gèrent leurs projets et leurs tâches avec DC-KNOWING.</p>
         </div>
     </div>
 
