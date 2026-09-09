@@ -29,14 +29,16 @@ trait ApprobationTache
     }
 
     /**
-     * L'utilisateur courant est-il administrateur ?
-     * L'administrateur de la diligence porteuse est assimile a un
-     * administrateur pour ses propres taches : c'est deja le cas dans
-     * toutes les autres regles du module.
+     * L'utilisateur courant peut-il arbitrer ?
+     *
+     * Trois cas : l'administrateur, la direction (DG et DGA, voir
+     * roles_arbitres()), et l'administrateur du projet porteur, assimile a
+     * un arbitre pour ses propres taches — c'est deja le cas dans toutes
+     * les autres regles du module.
      */
     private function estArbitre(?Task $task = null): bool
     {
-        if (in_array('admin', user_roles())) {
+        if (est_arbitre()) {
             return true;
         }
 
