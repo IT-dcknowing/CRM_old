@@ -10,25 +10,25 @@ use Illuminate\Support\Facades\DB;
 /**
  * Donnees du bloc de pilotage, conformes a la maquette
  * pilotage-dc-knowing : indicateurs, livraisons mensuelles, repartition
- * du portefeuille, diligences a traiter et echeancier reglementaire.
+ * du portefeuille, projets a traiter et echeancier reglementaire.
  *
  * Le trait sert deux tableaux de bord :
  *
  *   - administrateur : tout le portefeuille de l'entreprise ;
- *   - collaborateur  : uniquement les diligences dont il est membre.
+ *   - collaborateur  : uniquement les projets dont il est membre.
  *
  * La restriction passe par $pilotageUserId. Laisse a null, la portee
  * reste celle de l'entreprise. Renseigne, chaque requete est filtree
  * par une sous-selection sur project_members — jamais une jointure,
  * qui dupliquerait les lignes et fausserait les comptages.
  */
-trait PilotageDiligences
+trait PilotageProjets
 {
-    /** Restreint le pilotage aux diligences d'un collaborateur. */
+    /** Restreint le pilotage aux projets d'un collaborateur. */
     protected ?int $pilotageUserId = null;
 
     /**
-     * Socle commun a toutes les requetes : diligences vivantes de
+     * Socle commun a toutes les requetes : projets vivantes de
      * l'entreprise, restreintes au collaborateur le cas echeant.
      */
     private function requetePilotage(): Builder
@@ -55,7 +55,7 @@ trait PilotageDiligences
      * de livraison. On approche la cloture par updated_at, qui bouge a
      * chaque modification — le pourcentage est donc indicatif.
      */
-    protected function calculerDiligenceKpis()
+    protected function calculerProjetKpis()
     {
         $k = $this->requetePilotage()
             ->selectRaw('COUNT(*) as suivies')
@@ -82,7 +82,7 @@ trait PilotageDiligences
     }
 
     /**
-     * Diligences terminees par mois sur douze mois glissants.
+     * Projets terminees par mois sur douze mois glissants.
      * Meme reserve que ci-dessus sur updated_at.
      *
      * @return array{labels: string[], valeurs: int[], total: int}
@@ -115,7 +115,7 @@ trait PilotageDiligences
      * Repartition du portefeuille en quatre etats.
      *
      * « En retard » n'est pas un statut stocke : il se deduit d'une
-     * echeance depassee sur une diligence ni terminee ni annulee, et
+     * echeance depassee sur un projet ni terminee ni annulee, et
      * prime sur le statut d'origine pour ne pas compter deux fois la
      * meme ligne.
      */
@@ -147,10 +147,10 @@ trait PilotageDiligences
     }
 
     /**
-     * Diligences ouvertes les plus proches de leur echeance.
+     * Projets ouvertes les plus proches de leur echeance.
      * Relations prechargees : aucune requete par ligne.
      */
-    protected function diligencesATraiter(int $limite = 6)
+    protected function projetsATraiter(int $limite = 6)
     {
         $q = Project::with(['client:id,name,image'])
             ->select('id', 'project_name', 'project_short_code', 'client_id', 'deadline', 'status', 'completion_percent')
@@ -173,10 +173,10 @@ trait PilotageDiligences
     {
         $this->pilotageUserId = $userId;
 
-        $this->diligenceKpis   = $this->calculerDiligenceKpis();
+        $this->projetKpis   = $this->calculerProjetKpis();
         $this->dashLivraisons  = $this->livraisonsParMois();
         $this->dashRepartition = $this->repartitionPortefeuille();
-        $this->dashATraiter    = $this->diligencesATraiter();
+        $this->dashATraiter    = $this->projetsATraiter();
         // L'echeancier est un referentiel commun : aucune donnee propre
         // a un client, il est donc identique pour tous les roles.
         $this->dashEcheances   = RegulatoryDeadline::prochaines(30, company()->id);
