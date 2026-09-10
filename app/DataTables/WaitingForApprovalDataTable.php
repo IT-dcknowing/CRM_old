@@ -57,7 +57,7 @@ class WaitingForApprovalDataTable extends BaseDataTable
             'action', function ($row) {
 
             $userRoles = user_roles();
-            $isAdmin = in_array('admin', $userRoles);
+            $isAdmin = est_arbitre();
             $isEmployee = in_array('employee', $userRoles);
 
             $action = '<div class="task_view">

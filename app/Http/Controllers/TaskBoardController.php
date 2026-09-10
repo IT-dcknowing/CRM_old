@@ -42,7 +42,9 @@ class TaskBoardController extends AccountBaseController
     // @codingStandardsIgnoreLine
     public function index(Request $request)
     {
-        $this->userRole = in_array('admin', user_roles()) ? 'yes' : 'no';
+        /* « yes » signifie ici : peut cloturer une tache sans passer par la
+           demande d'approbation. Les arbitres, pas les seuls admins. */
+        $this->userRole = est_arbitre() ? 'yes' : 'no';
         $this->startDate = now()->subDays(15)->format($this->company->date_format);
         $this->endDate = now()->addDays(15)->format($this->company->date_format);
         $this->projects = Project::allProjects();
