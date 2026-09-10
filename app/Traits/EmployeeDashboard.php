@@ -39,7 +39,7 @@ use App\Models\EmployeeShift;
  */
 trait EmployeeDashboard
 {
-    use PilotageDiligences;
+    use PilotageProjets;
     use EspaceCollaborateur;
 
 
@@ -50,7 +50,7 @@ trait EmployeeDashboard
         $user = user();
 
         // Bloc « Mon tableau de bord » conforme a dck-flow-task :
-        // ses taches, sa semaine, ses diligences, les annonces. Les
+        // ses taches, sa semaine, ses projets, les annonces. Les
         // indicateurs de portefeuille restent sur l'ecran administrateur.
         $this->chargerEspaceCollaborateur($user->id);
 
