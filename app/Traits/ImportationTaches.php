@@ -33,9 +33,11 @@ trait ImportationTaches
      *
      * @return object lignes analysees, erreurs, et compteurs
      */
-    protected function analyserFichierTaches(string $chemin): object
+    protected function analyserFichierTaches(string $chemin, ?int $projetDefaut = null): object
     {
-        $brut = \Maatwebsite\Excel\Facades\Excel::toArray(new TaskImport, $chemin);
+        /* Le chemin est passe au lecteur : c'est de lui qu'il deduit le
+           separateur et l'encodage d'un CSV. */
+        $brut = \Maatwebsite\Excel\Facades\Excel::toArray(new TaskImport($chemin), $chemin);
         $feuille = $brut[0] ?? [];
 
         if (count($feuille) < 2) {
@@ -65,7 +67,7 @@ trait ImportationTaches
         }
 
         $index = $this->indexColonnes($entetes);
-        $refs = $this->referencesImport();
+        $refs = $this->referencesImport($projetDefaut);
 
         $lignes = [];
         $erreurs = [];
@@ -108,7 +110,7 @@ trait ImportationTaches
         $manquantes = [];
 
         foreach (TaskImport::colonnes() as $c) {
-            if (!in_array($this->normaliser($c['nom']), $normalise, true)) {
+            if ($this->positionColonne($c, $normalise) === null) {
                 $manquantes[] = $c['nom'];
             }
         }
@@ -122,11 +124,32 @@ trait ImportationTaches
         $index = [];
 
         foreach (TaskImport::colonnes() as $c) {
-            $p = array_search($this->normaliser($c['nom']), $normalise, true);
-            $index[$c['cle']] = $p === false ? null : $p;
+            $index[$c['cle']] = $this->positionColonne($c, $normalise);
         }
 
         return $index;
+    }
+
+    /**
+     * Position d'une colonne dans l'en-tete, ou null.
+     *
+     * L'intitule courant est cherche en premier, puis ceux qu'il a
+     * remplaces : un fichier rempli avant le renommage doit continuer
+     * de passer.
+     *
+     * @param array $entetesNormalises l'en-tete du fichier, deja normalise
+     */
+    private function positionColonne(array $colonne, array $entetesNormalises): ?int
+    {
+        foreach (TaskImport::intitulesAcceptes($colonne) as $intitule) {
+            $p = array_search($this->normaliser($intitule), $entetesNormalises, true);
+
+            if ($p !== false) {
+                return $p;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -136,7 +159,7 @@ trait ImportationTaches
      * superflu — pour qu'un fichier ecrit « EN COURS » ou « en cours »
      * tombe sur la meme colonne.
      */
-    private function referencesImport(): object
+    private function referencesImport(?int $projetDefaut = null): object
     {
         $societe = company()->id;
 
@@ -191,6 +214,7 @@ trait ImportationTaches
             'categories' => $categories,
             'statuts'    => $statuts,
             'existantes' => $existantes,
+            'projetDefaut' => $projetDefaut ? ($projets->firstWhere('id', $projetDefaut) ?: null) : null,
             'defaut'     => TaskboardColumn::where('slug', 'incomplete')->first(),
         ];
     }
@@ -208,8 +232,31 @@ trait ImportationTaches
             $erreurs[] = sprintf(__('Ligne %d : la tâche n\'a pas de titre.'), $numero);
         }
 
-        /* Doublon a l'interieur du fichier lui-meme. */
-        $empreinte = $this->normaliser($titre . '|' . $lire('project'));
+        /* Projet.
+
+           Resolu avant tout le reste : c'est lui qui distingue deux
+           taches de meme intitule, l'empreinte des doublons a donc
+           besoin de sa valeur definitive — celle du fichier, ou celle
+           choisie a l'ecran d'import quand la colonne est vide. */
+        $projet = null;
+        $nomProjet = $lire('project');
+
+        if ($nomProjet !== '') {
+            $projet = $refs->projets[$this->normaliser($nomProjet)] ?? null;
+
+            if (!$projet) {
+                $erreurs[] = sprintf(__('Ligne %d : le projet « %s » n\'existe pas.'), $numero, $nomProjet);
+            }
+        }
+        elseif ($refs->projetDefaut) {
+            $projet = $refs->projetDefaut;
+            $nomProjet = $projet->project_name;
+        }
+
+        /* Empreinte batie sur le nom reel du projet, et non sur ce que
+           porte la cellule : deux lignes rattachees au meme projet — que
+           ce soit par la colonne ou par defaut — sont bien un doublon. */
+        $empreinte = $this->normaliser($titre . '|' . ($projet->project_name ?? ''));
 
         if ($titre !== '' && isset($vus[$empreinte])) {
             $erreurs[] = sprintf(
@@ -226,21 +273,9 @@ trait ImportationTaches
                     __('Ligne %d : la tâche « %s » existe déjà%s. Supprimez cette ligne, ou renommez la tâche.'),
                     $numero,
                     $titre,
-                    $lire('project') !== ''
-                        ? sprintf(__(' dans le projet « %s »'), $lire('project')) : ''
+                    $nomProjet !== ''
+                        ? sprintf(__(' dans le projet « %s »'), $nomProjet) : ''
                 );
-            }
-        }
-
-        /* Projet */
-        $projet = null;
-        $nomProjet = $lire('project');
-
-        if ($nomProjet !== '') {
-            $projet = $refs->projets[$this->normaliser($nomProjet)] ?? null;
-
-            if (!$projet) {
-                $erreurs[] = sprintf(__('Ligne %d : le projet « %s » n\'existe pas.'), $numero, $nomProjet);
             }
         }
 
@@ -252,7 +287,7 @@ trait ImportationTaches
             $categorie = $refs->categories[$this->normaliser($nomCategorie)] ?? null;
 
             if (!$categorie) {
-                $erreurs[] = sprintf(__('Ligne %d : la catégorie « %s » n\'existe pas.'), $numero, $nomCategorie);
+                $erreurs[] = sprintf(__('Ligne %d : le domaine « %s » n\'existe pas.'), $numero, $nomCategorie);
             }
         }
 
@@ -382,7 +417,18 @@ trait ImportationTaches
     /** Sans accent, sans casse, sans espace superflu. */
     private function normaliser($valeur): string
     {
-        $v = Str::ascii(trim((string) $valeur));
+        $v = (string) $valeur;
+
+        /* Excel prefixe ses « CSV UTF-8 » d'une marque d'ordre des
+           octets. Invisible a l'ecran, elle colle a la premiere en-tete
+           et la rend introuvable. */
+        $v = preg_replace('/^ï»¿/', '', $v);
+
+        /* Espaces insecables compris : un copier-coller depuis le web en
+           seme, et « Date de début » cesse alors de correspondre. */
+        $v = str_replace(["Â ", "â¯"], ' ', $v);
+
+        $v = Str::ascii(trim($v));
 
         return strtolower(preg_replace('/\s+/', ' ', $v));
     }
@@ -399,6 +445,7 @@ trait ImportationTaches
     {
         $attente = TaskboardColumn::waitingForApprovalColumn();
         $creees = 0;
+        $comptageParProjet = [];
 
         /* Les taches creees et leurs destinataires, retenus pour
            notifier une fois la transaction close : un courriel parti
@@ -435,7 +482,11 @@ trait ImportationTaches
                 /* Meme reference que la creation manuelle : prefixe du
                    projet suivi d'un compteur, ou simple rang. */
                 if ($l->projet) {
-                    $rang = Task::projectTaskCount($l->projet->id);
+                    if (!array_key_exists($l->projet->id, $comptageParProjet)) {
+                        $comptageParProjet[$l->projet->id] = Task::projectTaskCount($l->projet->id);
+                    }
+
+                    $rang = $comptageParProjet[$l->projet->id]++;
 
                     $task->task_short_code = $l->projet->project_short_code
                         ? $l->projet->project_short_code . '-' . $this->getTaskShortCode(

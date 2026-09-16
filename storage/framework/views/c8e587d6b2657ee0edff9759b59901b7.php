@@ -11,99 +11,45 @@
     <form id="login-form" action="<?php echo e(route('login')); ?>" class="ajax-form" method="POST">
         <?php echo e(csrf_field()); ?>
 
-        <h3 class=" mb-4 f-w-500">Bienvenue sur DCK FLOW TASK!</h3>
-        <span align="left">Veuillez vous connecter à votre compte et commencer l'aventure</span>
-        <br><br> 
-        <script>   
-            const facebook = "<?php echo e(route('social_login', 'facebook')); ?>";
-            const google = "<?php echo e(route('social_login', 'google')); ?>";
-            const twitter = "<?php echo e(route('social_login', 'twitter-oauth-2')); ?>";
-            const linkedin = "<?php echo e(route('social_login', 'linkedin-openid')); ?>";
-        </script>
-  
-        <?php if($socialAuthSettings->google_status == 'enable'): ?>
-            <a class="mb-3 height_50 rounded f-w-500" onclick="window.location.href = google;">
-                <span><img src="<?php echo e(asset('img/google.png')); ?>" alt="Google"/></span>
-                <?php echo app('translator')->get('auth.signInGoogle'); ?></a>
-        <?php endif; ?>
-        <?php if($socialAuthSettings->facebook_status == 'enable'): ?>
-            <a class="mb-3 height_50 rounded f-w-500" onclick="window.location.href = facebook;">
-                <span><img src="<?php echo e(asset('img/fb.png')); ?>" alt="Google"/></span>
-                <?php echo app('translator')->get('auth.signInFacebook'); ?>
-            </a>
-        <?php endif; ?>
-        <?php if($socialAuthSettings->twitter_status == 'enable'): ?>
-            <a class="mb-3 height_50 rounded f-w-500" onclick="window.location.href = twitter;">
-                <span><img src="<?php echo e(asset('img/twitter.png')); ?>" alt="Google"/></span>
-                <?php echo app('translator')->get('auth.signInTwitter'); ?>
-            </a>
-        <?php endif; ?>
-        <?php if($socialAuthSettings->linkedin_status == 'enable'): ?>
-            <a class="mb-3 height_50 rounded f-w-500" onclick="window.location.href = linkedin;">
-                <span><img src="<?php echo e(asset('img/linkedin.png')); ?>" alt="Google"/></span>
-                <?php echo app('translator')->get('auth.signInLinkedin'); ?>
-            </a>
-        <?php endif; ?>
-
-        <?php if($socialAuthSettings->social_auth_enable): ?>
-            <p class="position-relative my-4"><?php echo app('translator')->get('auth.useEmail'); ?></p>
-        <?php endif; ?>
-
-        <div class="form-group text-left">
-            <label for="email"><?php echo app('translator')->get('auth.email'); ?></label>
-            <input tabindex="1" type="email" name="email"
-                   class="form-control height-50 f-15 light_text <?php $__errorArgs = ['email'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?>"
-                   autofocus
-                   value="<?php echo e(request()->old('email')); ?>"
-                   placeholder="<?php echo app('translator')->get('auth.email'); ?>" id="email">
-            <?php if($errors->has('email')): ?>
-                <div class="invalid-feedback"><?php echo e($errors->first('email')); ?></div>
-            <?php endif; ?>
-            <?php if($socialAuthSettings->social_auth_enable_count>1): ?>
-                <div class="forgot_pswd mt-2" id="forget-pass-email-section">
-                    <a href="<?php echo e(url('forgot-password')); ?>"><?php echo app('translator')->get('app.forgotPassword'); ?></a>
-                </div>
-            <?php endif; ?>
+        <div class="auth-head">
+            <h2>Bienvenue sur Taskflow</h2>
+            <p>Connectez-vous pour commencer l'aventure.</p>
         </div>
 
-        <?php if($socialAuthSettings->social_auth_enable_count>1 && !$errors->has('g-recaptcha-response')): ?>
-            <button type="submit" id="submit-next"
-                    class="btn-primary f-w-500 rounded w-100 height-50 f-18"> <?php echo app('translator')->get('auth.next'); ?> <i
-                    class="fa fa-arrow-right pl-1"></i></button>
-
-            <?php if($company->allow_client_signup): ?>
-                <a href="<?php echo e(route('register')); ?>" id="signup-client-next"
-                   class="btn-secondary f-w-500 rounded w-100 height-50 f-15 mt-3">
-                    <?php echo app('translator')->get('app.signUpAsClient'); ?>
-                </a>
-            <?php endif; ?>
-
+        <?php if($socialAuthSettings->social_auth_enable): ?>
+            <div class="social_login mb-3">
+                <?php if($socialAuthSettings->google_status == 'enable'): ?>
+                    <a class="mb-3 height_50 rounded f-w-500" onclick="window.location.href = google;">
+                        <span><img src="<?php echo e(asset('img/google.png')); ?>" alt="Google"/></span><?php echo app('translator')->get('app.signInGoogle'); ?>
+                    </a>
+                <?php endif; ?>
+                <?php if($socialAuthSettings->facebook_status == 'enable'): ?>
+                    <a class="mb-3 height_50 rounded f-w-500" onclick="window.location.href = facebook;">
+                        <span><img src="<?php echo e(asset('img/fb.png')); ?>" alt="Facebook"/></span><?php echo app('translator')->get('app.signInFacebook'); ?>
+                    </a>
+                <?php endif; ?>
+                <?php if($socialAuthSettings->twitter_status == 'enable'): ?>
+                    <a class="mb-3 height_50 rounded f-w-500" onclick="window.location.href = twitter;">
+                        <span><img src="<?php echo e(asset('img/twitter.png')); ?>" alt="Twitter"/></span><?php echo app('translator')->get('app.signInTwitter'); ?>
+                    </a>
+                <?php endif; ?>
+                <?php if($socialAuthSettings->linkedin_status == 'enable'): ?>
+                    <a class="mb-3 height_50 rounded f-w-500" onclick="window.location.href = linkedin;">
+                        <span><img src="<?php echo e(asset('img/linkedin.png')); ?>" alt="LinkedIn"/></span><?php echo app('translator')->get('app.signInLinkedin'); ?>
+                    </a>
+                <?php endif; ?>
+            </div>
         <?php endif; ?>
 
-        <div id="password-section"
-             <?php if($socialAuthSettings->social_auth_enable_count > 1 && !$errors->has('g-recaptcha-response')): ?> class="d-none" <?php endif; ?>>
-            <div class="form-group text-left">
-                <label for="password"><?php echo app('translator')->get('app.password'); ?></label>
-                <?php if (isset($component)) { $__componentOriginalcbf9105fd4879d5d6ef9e1f6fe271af7 = $component; } ?>
-<?php if (isset($attributes)) { $__attributesOriginalcbf9105fd4879d5d6ef9e1f6fe271af7 = $attributes; } ?>
-<?php $component = App\View\Components\Forms\InputGroup::resolve([] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? (array) $attributes->getIterator() : [])); ?>
-<?php $component->withName('forms.input-group'); ?>
-<?php if ($component->shouldRender()): ?>
-<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
-<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag && $constructor = (new ReflectionClass(App\View\Components\Forms\InputGroup::class))->getConstructor()): ?>
-<?php $attributes = $attributes->except(collect($constructor->getParameters())->map->getName()->all()); ?>
-<?php endif; ?>
-<?php $component->withAttributes([]); ?>
-                    <input type="password" name="password" id="password"
-                           placeholder="<?php echo app('translator')->get('placeholders.password'); ?>" tabindex="3"
-                           class="form-control height-50 f-15 light_text <?php $__errorArgs = ['password'];
+        
+        <div class="auth-field">
+            <label class="auth-field__label" for="email"><?php echo app('translator')->get('auth.email'); ?></label>
+            <span class="auth-control">
+                <span class="auth-control__icon"><i class="far fa-envelope"></i></span>
+                <input tabindex="1" type="email" name="email" id="email" autofocus
+                       value="<?php echo e(request()->old('email')); ?>"
+                       placeholder="<?php echo app('translator')->get('auth.email'); ?>"
+                       class="<?php $__errorArgs = ['email'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
@@ -111,36 +57,64 @@ $message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
 unset($__errorArgs, $__bag); ?>">
+            </span>
+            <?php if($errors->has('email')): ?>
+                <p class="auth-error"><?php echo e($errors->first('email')); ?></p>
+            <?php endif; ?>
+            <?php if($socialAuthSettings->social_auth_enable_count > 1): ?>
+                <p class="auth-hint" id="forget-pass-email-section">
+                    <a class="auth-link" href="<?php echo e(url('forgot-password')); ?>"><?php echo app('translator')->get('app.forgotPassword'); ?></a>
+                </p>
+            <?php endif; ?>
+        </div>
 
-                     <?php $__env->slot('append', null, []); ?> 
-                        <button type="button" data-toggle="tooltip"
-                                data-original-title="<?php echo app('translator')->get('app.viewPassword'); ?>"
-                                class="btn btn-outline-secondary border-grey height-50 toggle-password">
-                            <i
-                                class="fa fa-eye"></i></button>
-                     <?php $__env->endSlot(); ?>
+        <?php if($socialAuthSettings->social_auth_enable_count > 1 && !$errors->has('g-recaptcha-response')): ?>
+            <button type="submit" id="submit-next" class="auth-submit">
+                <?php echo app('translator')->get('auth.next'); ?> <i class="fa fa-arrow-right"></i>
+            </button>
 
-                 <?php echo $__env->renderComponent(); ?>
-<?php endif; ?>
-<?php if (isset($__attributesOriginalcbf9105fd4879d5d6ef9e1f6fe271af7)): ?>
-<?php $attributes = $__attributesOriginalcbf9105fd4879d5d6ef9e1f6fe271af7; ?>
-<?php unset($__attributesOriginalcbf9105fd4879d5d6ef9e1f6fe271af7); ?>
-<?php endif; ?>
-<?php if (isset($__componentOriginalcbf9105fd4879d5d6ef9e1f6fe271af7)): ?>
-<?php $component = $__componentOriginalcbf9105fd4879d5d6ef9e1f6fe271af7; ?>
-<?php unset($__componentOriginalcbf9105fd4879d5d6ef9e1f6fe271af7); ?>
-<?php endif; ?>
+            <?php if($company->allow_client_signup): ?>
+                <a href="<?php echo e(route('register')); ?>" id="signup-client-next" class="auth-secondary">
+                    <?php echo app('translator')->get('app.signUpAsClient'); ?>
+                </a>
+            <?php endif; ?>
+        <?php endif; ?>
+
+        
+        <div id="password-section"
+             <?php if($socialAuthSettings->social_auth_enable_count > 1 && !$errors->has('g-recaptcha-response')): ?> class="d-none" <?php endif; ?>>
+
+            <div class="auth-field">
+                <div class="auth-field__head">
+                    <label class="auth-field__label" for="password"><?php echo app('translator')->get('app.password'); ?></label>
+                    <a class="auth-link" href="<?php echo e(url('forgot-password')); ?>"><?php echo app('translator')->get('app.forgotPassword'); ?></a>
+                </div>
+                <span class="auth-control auth-control--with-action">
+                    <span class="auth-control__icon"><i class="fas fa-lock"></i></span>
+                    <input type="password" name="password" id="password" tabindex="3"
+                           placeholder="<?php echo app('translator')->get('placeholders.password'); ?>"
+                           class="<?php $__errorArgs = ['password'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>">
+                    <button type="button" class="auth-control__action toggle-password"
+                            data-toggle="tooltip" data-original-title="<?php echo app('translator')->get('app.viewPassword'); ?>"
+                            aria-label="<?php echo app('translator')->get('app.viewPassword'); ?>">
+                        <i class="far fa-eye"></i>
+                    </button>
+                </span>
                 <?php if($errors->has('password')): ?>
-                    <div class="invalid-feedback d-block"><?php echo e($errors->first('password')); ?></div>
+                    <p class="auth-error"><?php echo e($errors->first('password')); ?></p>
                 <?php endif; ?>
             </div>
-            <div class="forgot_pswd mb-3">
-                <a href="<?php echo e(url('forgot-password')); ?>"><?php echo app('translator')->get('app.forgotPassword'); ?></a>
-            </div>
 
-            <div class="form-group text-left ">
-                <input id="checkbox-signup" class="cursor-pointer" type="checkbox" name="remember">
-                <label for="checkbox-signup" class="cursor-pointer"><?php echo app('translator')->get('app.rememberMe'); ?></label>
+            <div class="auth-check">
+                <input id="checkbox-signup" type="checkbox" name="remember">
+                <label for="checkbox-signup"><?php echo app('translator')->get('app.rememberMe'); ?></label>
             </div>
 
             <?php if($globalSetting->google_recaptcha_status == 'active'): ?>
@@ -150,22 +124,18 @@ unset($__errorArgs, $__bag); ?>">
             <input type="hidden" id="g_recaptcha" name="g_recaptcha">
 
             <?php if($errors->has('g-recaptcha-response')): ?>
-                <div
-                    class="invalid-feedback  d-block text-left"><?php echo e($errors->first('g-recaptcha-response')); ?>
-
-                </div>
+                <p class="auth-error"><?php echo e($errors->first('g-recaptcha-response')); ?></p>
             <?php endif; ?>
 
-            <button type="submit" id="submit-login"
-                    class="btn-primary f-w-500 rounded w-100 height-50 f-18">
-                <?php echo app('translator')->get('app.login'); ?> <i class="fa fa-arrow-right pl-1"></i>
+            <button type="submit" id="submit-login" class="auth-submit">
+                <?php echo app('translator')->get('app.login'); ?> <i class="fa fa-arrow-right"></i>
             </button>
 
             <?php if($company->allow_client_signup): ?>
-                <a href="<?php echo e(route('register')); ?>"
-                   class="btn-secondary f-w-500 rounded w-100 height-50 f-15 mt-3">
-                    <?php echo app('translator')->get('app.signUpAsClient'); ?>
-                </a>
+                <p class="auth-foot">
+                    Vous n'avez pas de compte ?
+                    <a href="<?php echo e(route('register')); ?>"><?php echo app('translator')->get('app.signUpAsClient'); ?></a>
+                </p>
             <?php endif; ?>
         </div>
 
@@ -278,4 +248,4 @@ unset($__errorArgs, $__bag); ?>">
 <?php $component = $__componentOriginald278722911781386ebf0ce0184b0f0fb; ?>
 <?php unset($__componentOriginald278722911781386ebf0ce0184b0f0fb); ?>
 <?php endif; ?>
-<?php /**PATH /home/cp2255957p00/public_html/tacheflux/resources/views/auth/login.blade.php ENDPATH**/ ?>
+<?php /**PATH C:\laragon\www\dc_knowing\CRM\resources\views/auth/login.blade.php ENDPATH**/ ?>

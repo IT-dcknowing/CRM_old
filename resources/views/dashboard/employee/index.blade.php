@@ -240,8 +240,8 @@
 
         {{-- Bloc de pilotage, place apres le bandeau de bienvenue et de
              pointage : l'ecran se lit alors de haut en bas, du contexte
-             personnel vers l'activite. Restreint aux diligences dont le
-             collaborateur est membre (voir PilotageDiligences). --}}
+             personnel vers l'activite. Restreint aux projets dont le
+             collaborateur est membre (voir PilotageProjets). --}}
         @include('dashboard.employee.mon-espace')
 
         {{-- Les widgets historiques ne sont affiches que si au moins un
@@ -440,16 +440,15 @@
                         </div>
                     @endif
 
-                    @include('dashboard.employee.widgets.projects')
+                    <!-- @include('dashboard.employee.widgets.projects')
                     @include('dashboard.employee.widgets.lead')
-                    @include('dashboard.employee.widgets.week_timelog')
+                    @include('dashboard.employee.widgets.week_timelog') -->
                 </div>
                 <!-- EMP DASHBOARD TASKS PROJECTS END -->
                 @include('dashboard.employee.widgets.my_tasks')
                 @include('dashboard.employee.widgets.tickets')
                 @endif
                 @include('dashboard.employee.widgets.my_calendar')
-                @include('dashboard.employee.widgets.notices')
 
             </div>
             <!-- EMP DASHBOARD TASKS PROJECTS EVENTS END -->

@@ -6,14 +6,11 @@ use App\DataTables\ArchiveProjectsDataTable;
 use App\DataTables\ArchiveTasksDataTable;
 use App\DataTables\DiscussionDataTable;
 use App\DataTables\ExpensesDataTable;
-use App\DataTables\InvoicesDataTable;
-use App\DataTables\OrdersDataTable;
 use App\DataTables\PaymentsDataTable;
 use App\DataTables\ProjectNotesDataTable;
 use App\DataTables\ProjectsDataTable;
 use App\DataTables\EtatfinancierDatatable;
 use App\DataTables\TasksDataTable;
-use App\DataTables\TicketDataTable;
 use App\DataTables\TimeLogsDataTable;
 use App\Helper\Files;
 use App\Helper\Reply;
@@ -110,7 +107,7 @@ class ProjectController extends AccountBaseController
                         'deadline' => $project->deadline ? $project->deadline->format('d/m/Y') : 'Pas de date',
                         'status' => $project->status,
                         'progress' => $project->completion_percent,
-                        'category_name' => 'Diligence'
+                        'category_name' => 'Projet'
                     ];
                 });
             return response()->json($projects);
@@ -133,9 +130,9 @@ class ProjectController extends AccountBaseController
         return $dataTable->render('projects.index', $this->data);
     }
 
-    public function getAlldiligences(Request $request)
+    public function getAllprojets(Request $request)
     {
-        // Cette méthode peut être appelée directement par la route /getAlldiligences
+        // Cette méthode peut être appelée directement par la route /getAllprojets
         return $this->index(new ProjectsDataTable());
     }
 
@@ -731,7 +728,7 @@ class ProjectController extends AccountBaseController
         $this->viewBurndownChartPermission = user()->permission('view_project_burndown_chart');
         $this->viewProjectMemberPermission = user()->permission('view_project_members');
 
-        $this->project = Project::with(['client', 'members', 'members.user','mentionProject', 'members.user.session', 'members.user.employeeDetail.designation', 'milestones' => function ($q) use ($viewMilestonePermission) {
+        $this->project = Project::with(['client', 'members', 'members.user','mentionProject', 'members.user.session', 'members.user.employeeDetail.designation', 'projectMembers', 'milestones' => function ($q) use ($viewMilestonePermission) {
             if ($viewMilestonePermission == 'added') {
                 $q->where('added_by', user()->id);
             }
@@ -801,8 +798,6 @@ class ProjectController extends AccountBaseController
             $this->view = 'projects.ajax.gantt_dhtml';
             // $this->view = 'projects.ajax.gantt';
             break;
-        case 'invoices':
-            return $this->invoices();
         case 'files':
             $this->view = 'projects.ajax.files';
             break;
@@ -847,10 +842,6 @@ class ProjectController extends AccountBaseController
                 ->get();
             $this->view = 'projects.ajax.notes_workspace';
             break;
-        case 'tickets':
-            return $this->tickets($this->project->project_admin == user()->id);
-        case 'orders':
-            return $this->orders();
         default:
             $this->taskChart = $this->taskChartData($id);
             $hoursLogged = $this->project->times()->sum('total_minutes');
@@ -907,8 +898,13 @@ class ProjectController extends AccountBaseController
         $data['colors'] = $taskStatus->pluck('label_color');
         $data['values'] = [];
 
+        $countsByColumn = Task::where('project_id', $id)
+            ->selectRaw('board_column_id, count(*) as aggregate')
+            ->groupBy('board_column_id')
+            ->pluck('aggregate', 'board_column_id');
+
         foreach ($taskStatus as $label) {
-            $data['values'][] = Task::where('project_id', $id)->where('tasks.board_column_id', $label->id)->count();
+            $data['values'][] = $countsByColumn->get($label->id, 0);
         }
 
         return $data;
@@ -1111,20 +1107,6 @@ class ProjectController extends AccountBaseController
         }
 
         return response()->json($data);
-    }
-
-    public function invoices()
-    {
-        $dataTable = new InvoicesDataTable($this->onlyTrashedRecords);
-        $viewPermission = user()->permission('view_project_invoices');
-        abort_403(!in_array($viewPermission, ['all', 'added', 'owned']));
-
-        $tab = request('tab');
-        $this->activeTab = $tab ?: 'overview';
-
-        $this->view = 'projects.ajax.invoices';
-
-        return $dataTable->render('projects.show', $this->data);
     }
 
     /**
@@ -1405,22 +1387,6 @@ class ProjectController extends AccountBaseController
         $this->activeTab = $tab ?: 'profile';
 
         $this->view = 'projects.ajax.notes';
-
-        return $dataTable->render('projects.show', $this->data);
-
-    }
-
-    public function tickets($projectAdmin = false)
-    {
-        $dataTable = new TicketDataTable($this->onlyTrashedRecords);
-
-        if (!$projectAdmin) {
-            $viewPermission = user()->permission('view_tickets');
-            abort_403(!in_array($viewPermission, ['all', 'added', 'owned', 'both']));
-        }
-
-        $this->activeTab = request()->tab ?: 'profile';
-        $this->view = 'projects.ajax.tickets';
 
         return $dataTable->render('projects.show', $this->data);
 
@@ -1764,6 +1730,7 @@ class ProjectController extends AccountBaseController
 
             $projectTasks = $projectTasks->where('project_id', $request->duplicateProjectID)->get();
             $taskBoard = TaskboardColumn::where('slug', 'incomplete')->first();
+            $projectLastTaskCount = Task::projectTaskCount($project->id);
 
             if ($projectTasks) {
 
@@ -1795,8 +1762,8 @@ class ProjectController extends AccountBaseController
                     }
 
                     if ($project) {
-                        $projectLastTaskCount = Task::projectTaskCount($project->id);
-                        $task->task_short_code = ($project) ? $project->project_short_code . '-' . ((int)$projectLastTaskCount + 1) : null;
+                        $projectLastTaskCount++;
+                        $task->task_short_code = $project->project_short_code . '-' . $projectLastTaskCount;
                     }
 
                     $task->saveQuietly();
@@ -1876,20 +1843,6 @@ class ProjectController extends AccountBaseController
         return Reply::dataOnly(['projects' => $projects]);
     }
 
-    public function orders()
-    {
-        $dataTable = new OrdersDataTable($this->onlyTrashedRecords);
-        $viewPermission = user()->permission('view_project_orders');
-        abort_403(!in_array($viewPermission, ['all', 'added', 'owned']));
-
-        $tab = request('tab');
-        $this->activeTab = $tab ?: 'overview';
-
-        $this->view = 'projects.ajax.orders';
-
-        return $dataTable->render('projects.show', $this->data);
-    }
-
     public function ganttDataNew($projectID, $hideCompleted, $company)
     {
         $taskBoardColumn = TaskboardColumn::completeColumn();
@@ -1897,17 +1850,17 @@ class ProjectController extends AccountBaseController
         if ($hideCompleted == 0) {
             $milestones = ProjectMilestone::with(['tasks' => function ($q) {
                 return $q->whereNotNull('tasks.start_date');
-            }, 'tasks.boardColumn'])->where('project_id', $projectID)->get();
+            }, 'tasks.boardColumn', 'tasks.users', 'tasks.project', 'tasks.labels'])->where('project_id', $projectID)->get();
 
         } else {
             $milestones = ProjectMilestone::with(['tasks' => function ($q) use ($taskBoardColumn) {
                 return $q->whereNotNull('tasks.start_date')->where('tasks.board_column_id', '<>', $taskBoardColumn->id);
-            }, 'tasks.boardColumn'])
+            }, 'tasks.boardColumn', 'tasks.users', 'tasks.project', 'tasks.labels'])
             ->where('status', 'incomplete')
             ->where('project_id', $projectID)->get();
         }
 
-        $nonMilestoneTasks = Task::whereNull('milestone_id')->whereNotNull('start_date')->with('boardColumn');
+        $nonMilestoneTasks = Task::whereNull('milestone_id')->whereNotNull('start_date')->with('boardColumn', 'users', 'project', 'labels');
 
         if ($hideCompleted == 1) {
             $nonMilestoneTasks = $nonMilestoneTasks->where('tasks.board_column_id', '<>', $taskBoardColumn->id);
@@ -2054,9 +2007,9 @@ class ProjectController extends AccountBaseController
     }
 
     public function comptaGestion(){
-        //$diligences= Project::ALL();
+        //$projets= Project::ALL();
   
-        //return view('etats-financiers.index'/*, compact('diligences')*/);
+        //return view('etats-financiers.index'/*, compact('projets')*/);
         $viewPermission = user()->permission('view_projects');
         abort_403((!in_array($viewPermission, ['all', 'added', 'owned', 'both'])));
 
@@ -2079,9 +2032,9 @@ class ProjectController extends AccountBaseController
     }
 
     public function formation(){
-        //$diligences= Project::ALL();
+        //$projets= Project::ALL();
   
-        //return view('etats-financiers.index'/*, compact('diligences')*/);
+        //return view('etats-financiers.index'/*, compact('projets')*/);
         $viewPermission = user()->permission('view_projects');
         abort_403((!in_array($viewPermission, ['all', 'added', 'owned', 'both'])));
 
@@ -2104,9 +2057,9 @@ class ProjectController extends AccountBaseController
     }
 
     public function fiscalite(){
-        //$diligences= Project::ALL();
+        //$projets= Project::ALL();
   
-        //return view('etats-financiers.index'/*, compact('diligences')*/);
+        //return view('etats-financiers.index'/*, compact('projets')*/);
         $viewPermission = user()->permission('view_projects');
         abort_403((!in_array($viewPermission, ['all', 'added', 'owned', 'both'])));
 
@@ -2129,9 +2082,9 @@ class ProjectController extends AccountBaseController
     }
 
     public function autresServices(){
-        //$diligences= Project::ALL();
+        //$projets= Project::ALL();
   
-        //return view('etats-financiers.index'/*, compact('diligences')*/);
+        //return view('etats-financiers.index'/*, compact('projets')*/);
         $viewPermission = user()->permission('view_projects');
         abort_403((!in_array($viewPermission, ['all', 'added', 'owned', 'both'])));
 

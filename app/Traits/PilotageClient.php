@@ -27,10 +27,10 @@ trait PilotageClient
         $termine = TaskboardColumn::completeColumn();
         $societe = company()->id;
 
-        /* Diligences : le total et la part encore ouverte. Les statuts du
+        /* Projets : le total et la part encore ouverte. Les statuts du
            cabinet sont libelles en francais, on ecarte l'achevee par son
            libelle sans tenir compte de la casse. */
-        $diligences = DB::table('projects')
+        $projets = DB::table('projects')
             ->whereNull('deleted_at')
             ->where('company_id', $societe)
             ->where('client_id', $clientId)
@@ -41,7 +41,7 @@ trait PilotageClient
             )
             ->first();
 
-        /* Charge et retards, portes par les taches des diligences du client. */
+        /* Charge et retards, portes par les taches des projets du client. */
         $taches = DB::table('tasks')
             ->join('projects', 'projects.id', '=', 'tasks.project_id')
             ->whereNull('tasks.deleted_at')
@@ -70,8 +70,8 @@ trait PilotageClient
             ->first();
 
         return (object) [
-            'diligences'       => (int) ($diligences->total ?? 0),
-            'diligencesOuvertes' => (int) ($diligences->en_cours ?? 0),
+            'projets'       => (int) ($projets->total ?? 0),
+            'projetsOuvertes' => (int) ($projets->en_cours ?? 0),
             'taches'           => (int) ($taches->en_cours ?? 0),
             'retard'           => (int) ($taches->retard ?? 0),
             'contrats'         => (int) ($contrats->total ?? 0),

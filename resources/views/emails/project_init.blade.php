@@ -43,10 +43,10 @@
             </div>
             <div class="content">
                 <div class="greeting">Bonjour {{ $recipientName }},</div>
-                <div class="body-text">Nous avons le plaisir de vous confirmer l'ouverture officielle de votre dossier de diligence au sein de notre établissement.</div>
+                <div class="body-text">Nous avons le plaisir de vous confirmer l'ouverture officielle de votre dossier de projet au sein de notre établissement.</div>
 
                 <div class="info-section">
-                    <div class="info-row"><div class="info-label">Diligence</div><div class="info-value">{{ $projectName }}</div></div>
+                    <div class="info-row"><div class="info-label">Projet</div><div class="info-value">{{ $projectName }}</div></div>
                     <div class="info-row"><div class="info-label">Statut</div><div class="info-value">Dossier ouvert</div></div>
                     <div class="info-row"><div class="info-label">Date</div><div class="info-value">{{ $date }}</div></div>
                 </div>
@@ -72,7 +72,7 @@
                 </div>
             </div>
             <div class="footer">
-                <div class="footer-text">&copy; {{ date('Y') }} {{ $companyName }}. Ouverture de diligence officielle.</div>
+                <div class="footer-text">&copy; {{ date('Y') }} {{ $companyName }}. Ouverture de projet officielle.</div>
             </div>
         </div>
     </div>

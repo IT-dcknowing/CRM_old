@@ -2,14 +2,14 @@
 
 {{--
     Indicateurs de tete, conformes a la maquette pilotage-dc-knowing.
-    Les quatre valeurs viennent de $diligenceKpis, calcule en une seule
-    requete par OverviewDashboard::calculerDiligenceKpis(). Aucune
+    Les quatre valeurs viennent de $projetKpis, calcule en une seule
+    requete par OverviewDashboard::calculerProjetKpis(). Aucune
     requete n'est declenchee ici.
 
     Le bloc n'apparait que sur l'onglet Vue d'ensemble : les autres
     onglets reutilisent cette vue sans cette variable.
 --}}
-@isset($diligenceKpis)
+@isset($projetKpis)
     @include('dashboard.ajax.pilotage')
 @endisset
 
@@ -330,7 +330,7 @@
 
     @if (in_array('projects', user_modules()) && in_array('project_activity_timeline', $activeWidgets))
         <div class="col-sm-12 col-lg-6 mt-3">
-            @if (false) {{-- [BLOC RETIRE] Journal d'activite des diligences : retire du tableau de bord, donnees conservees --}}
+            @if (false) {{-- [BLOC RETIRE] Journal d'activite des projets : retire du tableau de bord, donnees conservees --}}
             <x-cards.data
                 :title="__('modules.dashboard.projectActivityTimeline').' <i class=\'fa fa-question-circle\' data-toggle=\'popover\' data-placement=\'top\' data-content=\''.__('app.from').' '.$startDate->translatedFormat(company()->date_format).' '.__('app.to').' '.$endDate->translatedFormat(company()->date_format).'\' data-trigger=\'hover\'></i>'"
                 padding="false"

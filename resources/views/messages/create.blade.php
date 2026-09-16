@@ -348,7 +348,7 @@
                 let users = "{!! $task->users->pluck('name')->implode(', ') !!}";
 
                 let content = "<h2><strong>Communication : [" + taskHeading + " #" + taskId + "]</strong></h2>";
-                content += "<p><strong>Diligence :</strong> " + project + "</p>";
+                content += "<p><strong>Projet :</strong> " + project + "</p>";
                 content += "<p><strong>Statut :</strong> " + status + "</p>";
                 content += "<p><strong>Date d'échéance :</strong> " + dueDate + "</p>";
                 content += "<p><strong>Responsable(s) :</strong> " + users + "</p>";

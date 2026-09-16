@@ -135,7 +135,7 @@ trait RapportHebdomadaire
         }
 
         /* Liste : jointures a gauche, car une tache peut n'avoir ni
-           diligence ni client sans devoir disparaitre du rapport. */
+           projet ni client sans devoir disparaitre du rapport. */
         $taches = DB::table('tasks')
             ->leftJoin('taskboard_columns', 'taskboard_columns.id', '=', 'tasks.board_column_id')
             ->leftJoin('projects', 'projects.id', '=', 'tasks.project_id')
@@ -188,7 +188,7 @@ trait RapportHebdomadaire
                 'reference' => $t->task_short_code,
                 'titre'     => $t->heading,
                 'client'    => $t->client,
-                'diligence' => $t->project_name,
+                'projet' => $t->project_name,
                 'projetId'  => $t->projet_id,
                 'debut'     => $t->start_date ? Carbon::parse($t->start_date) : null,
                 'echeance'  => $t->due_date ? Carbon::parse($t->due_date) : null,

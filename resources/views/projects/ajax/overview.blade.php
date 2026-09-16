@@ -94,7 +94,7 @@ $memberIds = $project->members->pluck('user_id')->toArray();
                                  ProjectController@destroy ('all' ou 'added'), pour ne jamais
                                  proposer une action que le controleur refusera par abort_403.
                                  Attention : destroy() fait un forceDelete() et efface aussi
-                                 les fichiers de la diligence. L'action est definitive. --}}
+                                 les fichiers de le projet. L'action est definitive. --}}
                             @if ($deleteProjectPermission == 'all'
                                 || ($deleteProjectPermission == 'added' && $project->added_by == user()->id))
                                 <hr class="my-1">
@@ -516,7 +516,7 @@ $memberIds = $project->members->pluck('user_id')->toArray();
 
         /* Suppression depuis la fiche : confirmation renforcee (l'action est
            definitive cote controleur, forceDelete + effacement des fichiers)
-           puis retour a la liste des diligences. */
+           puis retour a la liste des projets. */
         $('body').on('click', '.delete-project-detail', function () {
             var id = $(this).data('project-id');
 

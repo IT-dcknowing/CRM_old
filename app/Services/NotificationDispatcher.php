@@ -178,7 +178,7 @@ class NotificationDispatcher
     }
 
     /**
-     * Dispatch notifications when a project (diligence) is created or updated
+     * Dispatch notifications when a project (projet) is created or updated
      * 
      * @param Project $project
      * @param array $channels

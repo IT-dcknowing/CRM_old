@@ -73,4 +73,4 @@
     }
 
 </style>
-<?php /**PATH /home/cp2255957p00/public_html/tacheflux/resources/views/sections/theme_css.blade.php ENDPATH**/ ?>
+<?php /**PATH C:\laragon\www\dc_knowing\CRM\resources\views/sections/theme_css.blade.php ENDPATH**/ ?>

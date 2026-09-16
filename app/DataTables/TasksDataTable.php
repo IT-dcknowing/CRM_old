@@ -454,7 +454,7 @@ class TasksDataTable extends BaseDataTable
                project_milestones.milestone_title as milestone_name, project_milestones.id as milestone_id'
         )
             ->addSelect('tasks.company_id') // Company_id is fetched so the we have fetch company relation with it)
-            ->with('users', 'activeTimerAll', 'boardColumn', 'activeTimer', 'timeLogged', 'timeLogged.breaks', 'userActiveTimer', 'userActiveTimer.activeBreak', 'labels', 'taskUsers')
+            ->with('users', 'activeTimerAll', 'boardColumn', 'activeTimer', 'timeLogged', 'timeLogged.breaks', 'userActiveTimer', 'userActiveTimer.activeBreak', 'labels', 'taskUsers', 'milestone')
             ->withCount('activeTimerAll', 'completedSubtasks', 'subtasks')
             ->groupBy('tasks.id');
 
