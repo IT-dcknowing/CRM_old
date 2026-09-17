@@ -1446,6 +1446,35 @@ body.sidebar-toggled .dck-chrome.dck-chrome .dck-sect,
 .dck-chrome.dck-chrome .navbar-left,
 .dck-chrome.dck-chrome .navbar-right { display:flex; align-items:center; }
 
+/* Le theme de base coupe l'en-tete en deux moities flottantes de 50 % et
+   fait flotter les icones : quand la place manque, « Creer » et les
+   icones passaient a la ligne. En flex, le titre et la recherche cedent
+   de la place et les actions restent toujours sur une seule ligne. */
+.dck-chrome.dck-chrome.main-header { display:flex; align-items:center; flex-wrap:nowrap; }
+.dck-chrome.dck-chrome.main-header .navbar-left {
+  float:none;
+  flex:1 1 auto;
+  width:auto !important;
+  min-width:0;
+  overflow:hidden;
+}
+.dck-chrome.dck-chrome.main-header .navbar-left .app-title,
+.dck-chrome.dck-chrome.main-header .navbar-left .page-title { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.dck-chrome.dck-chrome.main-header .page-header-right {
+  float:none !important;
+  flex:0 1 auto;
+  width:auto !important;
+  min-width:0;
+}
+.dck-chrome.dck-chrome.main-header .page-header-right > ul {
+  display:flex;
+  align-items:center;
+  flex-wrap:nowrap;
+  flex:0 0 auto;
+  margin:0;
+}
+.dck-chrome.dck-chrome.main-header .page-header-right > ul > li { float:none; flex:0 0 auto; }
+
 .dck-chrome.dck-chrome .app-title,
 .dck-chrome.dck-chrome .page-title {
   font-size:15.5px !important;
@@ -1459,6 +1488,8 @@ body.sidebar-toggled .dck-chrome.dck-chrome .dck-sect,
   align-items:center;
   gap:8px;
   width:min(360px, 34vw);
+  flex:0 1 auto;
+  min-width:160px;
   height:36px;
   margin-right:14px;
   padding:0 11px;

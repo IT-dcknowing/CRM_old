@@ -204,7 +204,11 @@
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         })
         .then(function (r) {
-            return r.json().then(function (corps) { return { code: r.status, corps: corps }; });
+            /* Une page d'erreur HTML (delai depasse, fichier trop lourd
+               pour le serveur) ne se lit pas en JSON : on garde le code. */
+            return r.json()
+                .catch(function () { return {}; })
+                .then(function (corps) { return { code: r.status, corps: corps }; });
         })
         .then(function (r) {
             /* Un refus de validation — un PDF depose, par exemple —
@@ -220,7 +224,23 @@
                 return;
             }
 
-            zone.innerHTML = r.corps.html || '';
+            /* Toute autre reponse sans apercu est un incident : l'etape 3
+               s'ouvrait alors vide, sans rien dire. On affiche la cause. */
+            if (!r.corps.html) {
+                var messages = {
+                    419: '{{ __("La session a expiré. Rechargez la page puis recommencez.") }}',
+                    413: '{{ __("Le fichier est trop volumineux pour le serveur.") }}',
+                    403: '{{ __("Vous n’avez pas le droit d’importer des tâches.") }}'
+                };
+
+                erreur((r.corps.status === 'fail' && r.corps.message) || messages[r.code]
+                    || '{{ __("Le fichier n’a pas pu être analysé.") }}'
+                    + ' (' + '{{ __("code") }}' + ' ' + r.code + ')');
+
+                return;
+            }
+
+            zone.innerHTML = r.corps.html;
             etape.classList.remove('d-none');
             etape.scrollIntoView({ behavior: 'smooth', block: 'start' });
         })

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Carbon\Carbon;
 use App\Models\Task;
 use App\Models\User;
+use Illuminate\Support\Facades\Log;
 use App\Helper\Files;
 use App\Helper\Reply;
 use App\Models\Leave;
@@ -141,62 +142,134 @@ class TaskController extends AccountBaseController
     {
         switch ($request->action_type) {
             case 'delete':
-                $this->deleteRecords($request);
+                return $this->bilanActionGroupee(
+                    $this->deleteRecords($request), __('messages.deleteSuccess'));
 
-                return Reply::success(__('messages.deleteSuccess'));
             case 'change-status':
-                $this->changeBulkStatus($request);
+                return $this->bilanActionGroupee(
+                    $this->changeBulkStatus($request), __('messages.updateSuccess'));
 
-                return Reply::success(__('messages.updateSuccess'));
             case 'milestone':
-                $this->changeMilestones($request);
+                return $this->bilanActionGroupee(
+                    $this->changeMilestones($request), __('messages.updateSuccess'));
 
-                return Reply::success(__('messages.updateSuccess'));
             default:
                 return Reply::error(__('messages.selectAction'));
         }
     }
 
+    /**
+     * Reponse d'une action groupee, selon ce qui a pu etre traite.
+     *
+     * Le silence serait le pire des retours : une selection de dix
+     * taches dont trois echappent a l'utilisateur doit le lui dire,
+     * sinon il croit avoir tout supprime.
+     *
+     * @param array $bilan ['traitees' => int, 'ignorees' => int]
+     */
+    private function bilanActionGroupee(array $bilan, string $succes)
+    {
+        if ($bilan['traitees'] === 0) {
+            return Reply::error(__('Aucune des tâches sélectionnées ne relève de vos droits.'));
+        }
+
+        if ($bilan['ignorees'] > 0) {
+            return Reply::success(sprintf(
+                __('%d tâche(s) traitée(s). %d ignorée(s), faute de droits sur celles-ci.'),
+                $bilan['traitees'], $bilan['ignorees']
+            ));
+        }
+
+        return Reply::success($succes);
+    }
+
+    /**
+     * Parmi les taches designees, celles que l'utilisateur peut traiter.
+     *
+     * La regle est celle qui commande deja l'affichage des boutons et
+     * la suppression a l'unite. Les actions groupees, elles, exigeaient
+     * « all » : un employe ne pouvait pas supprimer d'un seul geste des
+     * taches qu'il avait pourtant creees lui-meme.
+     *
+     * @param string $droit 'delete_tasks' ou 'edit_tasks'
+     */
+    private function tachesAutorisees(string $droit, array $ids)
+    {
+        $niveau = user()->permission($droit);
+
+        if ($niveau === 'none') {
+            return collect();
+        }
+
+        return Task::with('users', 'project')->whereIn('id', $ids)->get()
+            ->filter(function ($tache) use ($niveau) {
+                $gens = $tache->users->pluck('id')->toArray();
+
+                return $niveau == 'all'
+                    || ($niveau == 'added' && $tache->added_by == user()->id)
+                    || ($niveau == 'owned' && in_array(user()->id, $gens))
+                    || ($niveau == 'both'
+                        && (in_array(user()->id, $gens) || $tache->added_by == user()->id))
+                    || ($tache->project && $tache->project->project_admin == user()->id);
+            });
+    }
+
     protected function deleteRecords($request)
     {
-        abort_403(user()->permission('delete_tasks') != 'all');
-
         $ids = explode(',', $request->row_ids);
+        $autorisees = $this->tachesAutorisees('delete_tasks', $ids);
 
-        Task::whereIn('id', $ids)->delete();
+        if ($autorisees->isNotEmpty()) {
+            Task::whereIn('id', $autorisees->pluck('id'))->delete();
+        }
+
+        return [
+            'traitees' => $autorisees->count(),
+            'ignorees' => count($ids) - $autorisees->count(),
+        ];
     }
 
     protected function changeBulkStatus($request)
     {
-        abort_403(user()->permission('edit_tasks') != 'all');
-
         $taskBoardColumn = TaskboardColumn::findOrFail(request()->status);
 
-        // Update tasks based on the requested status
-        $taskIds = explode(',', $request->row_ids);
+        $ids = explode(',', $request->row_ids);
+        $cibles = $this->tachesAutorisees('edit_tasks', $ids)->pluck('id');
 
-        if ($taskBoardColumn && $taskBoardColumn->slug == 'completed') {
-            Task::whereIn('id', $taskIds)->update([
-                'status' => 'completed',
-                'board_column_id' => $request->status,
-                'completed_on' => now()->format('Y-m-d')
-            ]);
-        }
-        else {
-            Task::whereIn('id', $taskIds)->update(['board_column_id' => $request->status]);
+        if ($cibles->isNotEmpty()) {
+            if ($taskBoardColumn && $taskBoardColumn->slug == 'completed') {
+                Task::whereIn('id', $cibles)->update([
+                    'status' => 'completed',
+                    'board_column_id' => $request->status,
+                    'completed_on' => now()->format('Y-m-d')
+                ]);
+            }
+            else {
+                Task::whereIn('id', $cibles)->update(['board_column_id' => $request->status]);
+            }
         }
 
+        return [
+            'traitees' => $cibles->count(),
+            'ignorees' => count($ids) - $cibles->count(),
+        ];
     }
 
     public function changeMilestones($request)
     {
-        abort_403(user()->permission('edit_tasks') != 'all');
+        $ids = explode(',', $request->row_ids);
+        $cibles = $this->tachesAutorisees('edit_tasks', $ids)->pluck('id');
 
-        $taskIds = explode(',', $request->row_ids);
+        if ($cibles->isNotEmpty()) {
+            Task::whereIn('id', $cibles)->update([
+                'milestone_id' => $request->milestone
+            ]);
+        }
 
-        Task::whereIn('id', $taskIds)->update([
-            'milestone_id' => $request->milestone
-        ]);
+        return [
+            'traitees' => $cibles->count(),
+            'ignorees' => count($ids) - $cibles->count(),
+        ];
     }
 
     public function changeStatus(Request $request)
@@ -459,15 +532,24 @@ class TaskController extends AccountBaseController
     /**
      * Ecran d'importation.
      *
-     * Reserve aux droits complets : l'import cree des taches en nombre,
-     * et l'on ne veut pas qu'un compte limite a « added » contourne sa
-     * restriction par ce biais.
+     * Ouvert a qui peut deja creer une tache, au meme titre que le
+     * formulaire. Un compte limite a « added » ne contourne rien en
+     * important : les taches qu'il cree portent son nom, et restent
+     * donc soumises aux memes restrictions de lecture et de
+     * modification que celles qu'il saisit a la main.
      */
     public function importTask()
     {
-        abort_403(user()->permission('add_tasks') != 'all');
+        abort_403(!in_array(user()->permission('add_tasks'), ['all', 'added']));
 
         $this->colonnes = TaskImport::colonnes();
+
+        /* Les projets du selecteur « projet par defaut ». Le plus
+           souvent, un lot de taches concerne un seul projet : le
+           choisir ici evite de repeter son nom a chaque ligne. */
+        $this->projets = Project::where('company_id', company()->id)
+            ->orderBy('project_name')->get(['id', 'project_name']);
+
         $this->pageTitle = __('Importer des tâches');
         $this->view = 'tasks.ajax.import';
 
@@ -482,7 +564,7 @@ class TaskController extends AccountBaseController
      */
     public function importTaskTemplate()
     {
-        abort_403(user()->permission('add_tasks') != 'all');
+        abort_403(!in_array(user()->permission('add_tasks'), ['all', 'added']));
 
         return Excel::download(
             new \App\Exports\ModeleImportTaches(),
@@ -495,37 +577,63 @@ class TaskController extends AccountBaseController
      */
     public function importTaskAnalyse(Request $request)
     {
-        abort_403(user()->permission('add_tasks') != 'all');
+        abort_403(!in_array(user()->permission('add_tasks'), ['all', 'added']));
 
+        /* Les tableurs que PhpSpreadsheet sait lire. Le PDF en est
+           volontairement absent : il decrit une mise en page, pas des
+           lignes et des colonnes, et rien n'y distingue une cellule
+           vide d'un blanc typographique. Mieux vaut le dire que de
+           laisser croire a un incident. */
         $request->validate(
-            ['import_file' => 'required|file|mimes:xlsx,xls,csv'],
-            [],
+            ['import_file' => 'required|file|mimes:xlsx,xls,csv,ods'],
+            ['import_file.mimes' => __('Ce format de fichier ne peut pas être lu. Déposez un tableur : xlsx, xls, ods ou csv. Un PDF ou une image ne peuvent pas être importés.')],
             ['import_file' => __('Fichier')]
         );
 
-        $chemin = $request->file('import_file')->getRealPath();
-        $resultat = $this->analyserFichierTaches($chemin);
+        /* Une exception ici — fichier illisible, dossier de depot non
+           inscriptible, extension PHP manquante — renvoyait une erreur 500
+           muette : l'ecran restait fige sur une etape 3 vide. Elle est
+           consignee et expliquee a l'utilisateur. */
+        try {
+            $chemin = $request->file('import_file')->getRealPath();
+            $resultat = $this->analyserFichierTaches(
+                $chemin,
+                $this->projetDefautChoisi($request),
+                $request->file('import_file')->getClientOriginalExtension()
+            );
 
-        /* Le fichier est conserve le temps de la confirmation : le
-           reanalyser evite de faire transiter les lignes par le
-           navigateur, et donc de leur faire confiance. */
-        $jeton = null;
+            /* Le fichier est conserve le temps de la confirmation : le
+               reanalyser evite de faire transiter les lignes par le
+               navigateur, et donc de leur faire confiance. */
+            $jeton = null;
 
-        if ($resultat->total > 0) {
-            $jeton = 'import-taches-' . user()->id . '-' . time() . '.'
-                . $request->file('import_file')->getClientOriginalExtension();
+            if ($resultat->total > 0) {
+                $jeton = 'import-taches-' . user()->id . '-' . time() . '.'
+                    . $request->file('import_file')->getClientOriginalExtension();
 
-            $request->file('import_file')->move(storage_path('app/imports-taches'), $jeton);
+                /* Le dossier n'est pas livre avec le code : il est cree au
+                   premier import, et manquait sur le serveur de production. */
+                \Illuminate\Support\Facades\File::ensureDirectoryExists(storage_path('app/imports-taches'), 0775);
+
+                $request->file('import_file')->move(storage_path('app/imports-taches'), $jeton);
+            }
+
+            $this->resultat = $resultat;
+            $this->jeton = $jeton;
+
+            return Reply::dataOnly([
+                'status' => 'success',
+                'html' => view('tasks.ajax.import_apercu', $this->data)->render(),
+                'peutImporter' => $resultat->ok && $resultat->total > 0,
+            ]);
         }
+        catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Import de taches, analyse : ' . $e->getMessage(), [
+                'fichier' => $e->getFile() . ':' . $e->getLine(),
+            ]);
 
-        $this->resultat = $resultat;
-        $this->jeton = $jeton;
-
-        return Reply::dataOnly([
-            'status' => 'success',
-            'html' => view('tasks.ajax.import_apercu', $this->data)->render(),
-            'peutImporter' => $resultat->ok && $resultat->total > 0,
-        ]);
+            return Reply::error(__('Le fichier n’a pas pu être analysé.') . ' ' . $e->getMessage());
+        }
     }
 
     /**
@@ -533,7 +641,7 @@ class TaskController extends AccountBaseController
      */
     public function importTaskProcess(Request $request)
     {
-        abort_403(user()->permission('add_tasks') != 'all');
+        abort_403(!in_array(user()->permission('add_tasks'), ['all', 'added']));
 
         $jeton = basename((string) $request->jeton);
         $chemin = storage_path('app/imports-taches/' . $jeton);
@@ -544,7 +652,7 @@ class TaskController extends AccountBaseController
 
         /* Deuxieme analyse : l'apercu affiche n'est pas une autorisation,
            et le fichier a pu changer entre-temps. */
-        $resultat = $this->analyserFichierTaches($chemin);
+        $resultat = $this->analyserFichierTaches($chemin, $this->projetDefautChoisi($request));
 
         if (!$resultat->ok || $resultat->total === 0) {
             @unlink($chemin);
@@ -561,6 +669,74 @@ class TaskController extends AccountBaseController
             sprintf(__('%d tâches ont été importées.'), $creees),
             ['creees' => $creees, 'redirectUrl' => route('tasks.index')]
         );
+    }
+
+    /**
+     * Projet applique aux lignes dont la colonne Projet est vide.
+     *
+     * Verifie ici plutot que dans le trait : l'identifiant vient du
+     * navigateur, et rien ne garantit qu'il designe un projet du
+     * cabinet. Un identifiant etranger est simplement ignore.
+     */
+    private function projetDefautChoisi(Request $request): ?int
+    {
+        $id = (int) $request->projet_defaut;
+
+        if (!$id) {
+            return null;
+        }
+
+        return Project::where('company_id', company()->id)
+            ->where('id', $id)->value('id');
+    }
+
+    /**
+     * Previent les collaborateurs a qui une tache vient d'etre confiee.
+     *
+     * L'auteur n'est jamais notifie : il vient d'ecrire la tache.
+     *
+     * @param array|null $ids identifiants des assignes
+     */
+    private function notifierNouveauxAssignes(Task $task, $ids): void
+    {
+        $ids = array_filter((array) $ids);
+
+        if (!$ids) {
+            return;
+        }
+
+        /* On ne se previent pas soi-meme. */
+        $ids = array_diff($ids, [user()?->id]);
+
+        if (!$ids) {
+            return;
+        }
+
+        $gens = User::whereIn('id', $ids)->get();
+
+        if ($gens->isEmpty()) {
+            return;
+        }
+
+        /* Un envoi qui echoue ne doit pas defaire l'enregistrement.
+
+           La tache est deja en base quand on arrive ici. Laisser
+           remonter l'exception afficherait une erreur pour une
+           creation pourtant reussie, et l'utilisateur recommencerait —
+           c'est ainsi qu'on fabrique des doublons.
+
+           Le serveur refuse par exemple les adresses desactivees
+           (« 525 Disabled recipient address »), ce qui est le cas de
+           plusieurs boites du domaine. On le consigne et l'on
+           poursuit ; la notification dans l'application, elle, est
+           ecrite quoi qu'il arrive. */
+        try {
+            event(new TaskEvent($task, $gens, 'NewTask'));
+        }
+        catch (\Throwable $e) {
+            Log::warning('Tache #' . $task->id . ' : notification d\'affectation non delivree — '
+                . $e->getMessage());
+        }
     }
 
     public function store(StoreTask $request)
@@ -652,6 +828,25 @@ class TaskController extends AccountBaseController
         // Save assignees
         if ($request->user_id) {
             $task->users()->sync($request->user_id);
+
+            /* Prevenir les collaborateurs a qui la tache est confiee.
+
+               Cet envoi avait ete coupe dans TaskObserver pour cause de
+               doublons : la notification partait a la fois de
+               l'observateur de la tache et de celui du pivot
+               task_users, que sync() declenche lui aussi. Creer une
+               tache ne prevenait donc plus personne, alors que la
+               modification, elle, prevenait toujours les nouveaux
+               assignes — d'ou l'incoherence constatee.
+
+               On la retablit ici, au meme endroit et de la meme facon
+               que dans update() : un seul point d'emission, sur le
+               chemin explicite du controleur. Les observateurs restent
+               muets, ce qui evite le doublon d'origine.
+
+               TaskListener ecarte de lui-meme les taches privees, et
+               NewTask respecte les preferences de chacun. */
+            $this->notifierNouveauxAssignes($task, $request->user_id);
         }
 
 
@@ -1050,11 +1245,14 @@ class TaskController extends AccountBaseController
         $task->users()->sync($request->user_id);
 
         if (!empty($request->user_id)) {
-            $newlyAssignedUserIds = array_diff($request->user_id, $taskUsers);
-            if (!empty($newlyAssignedUserIds)) {
-                $newUsers = User::whereIn('id', $newlyAssignedUserIds)->get();
-                event(new TaskEvent($task, $newUsers, 'NewTask'));
-            }
+            /* Les seuls nouveaux venus : reassigner une tache ne doit
+               pas re-prevenir ceux qui la portaient deja.
+
+               Meme methode qu'a la creation, donc meme protection
+               contre un envoi qui echoue, et meme regle sur l'auteur,
+               qui ne se notifie pas lui-meme. */
+            $this->notifierNouveauxAssignes(
+                $task, array_diff($request->user_id, $taskUsers));
         }
 
         // Dispatch delegation notification if changed
