@@ -1,0 +1,17 @@
+MAQUETTE DCK FLOW TASK
+======================
+
+Fichier : dck-flow-task.html
+
+Ouvre-le par un double-clic dans n'importe quel navigateur.
+Aucune installation, aucun serveur, aucune dependance locale.
+
+Il contient la maquette complete : barre laterale, tableaux de bord,
+Contrats, Diligences, Taches, formulaires, menu du profil, theme sombre.
+
+Seule ressource externe : les polices IBM Plex, chargees depuis Google
+Fonts. Sans connexion, la page s'affiche avec une police systeme de
+remplacement -- la mise en page reste identique.
+
+Version exportee le 31/08/2026 depuis l'artifact publie
+https://claude.ai/code/artifact/79c16af5-8675-4c0e-9d2b-2529a1d08d5d

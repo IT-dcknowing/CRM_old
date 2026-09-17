@@ -66,11 +66,11 @@ trait PilotageEmploye
         $jugees = (int) ($tenue->jugees ?? 0);
         $aTemps = (int) ($tenue->a_temps ?? 0);
 
-        /* Diligences en cours sur lesquelles il intervient. Les statuts
+        /* Projets en cours sur lesquelles il intervient. Les statuts
            du cabinet sont libelles en francais (« En cours », « terminée »)
            et non avec les valeurs d'origine de l'application : on ecarte
            donc l'achevee par son libelle, sans tenir compte de la casse. */
-        $diligences = DB::table('project_members')
+        $projets = DB::table('project_members')
             ->join('projects', 'projects.id', '=', 'project_members.project_id')
             ->whereNull('projects.deleted_at')
             ->where('projects.company_id', $societe)
@@ -89,7 +89,7 @@ trait PilotageEmploye
                renvoie null pour que la vue affiche un tiret plutot
                qu'un 0 % trompeur. */
             'respect'    => $jugees > 0 ? (int) round($aTemps / $jugees * 100) : null,
-            'diligences' => $diligences,
+            'projets' => $projets,
         ];
     }
 

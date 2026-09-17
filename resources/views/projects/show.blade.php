@@ -133,13 +133,13 @@ $projectArchived = $project->trashed();
                         @endif
                     @endif
 
-                    @if (in_array('invoices', user_modules()) && !is_null($project->client_id) && ($viewInvoicePermission == 'all' || ($viewInvoicePermission == 'added' && user()->id == $project->added_by) || ($viewInvoicePermission == 'owned' && user()->id == $project->client_id)))
+                    @if (false) {{-- [ONGLET RETIRE] Factures : aucun case correspondant dans ProjectController::show() --}}
                         <li>
                             <x-tab :href="route('projects.show', $project->id).'?tab=invoices'" :text="__('app.menu.invoices')" class="invoices" ajax="false" />
                         </li>
                     @endif
 
-                    @if (in_array('orders', user_modules()) && !is_null($project->client_id) && ($viewOrderPermission == 'all' || ($viewOrderPermission == 'added' && user()->id == $project->added_by) || ($viewOrderPermission == 'owned' && user()->id == $project->client_id)))
+                    @if (false) {{-- [ONGLET RETIRE] Commandes : aucun case correspondant dans ProjectController::show() --}}
                         <li>
                             <x-tab :href="route('projects.show', $project->id).'?tab=orders'" :text="__('app.menu.orders')" class="orders" ajax="false" />
                         </li>
@@ -208,7 +208,7 @@ $projectArchived = $project->trashed();
                         </li>
                     @endif
 
-                    @if ($viewNotePermission != 'none' )
+                    @if (false) {{-- [ONGLET RETIRE] Tickets : aucun case correspondant dans ProjectController::show() --}}
                         <li>
                             <x-tab :href="route('projects.show', $project->id).'?tab=tickets'" :text="__('app.menu.tickets')" class="tickets" ajax="false" />
                         </li>

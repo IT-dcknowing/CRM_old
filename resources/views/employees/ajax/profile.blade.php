@@ -119,8 +119,8 @@ $editEmployeePermission = user()->permission('edit_employees');
                                             </p>
                                         </span>
                                         <span class="dck-emp-kpi__c">
-                                            <label>@lang('Diligences')</label>
-                                            <p>{{ $k->diligences }}</p>
+                                            <label>@lang('Projets')</label>
+                                            <p>{{ $k->projets }}</p>
                                         </span>
                                     </div>
                                     @if (!is_null($k->respect))

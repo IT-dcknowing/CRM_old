@@ -117,7 +117,7 @@ tr { page-break-inside: avoid; }
             </div>
             <div class="edite">
                 Édité le {{ now(company()->timezone)->locale('fr')->translatedFormat('j F Y à H\hi') }}
-                — {{ $pourQui ?: __('tout le cabinet') }}
+                — {{ $pourQui ?: __('système') }}
             </div>
         </td>
     </tr>
@@ -256,8 +256,8 @@ tr { page-break-inside: avoid; }
                     <td class="gris">{{ $t->reference ?: '—' }}</td>
                     <td>
                         <div class="tache-titre">{{ \Illuminate\Support\Str::limit($t->titre, $pourQui ? 66 : 58) }}</div>
-                        @if ($t->client || $t->diligence)
-                            <div class="tache-sous">{{ \Illuminate\Support\Str::limit($t->client ?: $t->diligence, 42) }}</div>
+                        @if ($t->client || $t->projet)
+                            <div class="tache-sous">{{ \Illuminate\Support\Str::limit($t->client ?: $t->projet, 42) }}</div>
                         @endif
                     </td>
                     <td>

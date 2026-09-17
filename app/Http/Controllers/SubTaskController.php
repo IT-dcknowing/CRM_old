@@ -18,7 +18,7 @@ class SubTaskController extends AccountBaseController
      */
     public function edit($id)
     {
-        $this->subTask = SubTask::with(['files'])->findOrFail($id);
+        $this->subTask = SubTask::with(['files', 'task.users'])->findOrFail($id);
         return view('tasks.sub_tasks.edit', $this->data);
     }
 

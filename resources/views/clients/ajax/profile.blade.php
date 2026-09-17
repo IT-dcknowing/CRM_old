@@ -69,13 +69,13 @@
 
     {{-- Indicateurs du dossier. Ils remplacent les chiffres de
          facturation : le cabinet ne pilote pas ses clients au revenu
-         mais a l'avancement des diligences et au respect des delais. --}}
+         mais a l'avancement des projets et au respect des delais. --}}
     <div class="col-xl-5 col-lg-12 col-md-12">
         <div class="dck-emp-kpi">
             <div class="dck-emp-kpi__row">
                 <span class="dck-emp-kpi__c">
-                    <label>@lang('Diligences en cours')</label>
-                    <p>{{ $k->diligencesOuvertes }}<span class="dck-emp-kpi__u">/ {{ $k->diligences }}</span></p>
+                    <label>@lang('Projets en cours')</label>
+                    <p>{{ $k->projetsOuvertes }}<span class="dck-emp-kpi__u">/ {{ $k->projets }}</span></p>
                 </span>
                 <span class="dck-emp-kpi__c">
                     <label>@lang('Tâches en cours')</label>

@@ -294,29 +294,5 @@
         return data;
     }
 
-    $('#pipeline').on('change keyup', function () {
-        var dateRange = $('#datatableRange2').data('daterangepicker');
-        var startDate = dateRange.startDate.format('{{ company()->moment_date_format }}');
-        var endDate = dateRange.endDate.format('{{ company()->moment_date_format }}');
-
-        startDate = encodeURIComponent(startDate);
-        endDate = encodeURIComponent(endDate);
-
-        var pipelineId = $('#pipeline').val();
-        var url = "{{ route('dashboard.deal-stage-data', ':id') }}?startDate=" + startDate + "&endDate=" + endDate;
-        url = url.replace(':id', pipelineId);
-
-        $.easyAjax({
-
-            url: url,
-            container: '#dashboardWidgetForm',
-            blockUI: true,
-            type: "GET",
-            redirect: true,
-            data: $('#dashboardWidgetForm').serialize(),
-            success: function (response) {
-                $('#leadStageData').html(response.html);
-            }
-        })
-    });
+    {{-- [nettoyage-modules] Leads/Deals : widget pipeline retire cote controleur (route dashboard.deal-stage-data supprimee) --}}
 </script>

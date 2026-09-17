@@ -27,7 +27,7 @@ class RapportHebdomadaireExport implements FromCollection, WithHeadings, WithSty
     public function headings(): array
     {
         return [
-            'Référence', 'Tâche', 'Client ou diligence', 'Statut', 'En retard',
+            'Référence', 'Tâche', 'Client ou projet', 'Statut', 'En retard',
             'Priorité', 'Début', 'Échéance', 'Réalisée le', 'Délai (jours)',
             'Durée prévue', 'Temps pointé (h)', 'Collaborateurs', 'Dernière mise à jour',
         ];
@@ -40,7 +40,7 @@ class RapportHebdomadaireExport implements FromCollection, WithHeadings, WithSty
         return $this->rapport->taches->map(fn($t) => [
             $t->reference ?: '',
             $t->titre,
-            $t->client ?: ($t->diligence ?: ''),
+            $t->client ?: ($t->projet ?: ''),
             $t->statut,
             $t->retard ? 'oui' : 'non',
             $priorites[$t->priorite] ?? $t->priorite,

@@ -30,7 +30,7 @@
                 <span class="dck-note__i"><i class="bi bi-search"></i></span>
                 <div>
                     <b>@lang('Que cherchez-vous ?')</b>
-                    <p>@lang('La recherche porte sur les tâches, les diligences et les clients.')</p>
+                    <p>@lang('La recherche porte sur les tâches, les projets et les clients.')</p>
                 </div>
             </div>
         @elseif (($total ?? 0) === 0)
@@ -80,13 +80,13 @@
                 </div>
             @endif
 
-            {{-- ── Diligences ─────────────────────────────────────── --}}
-            @if ($diligences->isNotEmpty())
+            {{-- ── Projets ─────────────────────────────────────── --}}
+            @if ($projets->isNotEmpty())
                 <div class="dck-c dck-res">
                     <div class="dck-c__head">
                         <div>
                             <h3>@lang('app.menu.projects')</h3>
-                            <div class="dck-c__sub">{{ $diligences->count() }} {{ trans_choice('résultat|résultats', $diligences->count()) }}</div>
+                            <div class="dck-c__sub">{{ $projets->count() }} {{ trans_choice('résultat|résultats', $projets->count()) }}</div>
                         </div>
                         <div class="dck-c__right">
                             <a class="dck-lien" href="{{ route('projects.index') }}?search_keyword={{ urlencode($mot) }}">
@@ -95,7 +95,7 @@
                         </div>
                     </div>
                     <div class="dck-c__body dck-pile">
-                        @foreach ($diligences as $d)
+                        @foreach ($projets as $d)
                             <a class="dck-res__item" href="{{ route('projects.show', $d->id) }}">
                                 <span class="dck-res__ico"><i class="bi bi-folder2-open"></i></span>
                                 <span class="dck-res__txt">

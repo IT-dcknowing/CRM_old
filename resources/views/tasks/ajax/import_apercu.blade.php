@@ -93,9 +93,9 @@
     {{-- ── La confirmation ───────────────────────────────────────── --}}
     @if ($resultat->ok && $jeton)
         <div class="dck-import__valider">
-            <button type="button" class="dck-import__b is-principal" id="btn-confirmer-import"
+            <button type="button" class="btn btn-primary rounded f-14 p-2" id="btn-confirmer-import"
                     data-jeton="{{ $jeton }}">
-                <i class="bi bi-check2 mr-1"></i>
+                <i class="fa fa-check mr-1"></i>
                 {{ sprintf(__('Importer les %d tâches'), $resultat->total) }}
             </button>
             <span class="dck-import__note">@lang("Les tâches seront créées comme si elles avaient été saisies une à une.")</span>

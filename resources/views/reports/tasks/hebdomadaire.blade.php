@@ -15,12 +15,8 @@
 @section('filter-section')
     <div class="d-flex filter-box project-header bg-white">
         <div class="project-menu d-lg-flex">
-            {{-- Le rapport detaille reste reserve aux droits complets :
-                 son tableau ne sait pas se restreindre a une personne. --}}
-            @if (user()->permission('view_task_report') == 'all')
-                <x-tab :href="route('task-report.index')" ajax="false"
-                       :text="__('Rapport détaillé')" class="detaille" />
-            @endif
+            <x-tab :href="route('task-report.index')" ajax="false"
+                   :text="__('Rapport détaillé')" class="detaille" />
             <x-tab :href="route('task-report.hebdomadaire')" ajax="false"
                    :text="__('Rapport hebdomadaire')" class="hebdomadaire active" />
         </div>
@@ -240,7 +236,7 @@
                 @foreach ($rapport->taches as $t)
                     @php
                         $recherche = mb_strtolower(trim(
-                            $t->titre . ' ' . $t->client . ' ' . $t->diligence . ' ' . $t->reference . ' '
+                            $t->titre . ' ' . $t->client . ' ' . $t->projet . ' ' . $t->reference . ' '
                             . $t->gens->pluck('nom')->implode(' ')));
                         [$pLib, $pTeinte] = $priorites[$t->priorite] ?? [$t->priorite, 'neutre'];
                     @endphp
@@ -255,8 +251,8 @@
                             <a class="dck-hebdo__ttl openRightModal" href="{{ route('tasks.show', $t->id) }}">
                                 {{ $t->titre }}
                             </a>
-                            @if ($t->client || $t->diligence)
-                                <div class="dck-hebdo__sous">{{ $t->client ?: $t->diligence }}</div>
+                            @if ($t->client || $t->projet)
+                                <div class="dck-hebdo__sous">{{ $t->client ?: $t->projet }}</div>
                             @endif
                         </td>
                         <td>

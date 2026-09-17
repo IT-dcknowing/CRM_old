@@ -1,7 +1,7 @@
 {{--
     « Tableau de bord » du cabinet — conforme a PAGES.dashboard de la
     maquette dck-flow-task : quatre indicateurs, la charge de travail
-    sur six mois, la repartition des taches par colonne, les diligences
+    sur six mois, la repartition des taches par colonne, les projets
     a surveiller, l'activite recente, les taches en cours et le taux de
     cloture.
 
@@ -34,7 +34,7 @@
 
     {{-- ── Indicateurs ─────────────────────────────────────────
          Limites aux trois modules du coeur de metier : taches,
-         diligences et contrats. --}}
+         projets et contrats. --}}
     <div class="dck-grid dck-g4">
         <a class="dck-kpi2" href="{{ route('tasks.index') }}">
             <div class="dck-kpi2__top">
@@ -283,10 +283,10 @@
         </div>
     </div>
 
-    {{-- ── Diligences livrees a temps ─────────────────────────────
+    {{-- ── Projets livrees a temps ─────────────────────────────
          Le titre disait « Taux de cloture », comme la carte du haut :
          deux mesures differentes portaient le meme nom. Celle-ci compte
-         les diligences respectant leur echeance, celle du haut la part
+         les projets respectant leur echeance, celle du haut la part
          de taches terminees. La grille passe en pleine largeur, le bloc
          voisin ayant ete retire. --}}
     <div class="dck-grid">
@@ -294,8 +294,8 @@
         <div class="dck-c">
             <div class="dck-c__head">
                 <div>
-                    <h3>@lang('Diligences livrées à temps')</h3>
-                    <div class="dck-c__sub">Part des diligences terminées avant leur date limite</div>
+                    <h3>@lang('Projets livrées à temps')</h3>
+                    <div class="dck-c__sub">Part des projets terminés avant leur date limite</div>
                 </div>
             </div>
             <div class="dck-c__body">
@@ -309,7 +309,7 @@
         </div>
 
         {{-- [BLOC RETIRE] Echeancier reglementaire.
-             Les donnees restent calculees par PilotageDiligences
+             Les donnees restent calculees par PilotageProjets
              ($dashEcheances) : seul l'affichage est retire. --}}
     </div>
 
