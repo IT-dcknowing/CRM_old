@@ -315,14 +315,25 @@ if (!function_exists('user_modules')) {
     // @codingStandardsIgnoreLine
     function user_modules()
     {
+        // Memoire locale a la requete HTTP : cette fonction est appelee des
+        // centaines de fois par page (chaque serialisation d'un User, via
+        // l'attribut calcule "modules") pour toujours la meme valeur, ce qui
+        // multipliait les allers-retours vers le store de cache sans jamais
+        // changer de resultat en cours de requete.
+        static $memoire = [];
+
         $user = user();
 
         if (!$user) {
             return [];
         }
 
+        if (array_key_exists($user->id, $memoire)) {
+            return $memoire[$user->id];
+        }
+
         if (cache()->has('user_modules_' . $user->id)) {
-            return cache('user_modules_' . $user->id);
+            return $memoire[$user->id] = cache('user_modules_' . $user->id);
         }
 
         $module = new \App\Models\ModuleSetting();
@@ -351,7 +362,7 @@ if (!function_exists('user_modules')) {
 
         cache()->put('user_modules_' . $user->id, $moduleArray);
 
-        return $moduleArray;
+        return $memoire[$user->id] = $moduleArray;
     }
 
 }

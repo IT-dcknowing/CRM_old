@@ -414,7 +414,7 @@ class EmployeeController extends AccountBaseController
         if (!is_null($this->employee->employeeDetail)) {
             $this->employeeDetail = $this->employee->employeeDetail->withCustomFields();
 
-            $getCustomFieldGroupsWithFields = $this->employeeDetail->getCustomFieldGroupsWithFields();
+            $getCustomFieldGroupsWithFields = $this->employeeDetail->custom_fields;
 
             if ($getCustomFieldGroupsWithFields) {
                 $this->fields = $getCustomFieldGroupsWithFields->fields;
@@ -641,7 +641,7 @@ class EmployeeController extends AccountBaseController
                 if (!is_null($this->employee->employeeDetail)) {
                     $this->employeeDetail = $this->employee->employeeDetail->withCustomFields();
 
-                    $customFields = $this->employeeDetail->getCustomFieldGroupsWithFields();
+                    $customFields = $this->employeeDetail->custom_fields;
 
                     if (!empty($customFields)) {
                         $this->fields = $customFields->fields;

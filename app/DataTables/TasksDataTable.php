@@ -304,7 +304,7 @@ class TasksDataTable extends BaseDataTable
             || ($this->changeStatusPermission == 'both' && (in_array(user()->id, $taskUsers) || $row->added_by == user()->id))
             || ($row->project_admin == user()->id)
             ) {
-                $taskBoardColumn = TaskboardColumn::waitingForApprovalColumn();
+                $taskBoardColumn = $taskBoardColumns->firstWhere('slug', 'waiting_approval');
                 // Check if approval_send is 1, then disable the select dropdown
                 if ($row->approval_send == 1 && $row->need_approval_by_admin == 1 && (in_array('employee', user_roles()) && $row->project_admin != user()->id) && !in_array('admin', user_roles())) {
                     return '<span class="disabled-select"><i class="fa fa-circle mr-1 text-black"

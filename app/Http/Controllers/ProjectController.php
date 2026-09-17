@@ -512,7 +512,7 @@ class ProjectController extends AccountBaseController
 
         $this->pageTitle = __('app.update') . ' ' . __('app.project');
 
-        $getCustomFieldGroupsWithFields = $this->project->getCustomFieldGroupsWithFields();
+        $getCustomFieldGroupsWithFields = $this->project->custom_fields;
 
         if ($getCustomFieldGroupsWithFields) {
             $this->fields = $getCustomFieldGroupsWithFields->fields;
@@ -759,7 +759,7 @@ class ProjectController extends AccountBaseController
 
         $this->pageTitle = $this->project->project_name;
 
-        $getCustomFieldGroupsWithFields = $this->project->getCustomFieldGroupsWithFields();
+        $getCustomFieldGroupsWithFields = $this->project->custom_fields;
 
         if ($getCustomFieldGroupsWithFields) {
             $this->fields = $getCustomFieldGroupsWithFields->fields;
@@ -843,18 +843,18 @@ class ProjectController extends AccountBaseController
             $this->view = 'projects.ajax.notes_workspace';
             break;
         default:
-            $this->taskChart = $this->taskChartData($id);
+            $this->taskBoardStatus = TaskboardColumn::all();
+            $this->taskChart = $this->taskChartData($id, $this->taskBoardStatus);
             $hoursLogged = $this->project->times()->sum('total_minutes');
 
             $breakMinutes = ProjectTimeLogBreak::projectBreakMinutes($id);
 
             $this->hoursBudgetChart = $this->hoursBudgetChartData($this->project, $hoursLogged, $breakMinutes);
 
-            $this->amountBudgetChart = $this->amountBudgetChartData($this->project);
-            $this->taskBoardStatus = TaskboardColumn::all();
             $this->earnings = Payment::where('status', 'complete')
                 ->where('project_id', $id)
                 ->sum('amount');
+            $this->amountBudgetChart = $this->amountBudgetChartData($this->project, $this->earnings);
 
             // Initialize variables to store hours and minutes
             $hoursLogged = CarbonInterval::formatHuman($hoursLogged - $breakMinutes);
@@ -891,9 +891,9 @@ class ProjectController extends AccountBaseController
      *
      * @return array
      */
-    public function taskChartData($id)
+    public function taskChartData($id, $taskStatus = null)
     {
-        $taskStatus = TaskboardColumn::all();
+        $taskStatus = $taskStatus ?? TaskboardColumn::all();
         $data['labels'] = $taskStatus->pluck('column_name');
         $data['colors'] = $taskStatus->pluck('label_color');
         $data['values'] = [];
@@ -946,10 +946,10 @@ class ProjectController extends AccountBaseController
      *
      * @return \Illuminate\Http\Response
      */
-    public function amountBudgetChartData($project)
+    public function amountBudgetChartData($project, $earnings = null)
     {
         $amountBudget = $project->project_budget ?: 0;
-        $earnings = Payment::where('status', 'complete')
+        $earnings = $earnings ?? Payment::where('status', 'complete')
             ->where('project_id', $project->id)
             ->sum('amount');
         $plannedOverun = $earnings < $amountBudget ? $earnings : $amountBudget;
