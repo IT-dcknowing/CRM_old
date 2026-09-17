@@ -4887,55 +4887,40 @@ body.dark-theme .dck-chrome.dck-chrome .dck-marque img {
    Importation massive de taches
    ══════════════════════════════════════════════════════════════ */
 
-.dck-front.dck-front .dck-import { padding:20px 22px 26px; max-width:1000px; }
+/* L'ecran s'appuie sur .dck-card et sur les boutons de
+   l'application ; ne restent ici que les elements qui lui sont
+   propres — le bilan de l'analyse et le tableau d'apercu. */
 
-.dck-front.dck-front .dck-import__tete { margin-bottom:20px; }
-.dck-front.dck-front .dck-import__tete h2 { margin:0 0 3px; font-size:20px; font-weight:600; }
-.dck-front.dck-front .dck-import__tete p { margin:0; font-size:13px; color:var(--tx-3); }
+.dck-front.dck-front .dck-import { max-width:1600px; }
 
-.dck-front.dck-front .dck-import__etape {
-  display:flex; gap:14px; padding:18px;
-  background:var(--surface); border:1px solid var(--line);
-  border-radius:var(--r); margin-bottom:14px;
-}
+/* Numero d'etape, pose dans le titre de la carte. */
 .dck-front.dck-front .dck-import__num {
-  flex:0 0 28px; width:28px; height:28px;
-  display:flex; align-items:center; justify-content:center;
+  display:inline-flex; align-items:center; justify-content:center;
+  width:22px; height:22px; margin-right:8px; vertical-align:1px;
   border-radius:50%; background:var(--act); color:var(--act-tx);
-  font-family:var(--f-num); font-size:13px; font-weight:600;
+  font-family:var(--f-num); font-size:11.5px; font-weight:600;
 }
-.dck-front.dck-front .dck-import__corps { flex:1; min-width:0; }
-.dck-front.dck-front .dck-import__corps h3 { margin:2px 0 4px; font-size:14.5px; font-weight:600; }
-.dck-front.dck-front .dck-import__corps > p { margin:0 0 12px; font-size:13px; color:var(--tx-3); }
 
-.dck-front.dck-front .dck-import__b {
-  display:inline-flex; align-items:center; height:36px; padding:0 14px;
-  border:1px solid var(--line); border-radius:var(--r-sm);
-  background:var(--surface); color:var(--tx-2);
-  font-size:13px; font-weight:500; text-decoration:none; cursor:pointer;
+.dck-front.dck-front .dck-import__intro {
+  margin:0 0 14px; font-size:13px; color:var(--tx-3); max-width:76ch;
 }
-.dck-front.dck-front .dck-import__b:hover { background:var(--surface-3); text-decoration:none; }
-.dck-front.dck-front .dck-import__b.is-principal {
-  background:var(--act); border-color:var(--act); color:var(--act-tx);
-}
-.dck-front.dck-front .dck-import__b.is-principal:hover { background:var(--act-hover); color:var(--act-tx); }
-.dck-front.dck-front .dck-import__b[disabled] { opacity:.6; cursor:default; }
 
-.dck-front.dck-front .dck-import__cols { width:100%; border-collapse:collapse; margin-top:14px; font-size:12.5px; }
+.dck-front.dck-front .dck-import__note { margin:8px 0 0; font-size:12px; color:var(--tx-4); }
+
+/* Tableau des colonnes attendues : cale sur .table de l'application,
+   dont il ne change que la densite. */
+.dck-front.dck-front .dck-import__cols { font-size:12.5px; margin:0; }
 .dck-front.dck-front .dck-import__cols th {
-  text-align:left; padding:7px 9px; font-size:10.5px; text-transform:uppercase;
+  padding:7px 9px; font-size:10.5px; text-transform:uppercase;
   letter-spacing:.03em; color:var(--tx-4); background:var(--surface-2);
-  border-bottom:1px solid var(--line);
+  border-top:0; border-bottom:1px solid var(--line); white-space:nowrap;
 }
-.dck-front.dck-front .dck-import__cols td { padding:7px 9px; border-bottom:1px solid var(--line); vertical-align:top; }
-
-.dck-front.dck-front .dck-import__depot { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
-.dck-front.dck-front .dck-import__depot input[type=file] {
-  flex:1; min-width:200px; padding:7px 10px; font-size:13px;
-  border:1px solid var(--line); border-radius:var(--r-sm); background:var(--surface-2);
+.dck-front.dck-front .dck-import__cols td {
+  padding:7px 9px; border-top:0; border-bottom:1px solid var(--line); vertical-align:top;
 }
+.dck-front.dck-front .dck-import__cols tr:last-child td { border-bottom:0; }
 
-.dck-front.dck-front .dck-import__note { margin:12px 0 0; font-size:12px; color:var(--tx-4); }
+/* ── Bilan de l'analyse ─────────────────────────────────────── */
 
 .dck-front.dck-front .dck-import__bilan {
   display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:10px; margin-bottom:14px;
@@ -4960,6 +4945,8 @@ body.dark-theme .dck-chrome.dck-chrome .dck-marque img {
 
 .dck-front.dck-front .dck-import__erreurs { margin:9px 0 0; padding-left:18px; }
 .dck-front.dck-front .dck-import__erreurs li { margin-bottom:3px; font-size:12.5px; }
+
+/* ── Tableau d'apercu ───────────────────────────────────────── */
 
 .dck-front.dck-front .dck-import__scroll { overflow-x:auto; border:1px solid var(--line); border-radius:var(--r); }
 .dck-front.dck-front .dck-import__tbl { width:100%; border-collapse:collapse; font-size:12.5px; }
@@ -4986,6 +4973,5 @@ body.dark-theme .dck-chrome.dck-chrome .dck-marque img {
 }
 
 @media (max-width:640px) {
-  .dck-front.dck-front .dck-import { padding:14px 12px 20px; }
   .dck-front.dck-front .dck-import__bilan { grid-template-columns:1fr; }
 }
