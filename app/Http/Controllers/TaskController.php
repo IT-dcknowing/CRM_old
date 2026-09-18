@@ -654,21 +654,57 @@ class TaskController extends AccountBaseController
            et le fichier a pu changer entre-temps. */
         $resultat = $this->analyserFichierTaches($chemin, $this->projetDefautChoisi($request));
 
-        if (!$resultat->ok || $resultat->total === 0) {
+        /* Fichier illisible, en-tete incomplet, trop de lignes : il n'y a
+           rien a sauver, le message de l'analyse dit quoi. */
+        if ($resultat->total === 0) {
             @unlink($chemin);
 
             return Reply::error($resultat->message
                 ?: __('Le fichier contient des erreurs. Corrigez-le avant de recommencer.'));
         }
 
-        $creees = $this->creerTachesImportees($resultat->lignes);
+        /* Import partiel : les lignes correctes passent, les autres sont
+           laissees de cote.
+
+           L'ancien comportement — tout ou rien — refusait les cinquante
+           taches d'un fichier pour une date illisible a la ligne 34. Il
+           visait a ne jamais laisser un fichier a moitie importe ; il
+           produisait en pratique un fichier pas importe du tout, et
+           l'utilisateur recommencait l'operation entiere.
+
+           Reprendre le fichier corrige ensuite ne cree pas de doublon :
+           les taches deja enregistrees sont reconnues par leur empreinte
+           et rejoignent les lignes ignorees. */
+        $valides = array_values(array_filter(
+            $resultat->lignes, fn($l) => empty($l->erreurs)
+        ));
+
+        if (!$valides) {
+            @unlink($chemin);
+
+            return Reply::error(
+                __('Aucune ligne de ce fichier n\'est exploitable. Corrigez-le avant de recommencer.')
+            );
+        }
+
+        $creees = $this->creerTachesImportees($valides);
+        $ignorees = $resultat->total - count($valides);
 
         @unlink($chemin);
 
-        return Reply::successWithData(
-            sprintf(__('%d tâches ont été importées.'), $creees),
-            ['creees' => $creees, 'redirectUrl' => route('tasks.index')]
-        );
+        $message = sprintf(__('%d tâches ont été importées.'), $creees);
+
+        if ($ignorees > 0) {
+            $message .= ' ' . sprintf(
+                trans_choice('%d ligne a été ignorée car elle comporte une erreur.|%d lignes ont été ignorées car elles comportent des erreurs.', $ignorees),
+                $ignorees
+            );
+        }
+
+        return Reply::successWithData($message, [
+            'creees' => $creees, 'ignorees' => $ignorees,
+            'redirectUrl' => route('tasks.index'),
+        ]);
     }
 
     /**

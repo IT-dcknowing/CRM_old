@@ -3,6 +3,8 @@
 namespace App\Traits;
 
 use App\Imports\TaskImport;
+use App\Models\Project;
+use App\Models\ProjectStatusSetting;
 use App\Models\Task;
 use App\Models\TaskboardColumn;
 use App\Models\User;
@@ -101,6 +103,21 @@ trait ImportationTaches
 
         $valides = collect($lignes)->filter(fn($l) => empty($l->erreurs))->count();
 
+        /* Les projets que la confirmation creera, chacun une seule fois.
+           Enumeres pour l'apercu : creer un projet en silence, sur une
+           faute de frappe, remplirait la base de doublons que personne
+           n'aurait demandes. */
+        $aCreer = [];
+
+        foreach ($lignes as $l) {
+            /* Seules les lignes retenues comptent : une ligne ecartee pour
+               une autre raison n'importera pas sa tache, son projet n'a
+               donc pas lieu d'exister. */
+            if ($l->projetACreer && empty($l->erreurs)) {
+                $aCreer[$this->normaliser($l->projetACreer)] = $l->projetACreer;
+            }
+        }
+
         return (object) [
             'ok'        => empty($erreurs),
             'message'   => null,
@@ -109,6 +126,7 @@ trait ImportationTaches
             'total'     => count($lignes),
             'valides'   => $valides,
             'enErreur'  => count($lignes) - $valides,
+            'projetsACreer' => array_values($aCreer),
         ];
     }
 
@@ -117,6 +135,7 @@ trait ImportationTaches
         return (object) [
             'ok' => false, 'message' => $message, 'lignes' => [],
             'erreurs' => [$message], 'total' => 0, 'valides' => 0, 'enErreur' => 0,
+            'projetsACreer' => [],
         ];
     }
 
@@ -232,6 +251,11 @@ trait ImportationTaches
             'existantes' => $existantes,
             'projetDefaut' => $projetDefaut ? ($projets->firstWhere('id', $projetDefaut) ?: null) : null,
             'defaut'     => TaskboardColumn::where('slug', 'incomplete')->first(),
+
+            /* Le meme droit que le formulaire de creation d'un projet.
+               L'import ne doit pas etre un moyen d'obtenir ce qu'on ne
+               peut pas faire a l'ecran. */
+            'creationProjets' => in_array(user()->permission('add_projects'), ['all', 'added']),
         ];
     }
 
@@ -255,13 +279,29 @@ trait ImportationTaches
            besoin de sa valeur definitive — celle du fichier, ou celle
            choisie a l'ecran d'import quand la colonne est vide. */
         $projet = null;
+        $projetACreer = null;
         $nomProjet = $lire('project');
 
         if ($nomProjet !== '') {
             $projet = $refs->projets[$this->normaliser($nomProjet)] ?? null;
 
+            /* Projet absent du cabinet.
+
+               Il n'est pas cree ici : analyser() ne doit rien ecrire. On
+               retient le nom, l'apercu l'annonce, et la creation n'a lieu
+               qu'a la confirmation — sinon un simple coup d'oeil au
+               fichier aurait deja peuple la base.
+
+               Le droit de creer un projet est celui du module projets, et
+               non celui de l'import : sans lui, la ligne reste en erreur
+               comme auparavant. */
             if (!$projet) {
-                $erreurs[] = sprintf(__('Ligne %d : le projet « %s » n\'existe pas.'), $numero, $nomProjet);
+                if ($refs->creationProjets) {
+                    $projetACreer = $nomProjet;
+                }
+                else {
+                    $erreurs[] = sprintf(__('Ligne %d : le projet « %s » n\'existe pas.'), $numero, $nomProjet);
+                }
             }
         }
         elseif ($refs->projetDefaut) {
@@ -271,8 +311,14 @@ trait ImportationTaches
 
         /* Empreinte batie sur le nom reel du projet, et non sur ce que
            porte la cellule : deux lignes rattachees au meme projet — que
-           ce soit par la colonne ou par defaut — sont bien un doublon. */
-        $empreinte = $this->normaliser($titre . '|' . ($projet->project_name ?? ''));
+           ce soit par la colonne ou par defaut — sont bien un doublon.
+
+           Un projet a creer compte pour son nom : deux lignes qui
+           l'annoncent visent bien le meme projet, celui que la
+           confirmation creera une seule fois. */
+        $empreinte = $this->normaliser(
+            $titre . '|' . ($projet->project_name ?? $projetACreer ?? '')
+        );
 
         if ($titre !== '' && isset($vus[$empreinte])) {
             $erreurs[] = sprintf(
@@ -286,7 +332,10 @@ trait ImportationTaches
             /* Doublon avec une tache deja enregistree. */
             if (isset($refs->existantes[$empreinte])) {
                 $erreurs[] = sprintf(
-                    __('Ligne %d : la tâche « %s » existe déjà%s. Supprimez cette ligne, ou renommez la tâche.'),
+                    /* Ni ordre ni reproche : depuis l'import partiel, la
+                       ligne est simplement passee. C'est meme ce qui
+                       permet de redeposer un fichier corrige en entier. */
+                    __('Ligne %d : la tâche « %s » existe déjà%s. Elle ne sera pas créée une seconde fois.'),
                     $numero,
                     $titre,
                     $nomProjet !== ''
@@ -376,6 +425,7 @@ trait ImportationTaches
             'description' => $lire('description'),
             'projet'      => $projet,
             'projetNom'   => $nomProjet,
+            'projetACreer' => $projetACreer,
             'categorie'   => $categorie,
             'statut'      => $statut,
             'gens'        => $gens,
@@ -468,6 +518,12 @@ trait ImportationTaches
         $aNotifier = [];
 
         DB::transaction(function () use ($lignes, $attente, &$creees, &$aNotifier) {
+            /* Les projets annonces par l'apercu, crees avant les taches
+               et dans la meme transaction : un projet cree pour une tache
+               qui n'arrive pas serait un projet vide, sorti de nulle
+               part. */
+            $this->creerProjetsManquants($lignes);
+
             foreach ($lignes as $l) {
                 $task = new Task();
                 $task->heading = $l->titre;
@@ -552,6 +608,119 @@ trait ImportationTaches
         $this->notifierAffectations($aNotifier);
 
         return $creees;
+    }
+
+    /**
+     * Cree les projets que le fichier nomme sans qu'ils existent.
+     *
+     * Chaque nom ne donne qu'un projet, meme si dix lignes le citent.
+     * Les lignes concernees sont ensuite rattachees a l'objet cree :
+     * la suite du traitement n'a plus a savoir qu'il vient de naitre.
+     *
+     * Le projet cree est volontairement minimal — un nom, un code, une
+     * date de debut, le statut par defaut du cabinet. Le reste (client,
+     * budget, membres) se renseigne a l'ecran : l'import ne peut pas
+     * l'inventer, et un projet a moitie rempli vaut mieux qu'un import
+     * refuse.
+     *
+     * @param array $lignes lignes analysees, modifiees sur place
+     */
+    private function creerProjetsManquants(array $lignes): void
+    {
+        $noms = [];
+
+        foreach ($lignes as $l) {
+            if (!empty($l->projetACreer)) {
+                $noms[$this->normaliser($l->projetACreer)] = $l->projetACreer;
+            }
+        }
+
+        if (!$noms) {
+            return;
+        }
+
+        /* Le compteur est lu une fois : le relire a chaque projet
+           donnerait le meme numero a tous ceux d'un meme fichier, la
+           requete ne voyant pas les lignes non encore validees. */
+        $numero = $this->dernierNumeroProjet();
+        $crees = [];
+
+        foreach ($noms as $cle => $nom) {
+            $numero++;
+
+            $projet = new Project();
+            $projet->project_name = $nom;
+            $projet->project_short_code = 'DLG#' . sprintf('%03d', $numero);
+            $projet->start_date = $this->debutLePlusTot($lignes, $cle) ?: now()->startOfDay();
+            $projet->completion_percent = 0;
+            $projet->public = 0;
+            $projet->status = ProjectStatusSetting::where('default_status', 1)
+                ->value('status_name') ?: 'not started';
+
+            $projet->save();
+
+            /* Meme forme que les projets deja charges par
+               referencesImport() : la suite lit ->id et ->project_short_code
+               sans se soucier de la provenance. */
+            $crees[$cle] = $projet;
+        }
+
+        foreach ($lignes as $l) {
+            if (!empty($l->projetACreer)) {
+                $l->projet = $crees[$this->normaliser($l->projetACreer)] ?? null;
+            }
+        }
+    }
+
+    /**
+     * Le plus grand numero deja porte par un code « DLG#nnn ».
+     *
+     * Le maximum est cherche en PHP et non par la base : les codes sont
+     * du texte, et « DLG#099 » y passerait pour plus grand que
+     * « DLG#100 ».
+     */
+    private function dernierNumeroProjet(): int
+    {
+        $max = 0;
+
+        $codes = DB::table('projects')
+            ->where('company_id', company()->id)
+            ->where('project_short_code', 'LIKE', 'DLG#%')
+            ->pluck('project_short_code');
+
+        foreach ($codes as $code) {
+            $parts = explode('#', (string) $code);
+            $n = end($parts);
+
+            if (is_numeric($n) && (int) $n > $max) {
+                $max = (int) $n;
+            }
+        }
+
+        return $max;
+    }
+
+    /**
+     * La plus ancienne date de debut parmi les taches d'un projet a creer.
+     *
+     * Un projet qui commencerait aujourd'hui alors que ses taches
+     * debutent le mois dernier afficherait un retard qui n'existe pas.
+     */
+    private function debutLePlusTot(array $lignes, string $cle): ?Carbon
+    {
+        $tot = null;
+
+        foreach ($lignes as $l) {
+            if (empty($l->projetACreer) || $this->normaliser($l->projetACreer) !== $cle) {
+                continue;
+            }
+
+            if ($l->debut && (!$tot || $l->debut->lt($tot))) {
+                $tot = $l->debut;
+            }
+        }
+
+        return $tot;
     }
 
     /**

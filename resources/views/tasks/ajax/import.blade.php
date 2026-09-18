@@ -53,7 +53,7 @@
                     @php
                         $aide = [
                             'heading'     => __("Le titre de la tâche."),
-                            'project'     => __("Un projet existant, à choisir dans la liste. Laissez vide si la tâche n'est rattachée à aucun projet, ou si vous indiquez un projet par défaut à l'étape 2."),
+                            'project'     => __("À choisir dans la liste, ou laissez vide. Vous pouvez aussi saisir un nom qui n'existe pas encore : le projet sera créé à l'import, après confirmation."),
                             'start_date'  => __('Format :') . ' ' . company()->date_format,
                             'due_date'    => __('Même format. Doit être postérieure à la date de début.'),
                             'status'      => __('Un des statuts du tableau ; voir la liste ci-dessous.'),
