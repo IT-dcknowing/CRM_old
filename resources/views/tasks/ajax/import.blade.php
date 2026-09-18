@@ -250,7 +250,7 @@
         .then(function (r) { return r.json(); })
         .then(function (rep) {
             if (rep.status === 'success') {
-                window.location.href = rep.redirectUrl || '{{ route("tasks.index") }}';
+                window.location.href = rep.redirectUrl || '{{ route("taskboards.index") }}';
             }
             else {
                 erreur(rep.message || '{{ __("L’importation a échoué.") }}');

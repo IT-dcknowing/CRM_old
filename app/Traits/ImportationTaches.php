@@ -452,7 +452,7 @@ trait ImportationTaches
            depuis une transaction qui echoue serait un mensonge. */
         $aNotifier = [];
 
-        DB::transaction(function () use ($lignes, $attente, &$creees, &$aNotifier) {
+        DB::transaction(function () use ($lignes, $attente, &$creees, &$aNotifier, &$comptageParProjet) {
             foreach ($lignes as $l) {
                 $task = new Task();
                 $task->heading = $l->titre;

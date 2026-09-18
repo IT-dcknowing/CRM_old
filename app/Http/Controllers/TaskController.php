@@ -589,19 +589,23 @@ class TaskController extends AccountBaseController
             ['import_file' => __('Fichier')]
         );
 
-        $chemin = $request->file('import_file')->getRealPath();
+        /* Deplace d'emblee vers un chemin du projet : Excel lit le fichier
+           via realpath(), peu fiable sur le fichier temporaire de PHP
+           (sous C:\Windows\Temp sur cet environnement). Un chemin dans
+           storage/ leve l'ambiguite, et sert aussi de conservation pour
+           la confirmation (voir importTaskProcess). */
+        $jeton = 'import-taches-' . user()->id . '-' . time() . '.'
+            . $request->file('import_file')->getClientOriginalExtension();
+
+        $chemin = $request->file('import_file')
+            ->move(storage_path('app/imports-taches'), $jeton)
+            ->getPathname();
+
         $resultat = $this->analyserFichierTaches($chemin, $this->projetDefautChoisi($request));
 
-        /* Le fichier est conserve le temps de la confirmation : le
-           reanalyser evite de faire transiter les lignes par le
-           navigateur, et donc de leur faire confiance. */
-        $jeton = null;
-
-        if ($resultat->total > 0) {
-            $jeton = 'import-taches-' . user()->id . '-' . time() . '.'
-                . $request->file('import_file')->getClientOriginalExtension();
-
-            $request->file('import_file')->move(storage_path('app/imports-taches'), $jeton);
+        if ($resultat->total === 0) {
+            @unlink($chemin);
+            $jeton = null;
         }
 
         $this->resultat = $resultat;
@@ -645,7 +649,7 @@ class TaskController extends AccountBaseController
 
         return Reply::successWithData(
             sprintf(__('%d tâches ont été importées.'), $creees),
-            ['creees' => $creees, 'redirectUrl' => route('tasks.index')]
+            ['creees' => $creees, 'redirectUrl' => route('taskboards.index')]
         );
     }
 
