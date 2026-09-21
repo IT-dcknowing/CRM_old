@@ -387,6 +387,7 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
         }
 
         $clients = User::without('session')
+            ->with('clientDetails.company')
             ->join('role_user', 'role_user.user_id', '=', 'users.id')
             ->join('roles', 'roles.id', '=', 'role_user.role_id')
             ->join('client_details', 'users.id', '=', 'client_details.user_id')
@@ -428,7 +429,7 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
     public static function client()
     {
         return User::withoutGlobalScope(ActiveScope::class)
-            ->with('clientDetails')
+            ->with('clientDetails.company')
             ->join('role_user', 'role_user.user_id', '=', 'users.id')
             ->join('roles', 'roles.id', '=', 'role_user.role_id')
             ->join('client_details', 'users.id', '=', 'client_details.user_id')
@@ -450,6 +451,7 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
         }
 
         $users = User::withRole('employee')
+            ->with('employeeDetail.designation')
             ->join('employee_details', 'employee_details.user_id', '=', 'users.id')
             ->leftJoin('designations', 'employee_details.designation_id', '=', 'designations.id')
             ->select('users.id', 'users.company_id', 'users.name', 'users.email', 'users.created_at', 'users.image', 'designations.name as designation_name', 'users.email_notifications', 'users.mobile', 'users.country_id', 'users.status');

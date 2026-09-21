@@ -20,10 +20,6 @@
 
 <div class="dck-import">
 
-    {{-- Etapes 1 et 2 cote a cote sur grand ecran, empilees sinon. --}}
-    <div class="row">
-    <div class="col-xl-7">
-
     {{-- ── 1. Le modele ──────────────────────────────────────────── --}}
     <div class="dck-card mb-3">
         <div class="dck-card__head d-flex">
@@ -53,10 +49,11 @@
                     @php
                         $aide = [
                             'heading'     => __("Le titre de la tâche."),
-                            'project'     => __("À choisir dans la liste, ou laissez vide. Vous pouvez aussi saisir un nom qui n'existe pas encore : le projet sera créé à l'import, après confirmation."),
+                            'project'     => __("Un projet existant, à choisir dans la liste. Laissez vide si la tâche n'est rattachée à aucun projet, ou si vous indiquez un projet par défaut à l'étape 2."),
                             'start_date'  => __('Format :') . ' ' . company()->date_format,
                             'due_date'    => __('Même format. Doit être postérieure à la date de début.'),
                             'status'      => __('Un des statuts du tableau ; voir la liste ci-dessous.'),
+                            'assigned'    => __("Le nom d'un collaborateur, à choisir dans la liste. Pour en confier à plusieurs, séparez les noms par une virgule."),
                             'category'    => __("Un domaine existant, à choisir dans la liste. L'ancien intitulé « Catégorie » reste accepté."),
                             'description' => __('Texte libre.'),
                         ];
@@ -116,7 +113,7 @@
                          Une ligne qui porte un projet garde le sien, de
                          sorte qu'un fichier melangeant plusieurs projets
                          reste possible. --}}
-                    <div class="col-12">
+                    <div class="col-md-6">
                         <div class="form-group mb-3">
                             <label for="projet_defaut" class="f-14 text-dark-grey mb-2">
                                 @lang('Projet par défaut')
@@ -136,7 +133,7 @@
                         </div>
                     </div>
 
-                    <div class="col-12">
+                    <div class="col-md-6">
                         <div class="form-group mb-3">
                             <label for="import_file" class="f-14 text-dark-grey mb-2">
                                 @lang('Fichier') <sup class="text-danger">*</sup>
@@ -209,11 +206,7 @@
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         })
         .then(function (r) {
-            /* Une page d'erreur HTML (delai depasse, fichier trop lourd
-               pour le serveur) ne se lit pas en JSON : on garde le code. */
-            return r.json()
-                .catch(function () { return {}; })
-                .then(function (corps) { return { code: r.status, corps: corps }; });
+            return r.json().then(function (corps) { return { code: r.status, corps: corps }; });
         })
         .then(function (r) {
             /* Un refus de validation — un PDF depose, par exemple —
@@ -229,23 +222,7 @@
                 return;
             }
 
-            /* Toute autre reponse sans apercu est un incident : l'etape 3
-               s'ouvrait alors vide, sans rien dire. On affiche la cause. */
-            if (!r.corps.html) {
-                var messages = {
-                    419: '{{ __("La session a expiré. Rechargez la page puis recommencez.") }}',
-                    413: '{{ __("Le fichier est trop volumineux pour le serveur.") }}',
-                    403: '{{ __("Vous n’avez pas le droit d’importer des tâches.") }}'
-                };
-
-                erreur((r.corps.status === 'fail' && r.corps.message) || messages[r.code]
-                    || '{{ __("Le fichier n’a pas pu être analysé.") }}'
-                    + ' (' + '{{ __("code") }}' + ' ' + r.code + ')');
-
-                return;
-            }
-
-            zone.innerHTML = r.corps.html;
+            zone.innerHTML = r.corps.html || '';
             etape.classList.remove('d-none');
             etape.scrollIntoView({ behavior: 'smooth', block: 'start' });
         })
@@ -285,7 +262,7 @@
         .then(function (r) { return r.json(); })
         .then(function (rep) {
             if (rep.status === 'success') {
-                window.location.href = rep.redirectUrl || '{{ route("tasks.index") }}';
+                window.location.href = rep.redirectUrl || '{{ route("taskboards.index") }}';
             }
             else {
                 erreur(rep.message || '{{ __("L’importation a échoué.") }}');

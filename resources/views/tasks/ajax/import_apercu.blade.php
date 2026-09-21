@@ -118,11 +118,7 @@
             <button type="button" class="btn btn-primary rounded f-14 p-2" id="btn-confirmer-import"
                     data-jeton="{{ $jeton }}">
                 <i class="fa fa-check mr-1"></i>
-                @if ($resultat->enErreur > 0)
-                    {{ sprintf(__('Importer les %d lignes valides'), $resultat->valides) }}
-                @else
-                    {{ sprintf(__('Importer les %d tâches'), $resultat->total) }}
-                @endif
+                {{ sprintf(__('Importer les %d tâches'), $resultat->total) }}
             </button>
             <span class="dck-import__note">
                 @if ($resultat->enErreur > 0)

@@ -67,17 +67,7 @@
     <div class="px-4 py-2 border-top-0 emp-dashboard dck-front">
 
         <!-- WELOCOME START -->
-        @if (!is_null($checkTodayLeave))
-            <div class="row pt-4">
-                <div class="col-md-12">
-                    <x-alert type="info" icon="info-circle">
-                        <a href="{{ (Route::has('leaves.show') ? route('leaves.show', $checkTodayLeave->id) : '') }}" class="openRightModal text-dark-grey">
-                            <u>@lang('messages.youAreOnLeave') </u>
-                        </a>
-                    </x-alert>
-                </div>
-            </div>
-        @elseif (!is_null($checkTodayHoliday))
+        @if (!is_null($checkTodayHoliday))
             <div class="row pt-4">
                 <div class="col-md-12">
                     <x-alert type="info" icon="info-circle">
@@ -111,86 +101,10 @@
                 class="ml-auto d-flex clock-in-out mb-3 mb-lg-0 mb-md-0 m mt-4 mt-lg-0 mt-md-0 justify-content-between">
                 <p
                     class="mb-0 text-lg-right text-md-right f-18 font-weight-bold text-dark-grey d-grid align-items-center">
-                    <input type="hidden" id="current-latitude" name="current_latitude">
-                    <input type="hidden" id="current-longitude" name="current_longitude">
-
                     {{-- Date complete plutot que le seul jour de la semaine :
                          « jeudi 03 septembre 2026 » au lieu de « jeudi ». --}}
                     <span id="dashboard-clock">{!! now()->timezone(company()->timezone)->translatedFormat(company()->time_format) . '</span><span class="f-10 font-weight-normal">' . now()->timezone(company()->timezone)->translatedFormat('l d F Y') . '</span>' !!}
-
-                    @if (!is_null($currentClockIn))
-                        <span class="f-11 font-weight-normal text-lightest">
-                            @lang('app.clockInAt') -
-                            {{ $currentClockIn->clock_in_time->timezone(company()->timezone)->translatedFormat(company()->time_format) }}
-                        </span>
-                    @endif
                 </p>
-
-                @php
-                    $currentDateTime = now()->timezone(company()->timezone);
-                    $msg = null;
-                    $start_time = \Carbon\Carbon::createFromFormat('H:i:s', $attendanceSettings->office_start_time, company()->timezone);
-                    $mid_time = \Carbon\Carbon::createFromFormat('H:i:s', $attendanceSettings->halfday_mark_time, company()->timezone);
-                    $end_time = \Carbon\Carbon::createFromFormat('H:i:s', $attendanceSettings->office_end_time, company()->timezone);
-
-                    if ($start_time->gt($end_time)) { // check if shift end time is less then current time then shift not ended yet
-                        if(
-                            now(company()->timezone)->lessThan($end_time)
-                            || (now(company()->timezone)->greaterThan($end_time) && now(company()->timezone)->lessThan($start_time))
-                        ){
-                            $start_time->subDay();
-                            $mid_time->subDay();
-                        }else{
-                            $mid_time->addDay();
-                            $end_time->addDay();
-                        }
-                    }
-                    // dd($checkTodayHoliday);
-
-                    $current_user_id = auth()->user()->id;
-                    $leaveApplied = $leave->where('user_id', $current_user_id)->where('status', 'approved')->first();
-
-                    if($leaveApplied != null && ($leaveApplied->duration === 'single' || $leaveApplied->duration === 'multiple') && $currentDateTime->between($start_time, $end_time)){
-                        $msg = __('messages.leaveApplied');
-                    }elseif ($leaveApplied != null  && $leaveApplied->duration === 'half day' && $leaveApplied->half_day_type === 'first_half' && $currentDateTime->lt($mid_time) && $currentDateTime->between($start_time, $mid_time)){
-                        $msg = __('messages.leaveForFirstHalf');
-                    }elseif ($leaveApplied != null  && $leaveApplied->duration === 'half day' && $leaveApplied->half_day_type === 'second_half' && $currentDateTime->gt($mid_time) && $currentDateTime->between($mid_time, $end_time)){
-                        $msg = __('messages.leaveForSecondHalf');
-                    }else if(!is_null($checkTodayHoliday) && $checkTodayHoliday->exists){
-                        $msg = __('messages.todayHoliday');
-                    }else if($cannotLogin == true){
-                        $msg = __('messages.notInOfficeHours');
-                    }
-                    /*
-                        true means shift is near to cross with auto clock time adding clock out show
-                        false means show clock in
-                    */
-                    $flagbtn = now()->timezone(company()->timezone)->addHours($attendanceSettings->auto_clock_out_time)->gt($shiftEndDateTime);
-
-
-
-                @endphp
-                {{-- [BOUTONS RETIRES] Pointage d'arrivee et de depart.
-                     Le module de presence continue de fonctionner : seuls
-                     les boutons disparaissent de l'espace personnel. Le JS
-                     associe teste l'existence de l'element avant de s'y
-                     accrocher, il reste donc sans effet. --}}
-                @if (false)
-                    @if (is_null($currentClockIn) && $checkJoiningDate == true || (is_null($currentClockIn) && $flagbtn == false))
-                        <button type="button" class="btn-primary rounded f-15 ml-4" id="clock-in"
-                            @if (($cannotLogin || !is_null($msg)) && ($user->isAdmin($user->id) || $user->isEmployee($user->id)))
-                                disabled
-                                data-toggle="tooltip" data-placement="top" title="{{__($msg)}}"
-                            @endif
-                        ><i
-                        class="icons icon-login mr-2"></i>@lang('modules.attendance.clock_in')</button>
-                    @endif
-
-                    @if (!is_null($currentClockIn) && is_null($currentClockIn->clock_out_time) || (!is_null($currentClockIn) && $flagbtn == true))
-                        <button type="button" class="btn-danger rounded f-15 ml-4" id="clock-out"><i
-                                class="icons icon-login mr-2"></i>@lang('modules.attendance.clock_out')</button>
-                    @endif
-                @endif
 
                 @if (in_array('admin', user_roles()))
                     <div class="private-dash-settings d-flex align-self-center">
@@ -390,10 +304,6 @@
 
                                 @include('dashboard.employee.widgets.appreciation')
 
-                                @include('dashboard.employee.widgets.leave')
-
-                                @include('dashboard.employee.widgets.work_from_home')
-
                                 @include('dashboard.employee.widgets.work_anniversary')
 
                                 @include('dashboard.employee.widgets.notice-period')
@@ -440,16 +350,14 @@
                         </div>
                     @endif
 
-                    @include('dashboard.employee.widgets.projects')
+                    <!-- @include('dashboard.employee.widgets.projects')
                     @include('dashboard.employee.widgets.lead')
-                    @include('dashboard.employee.widgets.week_timelog')
+                    @include('dashboard.employee.widgets.week_timelog') -->
                 </div>
                 <!-- EMP DASHBOARD TASKS PROJECTS END -->
                 @include('dashboard.employee.widgets.my_tasks')
-                @include('dashboard.employee.widgets.tickets')
                 @endif
                 @include('dashboard.employee.widgets.my_calendar')
-                @include('dashboard.employee.widgets.notices')
 
             </div>
             <!-- EMP DASHBOARD TASKS PROJECTS EVENTS END -->
@@ -470,55 +378,6 @@
         )
         <script src="{{ asset('vendor/full-calendar/main.min.js') }}"  defer="defer"></script>
         <script src="{{ asset('vendor/full-calendar/locales-all.min.js') }}"  defer="defer"></script>
-        <script>
-
-            var clockInButton = document.getElementById('clock-in');
-
-            if (clockInButton) {
-
-                var cannotLogin = "{{ $cannotLogin }}";
-                var checkTodayHoliday = "{{ $checkTodayHoliday?->exists }}";
-                var leaveApplied = "{{ $leave->where('user_id', auth()->user()->id)->where('status', 'approved')->first()?->exists }}";
-
-                var currentDateTime = "{{ $currentDateTime }}";
-                var startTime = "{{ $start_time }}";
-                var midTime = "{{ $mid_time }}";
-                var endTime = "{{ $end_time }}";
-
-                if (
-                    cannotLogin === 'false' ||
-                    (cannotLogin === '' && (checkTodayHoliday == false && leaveApplied == false))
-                ) {
-
-                    clockInButton.disabled = false;
-                    $(clockInButton).tooltip();
-
-                } else if(leaveApplied == true){
-
-                    var leaveDuration = "{{ $leaveApplied?->duration }}";
-                    var halfDayType = "{{ $leaveApplied?->half_day_type }}";
-
-                    if(
-                        ((leaveDuration === 'single' || leaveDuration === 'multiple') && currentDateTime >= startTime && currentDateTime <= endTime) ||
-                        (leaveDuration === 'half day' && halfDayType === 'first_half' && currentDateTime < midTime && currentDateTime >= startTime && currentDateTime <= midTime) ||
-                        (leaveDuration === 'half day' && halfDayType === 'second_half' && currentDateTime > midTime && currentDateTime >= midTime && currentDateTime <= endTime)
-                    ){
-
-                        clockInButton.disabled = true;
-                        $(clockInButton).tooltip('dispose');
-                    }
-                }else if(checkTodayHoliday == true && currentDateTime >= startTime && currentDateTime <= midTime){
-
-                    clockInButton.disabled = true;
-                    $(clockInButton).tooltip('dispose');
-
-                }else {
-
-                    clockInButton.disabled = true;
-                    $(clockInButton).tooltip('dispose');
-                }
-            }
-        </script>
         <script>
 
             $(document).ready(function () {
@@ -722,12 +581,6 @@
             })
         });
 
-        $('#clock-in').click(function() {
-            const url = "{{ (Route::has('attendances.clock_in_modal') ? route('attendances.clock_in_modal') : '') }}";
-            $(MODAL_LG + ' ' + MODAL_HEADING).html('...');
-            $.ajaxModal(MODAL_LG, url);
-        });
-
         $('.request-shift-change').click(function() {
             var id = $(this).data('shift-schedule-id');
             var date = $(this).data('shift-schedule-date');
@@ -744,40 +597,6 @@
             $(MODAL_XL + ' ' + MODAL_HEADING).html('...');
             $.ajaxModal(MODAL_XL, url);
         });
-
-        @if (!is_null($currentClockIn))
-            $('#clock-out').click(function() {
-                var url = "{{ (Route::has('attendances.show_clocked_hours') ? route('attendances.show_clocked_hours') : '') }}?aid={{ $currentClockIn->id }}";
-
-                $(MODAL_DEFAULT + ' ' + MODAL_HEADING).html('...');
-                $.ajaxModal(MODAL_LG, url);
-
-            });
-
-            function clockOut()
-            {
-
-                var token = "{{ csrf_token() }}";
-                var currentLatitude = document.getElementById("current-latitude").value;
-                var currentLongitude = document.getElementById("current-longitude").value;
-
-                $.easyAjax({
-                    url: "{{ (Route::has('attendances.update_clock_in') ? route('attendances.update_clock_in') : '') }}",
-                    type: "GET",
-                    data: {
-                        currentLatitude: currentLatitude,
-                        currentLongitude: currentLongitude,
-                        _token: token,
-                        id: '{{ $currentClockIn->id }}'
-                    },
-                    success: function(response) {
-                        if (response.status == 'success') {
-                            window.location.reload();
-                        }
-                    }
-                });
-            }
-        @endif
 
         $('.keep-open .dropdown-menu').on({
             "click": function(e) {
@@ -846,29 +665,4 @@
             });
         @endif
     </script>
-
-    @if (attendance_setting()->radius_check == 'yes' || attendance_setting()->save_current_location)
-    <script>
-        function setCurrentLocation() {
-            const currentLatitude = document.getElementById("current-latitude");
-            const currentLongitude = document.getElementById("current-longitude");
-
-            function getLocation() {
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(showPosition);
-                }
-            }
-
-            function showPosition(position) {
-                currentLatitude.value = position.coords.latitude;
-                currentLongitude.value = position.coords.longitude;
-            }
-            getLocation();
-
-        }
-
-        setCurrentLocation();
-    </script>
-
-    @endif
 @endpush

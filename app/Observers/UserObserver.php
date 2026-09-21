@@ -3,7 +3,6 @@
 namespace App\Observers;
 
 use App\Events\NewUserEvent;
-use App\Models\TicketAgentGroups;
 use App\Models\User;
 use App\Traits\StoreHeaders;
 
@@ -14,13 +13,6 @@ class UserObserver
 
     public function saving(User $user)
     {
-        if (!isRunningInConsoleOrSeeding()) {
-            if ($user->isDirty('status') && $user->status == 'deactive') {
-                // Remove as ticket agent
-                TicketAgentGroups::whereAgentId($user->id)->delete();
-            }
-        }
-
         session()->forget('user');
     }
 

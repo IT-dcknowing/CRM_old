@@ -49,6 +49,7 @@ class TaskImport implements ToArray, WithCustomCsvSettings
             ['cle' => 'start_date',  'nom' => 'Date de début', 'requis' => true],
             ['cle' => 'due_date',    'nom' => 'Date de fin',   'requis' => false],
             ['cle' => 'status',      'nom' => 'Statut',        'requis' => false],
+            ['cle' => 'assigned',    'nom' => 'Assigné à',     'requis' => false],
             ['cle' => 'category',    'nom' => 'Domaine',       'requis' => false,
              'anciens' => ['Catégorie', 'Catégorie de tâche']],
             ['cle' => 'description', 'nom' => 'Description',   'requis' => false],

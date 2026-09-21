@@ -8,7 +8,6 @@ use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use App\Helper\Files;
 use App\Helper\Reply;
-use App\Models\Leave;
 use App\Models\Pinned;
 use App\Models\Project;
 use App\Models\SubTask;
@@ -589,34 +588,25 @@ class TaskController extends AccountBaseController
             ['import_file.mimes' => __('Ce format de fichier ne peut pas être lu. Déposez un tableur : xlsx, xls, ods ou csv. Un PDF ou une image ne peuvent pas être importés.')],
             ['import_file' => __('Fichier')]
         );
+                                                                                            
+        /* Deplace d'emblee vers un chemin du projet : Excel lit le fichier
+           via realpath(), peu fiable sur le fichier temporaire de PHP
+           (sous C:\Windows\Temp sur cet environnement). Un chemin dans
+           storage/ leve l'ambiguite, et sert aussi de conservation pour
+           la confirmation (voir importTaskProcess). */
+        $jeton = 'import-taches-' . user()->id . '-' . time() . '.'
+            . $request->file('import_file')->getClientOriginalExtension();
 
-        /* Une exception ici — fichier illisible, dossier de depot non
-           inscriptible, extension PHP manquante — renvoyait une erreur 500
-           muette : l'ecran restait fige sur une etape 3 vide. Elle est
-           consignee et expliquee a l'utilisateur. */
-        try {
-            $chemin = $request->file('import_file')->getRealPath();
-            $resultat = $this->analyserFichierTaches(
-                $chemin,
-                $this->projetDefautChoisi($request),
-                $request->file('import_file')->getClientOriginalExtension()
-            );
+        $chemin = $request->file('import_file')
+            ->move(storage_path('app/imports-taches'), $jeton)
+            ->getPathname();
 
-            /* Le fichier est conserve le temps de la confirmation : le
-               reanalyser evite de faire transiter les lignes par le
-               navigateur, et donc de leur faire confiance. */
+        $resultat = $this->analyserFichierTaches($chemin, $this->projetDefautChoisi($request));
+
+        if ($resultat->total === 0) {
+            @unlink($chemin);
             $jeton = null;
-
-            if ($resultat->total > 0) {
-                $jeton = 'import-taches-' . user()->id . '-' . time() . '.'
-                    . $request->file('import_file')->getClientOriginalExtension();
-
-                /* Le dossier n'est pas livre avec le code : il est cree au
-                   premier import, et manquait sur le serveur de production. */
-                \Illuminate\Support\Facades\File::ensureDirectoryExists(storage_path('app/imports-taches'), 0775);
-
-                $request->file('import_file')->move(storage_path('app/imports-taches'), $jeton);
-            }
+        }
 
             $this->resultat = $resultat;
             $this->jeton = $jeton;
@@ -692,19 +682,10 @@ class TaskController extends AccountBaseController
 
         @unlink($chemin);
 
-        $message = sprintf(__('%d tâches ont été importées.'), $creees);
-
-        if ($ignorees > 0) {
-            $message .= ' ' . sprintf(
-                trans_choice('%d ligne a été ignorée car elle comporte une erreur.|%d lignes ont été ignorées car elles comportent des erreurs.', $ignorees),
-                $ignorees
-            );
-        }
-
-        return Reply::successWithData($message, [
-            'creees' => $creees, 'ignorees' => $ignorees,
-            'redirectUrl' => route('tasks.index'),
-        ]);
+        return Reply::successWithData(
+            sprintf(__('%d tâches ont été importées.'), $creees),
+            ['creees' => $creees, 'redirectUrl' => route('taskboards.index')]
+        );
     }
 
     /**
@@ -1770,39 +1751,12 @@ class TaskController extends AccountBaseController
         }
     }
 
+    /* Module Conges retire du perimetre du cabinet (cf. audit nettoyage-modules) :
+       la superposition "en conges" du calendrier de taches n'interroge plus le
+       module Leave. La vue gere deja nativement l'absence de resultat. */
     public function leaves($userIds, $startDate, $dueDate)
     {
-        $leaveDates = [];
-
-        foreach ($userIds as $userId) {
-            $leaves = Leave::with('user')
-                ->where('user_id', $userId)
-                ->whereBetween('leave_date', [$startDate, $dueDate])
-                ->get();
-
-            foreach ($leaves as $leave) {
-                $userName[] = $leave->user->name;
-                $leaveDates[] = $leave->leave_date->format('d,M Y');
-            }
-        }
-
-        if (isset($userName)) {
-            $uniqueUser = array_unique($userName);
-            $data = [];
-
-            foreach ($uniqueUser as $name) {
-                $data[$name] = [];
-
-                foreach ($userName as $key => $value) {
-                    if ($value == $name) {
-                        $data[$name][] = $leaveDates[$key];
-                    /** @phpstan-ignore-line */
-                    }
-                }
-            }
-
-            return $data;
-        }
+        return null;
     }
 
     public function sendNotifications($id)
