@@ -240,8 +240,8 @@
 
         {{-- Bloc de pilotage, place apres le bandeau de bienvenue et de
              pointage : l'ecran se lit alors de haut en bas, du contexte
-             personnel vers l'activite. Restreint aux diligences dont le
-             collaborateur est membre (voir PilotageDiligences). --}}
+             personnel vers l'activite. Restreint aux projets dont le
+             collaborateur est membre (voir PilotageProjets). --}}
         @include('dashboard.employee.mon-espace')
 
         {{-- Les widgets historiques ne sont affiches que si au moins un

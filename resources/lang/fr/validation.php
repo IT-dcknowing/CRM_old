@@ -201,7 +201,7 @@ return [
         'description' => 'description',
         'start_date' => 'date de début',
         'due_date' => 'échéance',
-        'project_id' => 'diligence',
+        'project_id' => 'projet',
         'user_id' => 'utilisateur',
         'file' => 'fichier',
         'import_file' => 'fichier à importer',
@@ -284,9 +284,9 @@ return [
         'occassion' => 'occasion',
         'multi_date' => 'dates multiples',
 
-        // Diligences, taches, contrats
-        'project_name' => 'nom de la diligence',
-        'project_budget' => 'budget de la diligence',
+        // Projets, taches, contrats
+        'project_name' => 'nom de le projet',
+        'project_budget' => 'budget de le projet',
         'hours_allocated' => 'heures allouées',
         'deadline' => 'date limite',
         'milestone_title' => 'titre du jalon',

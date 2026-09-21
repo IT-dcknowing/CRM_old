@@ -1,16 +1,16 @@
 {{--
     « Mon tableau de bord » — derive de l'ecran mon-espace de la
     maquette dck-flow-task : trois indicateurs, les taches du moment,
-    la semaine pointee, les diligences et les annonces.
+    la semaine pointee, les projets et les annonces.
 
     Les indicateurs sont volontairement limites aux trois modules du
-    coeur de metier — taches, diligences, contrats. L'indicateur de
+    coeur de metier — taches, projets, contrats. L'indicateur de
     conges et la carte de presence ont ete retires.
 
     Les donnees viennent d'EmployeeDashboard, qui les preparait deja
     pour les widgets historiques — pendingTasks, inProcessTasks,
     dueTasks, notices, weekWiseTimelogs — completees par
-    EspaceCollaborateur pour l'avancement des diligences et les taches
+    EspaceCollaborateur pour l'avancement des projets et les taches
     terminees du mois. Aucune requete ici.
 --}}
 
@@ -38,7 +38,7 @@
 
     {{-- ── Indicateurs ─────────────────────────────────────────
          Limites aux trois modules du coeur de metier : taches,
-         diligences et contrats. --}}
+         projets et contrats. --}}
     <div class="dck-grid dck-g3">
         <a class="dck-kpi2" href="{{ route('tasks.index') }}">
             <div class="dck-kpi2__top">
@@ -61,7 +61,7 @@
         <a class="dck-kpi2" href="{{ route('projects.index') }}">
             <div class="dck-kpi2__top">
                 <span class="dck-kpi2__ico"><i class="bi bi-folder2-open"></i></span>
-                <span class="dck-kpi2__lab">@lang('Mes diligences')</span>
+                <span class="dck-kpi2__lab">@lang('Mes projets')</span>
             </div>
             <div class="dck-kpi2__val">{{ $totalProjects ?? 0 }}</div>
             <div class="dck-kpi2__sub">dont vous êtes membre</div>
@@ -94,7 +94,7 @@
                         <h5>{{ $t->heading }}</h5>
                         <div class="dck-tc__meta">
                             <i class="bi bi-folder2"></i>
-                            <span>{{ optional($t->activeProject)->project_name ?: __('Sans diligence') }}</span>
+                            <span>{{ optional($t->activeProject)->project_name ?: __('Sans projet') }}</span>
                             <span class="dck-tc__ech {{ $tRetard ? 'is-late' : '' }}">
                                 {{ $t->due_date ? $t->due_date->translatedFormat('d/m/Y') : '—' }}
                             </span>
@@ -106,18 +106,18 @@
             </div>
         </div>
 
-        {{-- « Mes diligences » occupe la colonne laissee libre par le
+        {{-- « Mes projets » occupe la colonne laissee libre par le
              retrait de « Ma semaine » : les deux cartes se lisent
              desormais cote a cote. --}}
         <div class="dck-c">
             <div class="dck-c__head">
-                <div><h3>@lang('Mes diligences')</h3></div>
+                <div><h3>@lang('Mes projets')</h3></div>
                 <div class="dck-c__right">
                     <a class="dck-lien" href="{{ route('projects.index') }}">Ouvrir</a>
                 </div>
             </div>
             <div class="dck-c__body dck-pile-l">
-                @forelse ($espaceDiligences ?? [] as $d)
+                @forelse ($espaceProjets ?? [] as $d)
                     @php $av = (int) $d->completion_percent; @endphp
                     <div>
                         <div class="dck-dl2">
@@ -130,7 +130,7 @@
                         <div class="dck-dl2__sub">{{ $d->taches_faites }} / {{ $d->taches_total }} tâches terminées</div>
                     </div>
                 @empty
-                    <p class="dck-vide2">@lang('Vous n\'êtes membre d\'aucune diligence.')</p>
+                    <p class="dck-vide2">@lang('Vous n\'êtes membre d\'aucun projet.')</p>
                 @endforelse
             </div>
         </div>

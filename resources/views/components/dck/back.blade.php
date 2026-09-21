@@ -10,7 +10,7 @@
 
     L'attribut « barre » enveloppe le lien dans son propre bandeau. On le
     laisse a false quand la page possede deja un .dck-detail-head, comme la
-    fiche de diligence, pour ne pas empiler deux bandeaux.
+    fiche de projet, pour ne pas empiler deux bandeaux.
 --}}
 @props(['href', 'libelle', 'barre' => true])
 

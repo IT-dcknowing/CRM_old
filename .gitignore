@@ -1,7 +1,7 @@
 /node_modules
 /public/hot
 /public/storage
-/public/user-uploads/*
+
 !public/user-uploads/.htaccess
 /storage/*.key
 .env.backup
@@ -45,3 +45,4 @@ resources/views/sections/custom_script.blade.php
 demo_db_copy.sql
 database/maxmind/
 .env
+/Documents

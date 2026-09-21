@@ -638,7 +638,7 @@ class EmployeeController extends AccountBaseController
                 $this->toDate = now()->timezone($this->company->timezone)->endOfMonth()->toDateString();
 
                 /* Indicateurs de la fiche : charge, retards, respect des
-                   echeances et diligences. Ils remplacent les chiffres de
+                   echeances et projets. Ils remplacent les chiffres de
                    pointage et de conges, dont les modules ne sont pas
                    utilises par le cabinet. */
                 $this->k = $this->employeIndicateurs((int) $id);

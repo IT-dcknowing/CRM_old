@@ -446,6 +446,34 @@ if (!function_exists('asset_url_local_s3')) {
 
 }
 
+if (!function_exists('logo_ou_defaut')) {
+
+    /**
+     * URL d'une image de marque televersee, ou de celle livree avec
+     * l'application si le fichier n'existe pas. public/user-uploads n'est
+     * pas versionne : sans ce repli, un serveur fraichement deploye
+     * affichait des images cassees la ou la base cite un fichier absent.
+     */
+    // @codingStandardsIgnoreLine
+    function logo_ou_defaut($dossier, $fichier, $defaut)
+    {
+        if (is_null($fichier)) {
+            return asset($defaut);
+        }
+
+        if (in_array(config('filesystems.default'), StorageSetting::S3_COMPATIBLE_STORAGE)) {
+            return asset_url_local_s3($dossier . '/' . $fichier);
+        }
+
+        if (!file_exists(public_path(Files::UPLOAD_FOLDER . '/' . $dossier . '/' . $fichier))) {
+            return asset($defaut);
+        }
+
+        return asset_url_local_s3($dossier . '/' . $fichier);
+    }
+
+}
+
 if (!function_exists('download_local_s3')) {
 
     // @codingStandardsIgnoreLine

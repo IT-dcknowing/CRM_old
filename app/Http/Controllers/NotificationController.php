@@ -31,6 +31,19 @@ class NotificationController extends AccountBaseController
             $this->userType = 'client';
         }
 
+        /* Toutes les notifications, et non les seules non-lues.
+
+           L'ecran n'affichait que « unreadNotifications » : apres un
+           passage par la cloche, qui marque tout comme lu, « Tout
+           afficher » ouvrait une page vide sur un compte qui en portait
+           pourtant des dizaines.
+
+           Elles sont paginees : certains comptes en cumulent plusieurs
+           centaines, et tout rendre d'un bloc chargeait la page pour
+           rien. */
+        $this->notifications = user()->notifications()->paginate(30);
+        $this->nonLues = user()->unreadNotifications()->count();
+
         return view('notifications.all_user_notifications', $this->data);
     }
 

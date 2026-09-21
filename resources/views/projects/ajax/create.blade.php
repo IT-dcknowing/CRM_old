@@ -63,9 +63,9 @@
                     </div>
 
                     <div class="col-lg-7 col-md-7">
-                        <x-forms.text class="mr-0 mr-lg-2 mr-md-2" :fieldLabel="('Nom de la diligence')"
+                        <x-forms.text class="mr-0 mr-lg-2 mr-md-2" :fieldLabel="('Nom de le projet')"
                                       fieldName="project_name" fieldRequired="true" fieldId="project_name"
-                                      :fieldPlaceholder="('Nom de la diligence')"
+                                      :fieldPlaceholder="('Nom de le projet')"
                                       :fieldValue="($project ? $project->project_name : (($projectTemplate) ? $projectTemplate->project_name : ''))"/>
                     </div>
                     <x-dck.form-section :titre="__('app.dckSection.planning')" />

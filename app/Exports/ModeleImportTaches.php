@@ -21,10 +21,9 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
  * configuration reelle du cabinet, sans modele a maintenir a la main.
  *
  * Le classeur porte un second onglet, « Listes », masque, d'ou les
- * colonnes Projet, Statut, Assigne a et Domaine tirent des menus
- * deroulants. Sans lui, remplir le fichier supposait de connaitre par
- * coeur quatre-vingt-dix projets et quatre cents collaborateurs,
- * orthographe comprise — ce que personne ne peut faire.
+ * colonnes Projet, Statut et Domaine tirent des menus deroulants.
+ * L'utilisateur connecte est automatiquement assigne a toutes ses
+ * taches importees : la colonne « Assigne a » n'existe plus.
  */
 class ModeleImportTaches implements FromArray, WithHeadings, WithStyles, WithEvents
 {
@@ -34,7 +33,6 @@ class ModeleImportTaches implements FromArray, WithHeadings, WithStyles, WithEve
     private const DERNIERE_LIGNE = TaskImport::MAXIMUM_LIGNES + 1;
 
     private array $projets;
-    private array $gens;
     private array $categories;
     private array $statuts;
 
@@ -46,13 +44,9 @@ class ModeleImportTaches implements FromArray, WithHeadings, WithStyles, WithEve
             ->where('company_id', $societe)
             ->orderBy('project_name')->pluck('project_name')->all();
 
-        /* Tous les comptes actifs, et non les seuls employes : l'import
-           accepte deja n'importe quel utilisateur, la liste doit dire
-           la meme chose que le controle. */
-        $this->gens = DB::table('users')
-            ->where('company_id', $societe)->where('status', 'active')
-            ->orderBy('name')->pluck('name')->unique()->values()->all();
-
+        /* L'assignation est desormais automatique : l'utilisateur connecte
+           est toujours l'assigne. La liste des collaborateurs n'est plus
+           necessaire dans le modele. */
         $this->categories = DB::table('task_category')
             ->where('company_id', $societe)
             ->orderBy('category_name')->pluck('category_name')->all();
@@ -80,9 +74,8 @@ class ModeleImportTaches implements FromArray, WithHeadings, WithStyles, WithEve
                 now()->format($format),
                 now()->addDays(7)->format($format),
                 TaskboardColumn::where('slug', 'to_do')->value('column_name') ?: 'À faire',
-                $this->gens[0] ?? '',
                 $this->categories[0] ?? '',
-                'Ligne d’exemple : supprimez-la avant d’importer.',
+                'Ligne d\'exemple : supprimez-la avant d\'importer.',
             ],
         ];
     }
@@ -107,7 +100,8 @@ class ModeleImportTaches implements FromArray, WithHeadings, WithStyles, WithEve
                 $this->ecrireListes($feuille->getParent());
                 $this->poserMenus($feuille);
 
-                foreach (range('A', 'H') as $colonne) {
+                /* 7 colonnes : A (Tâche) à G (Description). */
+                foreach (range('A', 'G') as $colonne) {
                     $feuille->getColumnDimension($colonne)->setAutoSize(true);
                 }
 
@@ -131,11 +125,13 @@ class ModeleImportTaches implements FromArray, WithHeadings, WithStyles, WithEve
         $listes = $classeur->createSheet();
         $listes->setTitle('Listes');
 
+        /* La colonne « Collaborateurs » a ete retiree : l'assignation est
+           desormais automatique. Onglet Listes : A = Projets, B = Domaines,
+           C = Statuts. */
         $colonnes = [
-            'A' => ['Projets', $this->projets],
-            'B' => ['Collaborateurs', $this->gens],
-            'C' => ['Domaines', $this->categories],
-            'D' => ['Statuts', $this->statuts],
+            'A' => ['Projets',  $this->projets],
+            'B' => ['Domaines', $this->categories],
+            'C' => ['Statuts',  $this->statuts],
         ];
 
         foreach ($colonnes as $lettre => [$titre, $valeurs]) {
@@ -148,7 +144,7 @@ class ModeleImportTaches implements FromArray, WithHeadings, WithStyles, WithEve
             $listes->getColumnDimension($lettre)->setAutoSize(true);
         }
 
-        $listes->getStyle('A1:D1')->getFont()->setBold(true);
+        $listes->getStyle('A1:C1')->getFont()->setBold(true);
 
         /* Masque une fois rempli. Un classeur ne peut pas etre enregistre
            avec pour seul onglet visible un onglet masque : celui des
@@ -157,18 +153,18 @@ class ModeleImportTaches implements FromArray, WithHeadings, WithStyles, WithEve
     }
 
     /**
-     * Menus deroulants sur les quatre colonnes a referentiel.
+     * Menus deroulants sur les trois colonnes a referentiel.
      *
-     * Deux d'entre elles n'imposent pas leur liste :
+     * La colonne « Assigne a » a ete supprimee : l'utilisateur connecte
+     * est automatiquement assigne a toutes les taches qu'il importe.
      *
-     * — Assigne a, sans quoi l'on ne pourrait plus ecrire deux noms
-     *   separes par une virgule pour confier une tache a plusieurs
-     *   personnes ;
-     * — Projet, parce que l'import cree celui qu'il ne trouve pas.
+     * Le projet n'impose pas sa liste : l'import cree celui qu'il ne
+     * trouve pas. Statut et Domaine restent bloquants : l'import refuse
+     * une valeur inconnue, autant le dire dans Excel plutot qu'a l'analyse.
      *
-     * Statut et Domaine restent bloquants : l'import refuse une valeur
-     * qu'il ne reconnait pas, autant le dire dans Excel plutot qu'a
-     * l'analyse.
+     * Colonnes du fichier : A Tâche · B Projet · C Date début · D Date fin
+     *                       E Statut · F Domaine · G Description
+     * Onglet Listes        : A Projets · B Domaines · C Statuts
      */
     private function poserMenus(Worksheet $feuille): void
     {
@@ -178,12 +174,10 @@ class ModeleImportTaches implements FromArray, WithHeadings, WithStyles, WithEve
                Une validation « stop » interdisait d'ecrire ce nom, et la
                creation restait donc hors d'atteinte depuis Excel. */
             'B' => ['liste' => $this->projets,    'colonne' => 'A', 'strict' => false,
-                    'aide' => 'Choisissez un projet dans la liste, laissez vide, ou saisissez un nouveau nom : le projet sera créé à l’import.'],
-            'E' => ['liste' => $this->statuts,    'colonne' => 'D', 'strict' => true,
+                    'aide' => 'Choisissez un projet dans la liste, laissez vide, ou saisissez un nouveau nom : le projet sera cree a l\'import.'],
+            'E' => ['liste' => $this->statuts,    'colonne' => 'C', 'strict' => true,
                     'aide' => 'Choisissez un statut. Vide, la tâche sera « Incomplète ».'],
-            'F' => ['liste' => $this->gens,       'colonne' => 'B', 'strict' => false,
-                    'aide' => 'Choisissez un collaborateur. Pour en confier à plusieurs, séparez les noms par une virgule.'],
-            'G' => ['liste' => $this->categories, 'colonne' => 'C', 'strict' => true,
+            'F' => ['liste' => $this->categories, 'colonne' => 'B', 'strict' => true,
                     'aide' => 'Choisissez un domaine dans la liste, ou laissez vide.'],
         ];
 

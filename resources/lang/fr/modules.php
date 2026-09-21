@@ -13,7 +13,7 @@ return [
 
     'module' => [
         'tasks' => 'Tâches',
-        'projects' => 'Diligences',
+        'projects' => 'Projets',
         'contracts' => 'Contrats',
         'clients' => 'Clients',
         'employees' => 'Employés',
@@ -79,8 +79,8 @@ return [
         'chooseTask' => 'Choisir une tâche',
         'copyTaskLink' => 'Copier le lien de la tâche',
 
-        'selectProject' => 'Sélectionner une diligence',
-        'notFinishedProjects' => 'Seules les diligences en cours sont affichées',
+        'selectProject' => 'Sélectionner un projet',
+        'notFinishedProjects' => 'Seuls les projets en cours sont affichés',
         'hideCompletedTask' => 'Masquer les tâches terminées',
         'lastCreated' => 'Créées récemment',
         'dueSoon' => 'Échéance proche',
@@ -120,9 +120,9 @@ return [
         'taskLabel' => 'Étiquette de tâche',
         'taskboardDefaultLength' => 'Nombre de tâches affichées par colonne',
 
-        'taskCategory' => 'Catégorie de tâche',
-        'selectTaskCategory' => 'Sélectionner une catégorie de tâche',
-        'noTaskCategory' => 'Aucune catégorie de tâche disponible',
+        'taskCategory' => 'Domaine',
+        'selectTaskCategory' => 'Sélectionner un domaine',
+        'noTaskCategory' => 'Aucun domaine disponible',
         'category' => 'Catégorie',
 
         'comment' => 'Commentaire',
@@ -153,7 +153,7 @@ return [
         'subTaskUpdateActivity' => 'Sous-tâche modifiée par ',
 
         'timerStartedTask' => 'Minuteur démarré pour la tâche ',
-        'timerStartedProject' => 'Minuteur démarré pour la diligence ',
+        'timerStartedProject' => 'Minuteur démarré pour le projet ',
         'timerStartedBy' => 'Minuteur démarré',
         'timerStoppedBy' => 'Minuteur arrêté',
         'timerPausedBy' => 'Minuteur mis en pause',
@@ -177,24 +177,24 @@ return [
     ],
 
     /* ================================================================== */
-    /* Module Diligences (projects)                                        */
+    /* Module Projets (projects)                                        */
     /* ================================================================== */
 
     'projects' => [
-        'addNewProject' => 'Ajouter une diligence',
-        'createTitle' => 'Ajouter une diligence',
-        'updateTitle' => 'Modifier la diligence',
-        'allProject' => 'Toutes les diligences',
-        'projectName' => 'Nom de la diligence',
-        'projectSummary' => 'Résumé de la diligence',
-        'projectDetails' => 'Détails de la diligence',
-        'projectInfo' => 'Informations sur la diligence',
-        'projectCategory' => 'Catégorie de diligence',
+        'addNewProject' => 'Ajouter un projet',
+        'createTitle' => 'Ajouter un projet',
+        'updateTitle' => 'Modifier le projet',
+        'allProject' => 'Tous les projets',
+        'projectName' => 'Nom de le projet',
+        'projectSummary' => 'Résumé de le projet',
+        'projectDetails' => 'Détails de le projet',
+        'projectInfo' => 'Informations sur le projet',
+        'projectCategory' => 'Catégorie de projet',
         'manageProjectCategory' => 'Gérer les catégories',
-        'projectProgress' => 'Avancement de la diligence',
+        'projectProgress' => 'Avancement de le projet',
         'projectCompletionStatus' => 'Taux d’achèvement',
-        'projectStatusSettings' => 'Paramètres des statuts de diligence',
-        'hideFinishedProjects' => 'Masquer les diligences terminées',
+        'projectStatusSettings' => 'Paramètres des statuts de projet',
+        'hideFinishedProjects' => 'Masquer les projets terminés',
         'withoutDeadline' => 'Aucune date limite définie',
         'deadline' => 'Date limite',
         'startDate' => 'Date de début',
@@ -208,21 +208,21 @@ return [
 
         'selectClient' => 'Sélectionner un client',
         'clientInfo' => 'Informations client',
-        'projectClient' => 'Détails du client de la diligence ',
-        'projectDoNotHaveClient' => 'Cette diligence n’a aucun client associé',
+        'projectClient' => 'Détails du client de le projet ',
+        'projectDoNotHaveClient' => 'Ce projet n’a aucun client associé',
         'clientFeedback' => 'Retour du client',
-        'clientViewTask' => 'Le client peut gérer les tâches de cette diligence',
+        'clientViewTask' => 'Le client peut gérer les tâches de ce projet',
         'clientTaskNotification' => 'Envoyer les notifications de tâche au client',
 
         'members' => 'Membres',
-        'projectMembers' => 'Membres de la diligence',
+        'projectMembers' => 'Membres de le projet',
         'addMemberTitle' => 'Ajouter des membres',
         'chooseMembers' => 'Choisir les membres',
         'chooseDepartment' => 'Choisir un département',
         'selfAssignAsProjectMember' => 'M’ajouter comme membre',
         'sameAssignee' => 'Reprendre les mêmes assignés',
-        'projectAdminInfo' => 'Le responsable de diligence peut ajouter des membres, tâches, discussions, notes, fichiers et jalons',
-        'needApproval' => 'La tâche doit être validée par l’administrateur ou le responsable de diligence',
+        'projectAdminInfo' => 'Le responsable de projet peut ajouter des membres, tâches, discussions, notes, fichiers et jalons',
+        'needApproval' => 'La tâche doit être validée par l’administrateur ou le responsable de projet',
 
         'files' => 'Fichiers',
         'fileName' => 'Nom du fichier',
@@ -248,7 +248,7 @@ return [
         'milestoneEndDate' => 'Date de fin du jalon',
 
         'budgetInfo' => 'Informations budgétaires',
-        'projectBudget' => 'Budget de la diligence',
+        'projectBudget' => 'Budget de le projet',
         'addCostProjectBudget' => 'Ajouter le coût au budget',
         'hours_allocated' => 'Estimation (en heures)',
         'expenses_total' => 'Dépenses',
@@ -266,15 +266,15 @@ return [
         'noRatingAvailable' => 'Aucune évaluation disponible',
         'visibleRatingToMembers' => 'Évaluation visible par les membres',
 
-        'createPublicProject' => 'Créer une diligence publique',
-        'createPrivateProject' => 'Rendre la diligence privée',
-        'changeToPublicProject' => 'Rendre la diligence publique',
+        'createPublicProject' => 'Créer un projet publique',
+        'createPrivateProject' => 'Rendre le projet privée',
+        'changeToPublicProject' => 'Rendre le projet publique',
 
         'pause' => 'Suspendre',
         'resume' => 'Reprendre',
         'cancel' => 'Annuler',
         'activate' => 'Activer',
-        'updateSuccess' => ' détails de la diligence mis à jour.',
+        'updateSuccess' => ' détails de le projet mis à jour.',
 
         'enableMiroboard' => 'Activer Miroboard',
         'miroBoardId' => 'Identifiant du tableau Miro',
@@ -340,7 +340,7 @@ return [
         'profile' => 'Profil',
         'thisMonth' => 'Ce mois-ci',
 
-        // Taches et diligences
+        // Taches et projets
         'tasks' => 'Tâches',
         'myTask' => 'Mes tâches',
         'totalPendingTasks' => 'Tâches en attente',
@@ -348,17 +348,17 @@ return [
         'overdueTasks' => 'Tâches en retard',
         'privateTaskInfo' => 'Les tâches privées ne sont pas comptées',
         'dueDate' => 'Échéance',
-        'projects' => 'Diligences',
-        'totalProject' => 'Total des diligences',
-        'totalProjects' => 'Total des diligences',
-        'newProjects' => 'Nouvelles diligences',
-        'totalArchiveProjects' => 'Diligences archivées',
-        'totalOverdueProject' => 'Diligences en retard',
-        'statusWiseProject' => 'Diligences par statut',
+        'projects' => 'Projets',
+        'totalProject' => 'Total des projets',
+        'totalProjects' => 'Total des projets',
+        'newProjects' => 'Nouveaux projets',
+        'totalArchiveProjects' => 'Projets archivés',
+        'totalOverdueProject' => 'Projets en retard',
+        'statusWiseProject' => 'Projets par statut',
         'pendingMilestone' => 'Jalons en attente',
-        'projectActivityTimeline' => 'Journal d’activité des diligences',
+        'projectActivityTimeline' => 'Journal d’activité des projets',
         'userActivityTimeline' => 'Journal d’activité des utilisateurs',
-        'freeEmployees' => 'Sans diligence en cours',
+        'freeEmployees' => 'Sans projet en cours',
         'totalPendingIssues' => 'Total des incidents en attente',
         'pendingClientIssues' => 'Incidents en attente',
 
@@ -435,7 +435,7 @@ return [
         'totalPendingAmount' => 'Montant en attente',
         'totalOutstandingAmount' => 'Montant restant dû',
         'earningsByClient' => 'Revenus par client',
-        'earningsByProjects' => 'Revenus par diligence',
+        'earningsByProjects' => 'Revenus par projet',
         'clientWiseEarnings' => 'Revenus par client',
         'lastReceivedPayments' => 'Derniers paiements reçus',
         'totalPaidInvoices' => 'Factures réglées',
@@ -503,7 +503,7 @@ return [
         'importFromRole' => 'Importer depuis un rôle',
         'selectAll' => 'Tout sélectionner',
         'deselectAll' => 'Tout désélectionner',
-        'projectNote' => 'Un utilisateur peut consulter les informations de base des diligences qui lui sont affectées, même sans permission.',
+        'projectNote' => 'Un utilisateur peut consulter les informations de base des projets qui lui sont affectées, même sans permission.',
         'taskNote' => 'Un utilisateur peut consulter les tâches qui lui sont assignées, même sans permission.',
         'attendanceNote' => 'Un utilisateur peut consulter sa propre présence, même sans permission.',
         'ticketNote' => 'Un utilisateur peut consulter les tickets qu’il a créés, même sans permission.',
@@ -528,7 +528,7 @@ return [
         'profileImage' => 'Ajouter une photo de profil',
         'profileImageInfo' => 'Ajoutez votre photo de profil.',
         'emailSetup' => 'Configurer les paramètres e-mail',
-        'configureEmailSetting' => 'La configuration e-mail est nécessaire pour notifier les utilisateurs des diligences, tâches, etc.',
+        'configureEmailSetting' => 'La configuration e-mail est nécessaire pour notifier les utilisateurs des projets, tâches, etc.',
         'crontSetup' => 'Configurer la tâche planifiée (cron)',
         'cronSetupInfo' => 'La tâche planifiée est nécessaire aux rappels et aux traitements en arrière-plan.',
     ],
@@ -591,7 +591,7 @@ return [
     ],
 
     'taskCategory' => [
-        'addTaskCategory'          => 'Ajouter une catégorie',
+        'addTaskCategory'          => 'Ajouter un domaine',
     ],
 
     'taskLabel' => [

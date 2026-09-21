@@ -555,6 +555,12 @@ class ProjectsDataTable extends BaseDataTable
      */
     protected function getColumns()
     {
+        /* La liste ne montre que le code, le nom et les actions.
+
+           Les autres colonnes ne sont pas supprimees mais masquees :
+           elles restent disponibles a l'export et au selecteur de
+           colonnes, et le tri comme la recherche continuent de s'y
+           appuyer. Les retirer aurait casse ces trois usages. */
         $data = [
             'check' => [
                 'title' => '<input type="checkbox" name="select_all_table" id="select-all-table" onclick="selectAllTable(this)">',
@@ -571,23 +577,23 @@ class ProjectsDataTable extends BaseDataTable
 
         if (in_array('client', user_roles())){
             if(user()->permission('view_project_members') == 'all') {
-                $data[__('modules.projects.members')] = ['data' => 'members', 'orderable' => false, 'name' => 'members', 'exportable' => false, 'width' => '15%', 'title' => __('modules.projects.members')];
+                $data[__('modules.projects.members')] = ['data' => 'members', 'orderable' => false, 'name' => 'members', 'exportable' => false, 'width' => '15%', 'visible' => false, 'title' => __('modules.projects.members')];
             }
         }else{
-            $data[__('modules.projects.members')] = ['data' => 'members', 'orderable' => false, 'name' => 'members', 'exportable' => false, 'width' => '15%', 'title' => __('modules.projects.members')];
+            $data[__('modules.projects.members')] = ['data' => 'members', 'orderable' => false, 'name' => 'members', 'exportable' => false, 'width' => '15%', 'visible' => false, 'title' => __('modules.projects.members')];
         }    
 
         $data2 = [
             __('modules.projects.projectMembers') => ['data' => 'name', 'orderable' => false, 'name' => 'name', 'visible' => false, 'title' => __('modules.projects.projectMembers')],
-            __('modules.projects.startDate') => ['data' => 'start_date', 'name' => 'start_date', 'title' => __('modules.projects.startDate'), 'width' => '12%'],
-            __('app.deadline') => ['data' => 'deadline', 'name' => 'deadline', 'title' => __('app.deadline'), 'width' => '12%'],
-            __('app.client') => ['data' => 'client_id', 'name' => 'client_id', 'width' => '15%', 'exportable' => false, 'title' => __('app.client'), 'visible' => (!in_array('client', user_roles()) && in_array('clients', user_modules()))],
+            __('modules.projects.startDate') => ['data' => 'start_date', 'name' => 'start_date', 'title' => __('modules.projects.startDate'), 'width' => '12%', 'visible' => false],
+            __('app.deadline') => ['data' => 'deadline', 'name' => 'deadline', 'title' => __('app.deadline'), 'width' => '12%', 'visible' => false],
+            __('app.client') => ['data' => 'client_id', 'name' => 'client_id', 'width' => '15%', 'exportable' => false, 'title' => __('app.client'), 'visible' => false],
             __('app.customers') => ['data' => 'client_name', 'name' => 'client_id', 'visible' => false, 'title' => __('app.customers')],
 
             __('app.client') . ' ' . __('app.email') => ['data' => 'client_email', 'name' => 'client_id', 'visible' => false, 'title' => __('app.client') . ' ' . __('app.email')],
             // Hide __('app.progress') => ['data' => 'completion_percent', 'name' => 'completion_percent', 'exportable' => false, 'title' => __('app.progress')],
             __('app.completion') => ['data' => 'completion_export', 'name' => 'completion_export', 'visible' => false, 'title' => __('app.completion')],
-            __('app.status') => ['data' => 'status', 'name' => 'status', 'width' => '16%', 'exportable' => false, 'title' => __('app.status')],
+            __('app.status') => ['data' => 'status', 'name' => 'status', 'width' => '16%', 'exportable' => false, 'title' => __('app.status'), 'visible' => false],
             __('app.project') . ' ' . __('app.status') => ['data' => 'project_status', 'name' => 'status', 'visible' => false, 'title' => __('app.project') . ' ' . __('app.status')]
         ];
 

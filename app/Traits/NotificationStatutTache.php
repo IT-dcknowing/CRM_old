@@ -77,7 +77,7 @@ trait NotificationStatutTache
     }
 
     /**
-     * Administrateurs de la societe, plus l'administrateur de la diligence.
+     * Administrateurs de la societe, plus l'administrateur de le projet.
      */
     private function arbitres(Task $task)
     {
@@ -91,7 +91,7 @@ trait NotificationStatutTache
     }
 
     /**
-     * Collaborateurs en charge de la tache. La diligence peut avoir coupe
+     * Collaborateurs en charge de la tache. Le projet peut avoir coupe
      * leurs notifications : ce reglage existait deja et reste respecte.
      */
     private function assignes(Task $task)

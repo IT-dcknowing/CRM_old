@@ -44,22 +44,20 @@ class TaskReportController extends AccountBaseController
     }
 
     /**
-     * Perimetre du rapport pour l'utilisateur connecte.
+     * Controle d'acces au rapport, en un seul endroit.
      *
-     * « all » donne tout le cabinet, « owned » restreint aux taches ou
-     * la personne est affectee. Tout autre niveau refuse l'acces : la
-     * decision est prise ici, et nulle part ailleurs, pour que l'ecran,
-     * l'export Excel et le PDF ne puissent pas diverger.
+     * Le rapport porte sur tout le cabinet et n'est ouvert qu'aux droits
+     * complets. Le retour null vaut « aucune restriction » : la signature
+     * reste celle attendue par rapportHebdomadaire(), qui sait par
+     * ailleurs se limiter a une personne si le besoin revient.
      *
-     * @return int|null identifiant auquel restreindre, null pour tout voir
+     * @return int|null toujours null : aucun perimetre restreint
      */
     private function perimetreRapport(): ?int
     {
-        $niveau = user()->permission('view_task_report');
+        abort_403(user()->permission('view_task_report') != 'all');
 
-        abort_403(!in_array($niveau, ['all', 'owned'], true));
-
-        return $niveau === 'all' ? null : user()->id;
+        return null;
     }
 
     /**

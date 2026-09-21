@@ -78,7 +78,6 @@
                     <th>@lang('Tâche')</th>
                     <th>@lang('Projet')</th>
                     <th>@lang('Statut')</th>
-                    <th>@lang('Assigné à')</th>
                     <th>@lang('Début')</th>
                     <th>@lang('Fin')</th>
                     <th>@lang('État')</th>
@@ -96,7 +95,6 @@
                         @endif
                     </td>
                     <td>{{ $l->statut->column_name ?? '—' }}</td>
-                    <td>{{ $l->gensNoms ? implode(', ', $l->gensNoms) : '—' }}</td>
                     <td class="dck-import__n">{{ $l->debut?->format(company()->date_format) ?: '—' }}</td>
                     <td class="dck-import__n">{{ $l->fin?->format(company()->date_format) ?: '—' }}</td>
                     <td>

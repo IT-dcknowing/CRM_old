@@ -110,7 +110,7 @@ class ProjectController extends AccountBaseController
                         'deadline' => $project->deadline ? $project->deadline->format('d/m/Y') : 'Pas de date',
                         'status' => $project->status,
                         'progress' => $project->completion_percent,
-                        'category_name' => 'Diligence'
+                        'category_name' => 'Projet'
                     ];
                 });
             return response()->json($projects);
@@ -133,9 +133,9 @@ class ProjectController extends AccountBaseController
         return $dataTable->render('projects.index', $this->data);
     }
 
-    public function getAlldiligences(Request $request)
+    public function getAllprojets(Request $request)
     {
-        // Cette méthode peut être appelée directement par la route /getAlldiligences
+        // Cette méthode peut être appelée directement par la route /getAllprojets
         return $this->index(new ProjectsDataTable());
     }
 
@@ -2054,9 +2054,9 @@ class ProjectController extends AccountBaseController
     }
 
     public function comptaGestion(){
-        //$diligences= Project::ALL();
+        //$projets= Project::ALL();
   
-        //return view('etats-financiers.index'/*, compact('diligences')*/);
+        //return view('etats-financiers.index'/*, compact('projets')*/);
         $viewPermission = user()->permission('view_projects');
         abort_403((!in_array($viewPermission, ['all', 'added', 'owned', 'both'])));
 
@@ -2079,9 +2079,9 @@ class ProjectController extends AccountBaseController
     }
 
     public function formation(){
-        //$diligences= Project::ALL();
+        //$projets= Project::ALL();
   
-        //return view('etats-financiers.index'/*, compact('diligences')*/);
+        //return view('etats-financiers.index'/*, compact('projets')*/);
         $viewPermission = user()->permission('view_projects');
         abort_403((!in_array($viewPermission, ['all', 'added', 'owned', 'both'])));
 
@@ -2104,9 +2104,9 @@ class ProjectController extends AccountBaseController
     }
 
     public function fiscalite(){
-        //$diligences= Project::ALL();
+        //$projets= Project::ALL();
   
-        //return view('etats-financiers.index'/*, compact('diligences')*/);
+        //return view('etats-financiers.index'/*, compact('projets')*/);
         $viewPermission = user()->permission('view_projects');
         abort_403((!in_array($viewPermission, ['all', 'added', 'owned', 'both'])));
 
@@ -2129,9 +2129,9 @@ class ProjectController extends AccountBaseController
     }
 
     public function autresServices(){
-        //$diligences= Project::ALL();
+        //$projets= Project::ALL();
   
-        //return view('etats-financiers.index'/*, compact('diligences')*/);
+        //return view('etats-financiers.index'/*, compact('projets')*/);
         $viewPermission = user()->permission('view_projects');
         abort_403((!in_array($viewPermission, ['all', 'added', 'owned', 'both'])));
 

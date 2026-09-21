@@ -900,7 +900,7 @@ class ClientController extends AccountBaseController
 
         $this->pageTitle = $this->client->name;
 
-        /* Indicateurs du dossier : diligences, taches, retards et
+        /* Indicateurs du dossier : projets, taches, retards et
            contrats. Ils remplacent les chiffres de facturation, que le
            cabinet n'utilise pas pour piloter ses clients. */
         $this->k = $this->clientIndicateurs((int) $id);

@@ -203,12 +203,10 @@ trait ImportationTaches
             ->select('id', 'project_name', 'project_short_code')->get()
             ->keyBy(fn($p) => $this->normaliser($p->project_name));
 
-        $gens = DB::table('users')
-            ->where('company_id', $societe)->where('status', 'active')
-            ->select('id', 'name', 'email')->get();
-
-        $parNom = $gens->keyBy(fn($u) => $this->normaliser($u->name));
-        $parMail = $gens->keyBy(fn($u) => $this->normaliser($u->email));
+        /* L'assignation est desormais automatique : l'utilisateur connecte
+           est toujours l'assigne. Le chargement des collaborateurs a ete
+           retire pour alleger la requete et ne plus exposer la liste des
+           utilisateurs dans le traitement. */
 
         $categories = DB::table('task_category')
             ->where('company_id', $societe)
@@ -244,8 +242,6 @@ trait ImportationTaches
 
         return (object) [
             'projets'    => $projets,
-            'gensNom'    => $parNom,
-            'gensMail'   => $parMail,
             'categories' => $categories,
             'statuts'    => $statuts,
             'existantes' => $existantes,
@@ -371,31 +367,11 @@ trait ImportationTaches
             }
         }
 
-        /* Collaborateurs : plusieurs noms separes par une virgule ou un
-           point-virgule, reconnus par nom ou par adresse. */
-        $gens = [];
+        /* Collaborateurs : l'assignation est desormais automatique.
+           L'utilisateur connecte sera assigne a toutes ses taches a la
+           creation. La colonne « Assigne a » n'existe plus dans le modele. */
+        $gens     = [];
         $nomsGens = [];
-        $brutGens = $lire('assigned');
-
-        if ($brutGens !== '') {
-            foreach (preg_split('/[;,]/', $brutGens) as $morceau) {
-                $morceau = trim($morceau);
-
-                if ($morceau === '') { continue; }
-
-                $cle = $this->normaliser($morceau);
-                $u = $refs->gensNom[$cle] ?? $refs->gensMail[$cle] ?? null;
-
-                if ($u) {
-                    $gens[] = $u->id;
-                    $nomsGens[] = $u->name;
-                }
-                else {
-                    $erreurs[] = sprintf(
-                        __('Ligne %d : le collaborateur « %s » est introuvable.'), $numero, $morceau);
-                }
-            }
-        }
 
         /* Dates */
         $debut = $this->lireDate($lire('start_date'));
@@ -563,9 +539,11 @@ trait ImportationTaches
 
                 $task->save();
 
-                if ($l->gens) {
-                    $task->users()->sync($l->gens);
-                }
+                /* Assignation automatique : l'utilisateur connecte est
+                   toujours l'assigne de ses propres taches importees.
+                   Cela garantit qu'aucune donnee du fichier Excel ne peut
+                   detourner l'attribution vers un autre compte. */
+                $task->users()->sync([user()->id]);
 
                 /* Historique.
 
@@ -593,9 +571,11 @@ trait ImportationTaches
                     ]);
                 }
 
-                if ($l->gens) {
-                    $aNotifier[] = ['task' => $task, 'gens' => $l->gens];
-                }
+                /* L'utilisateur qui importe est notifie s'il le souhaite,
+                   mais notifierAffectations() exclut deja user() de ses
+                   propres notifications. On passe le tableau vide ici :
+                   l'appel reste pour la robustesse future. */
+                $aNotifier[] = ['task' => $task, 'gens' => [user()->id]];
 
                 $creees++;
             }

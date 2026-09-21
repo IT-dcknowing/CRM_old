@@ -57,7 +57,6 @@
                             'start_date'  => __('Format :') . ' ' . company()->date_format,
                             'due_date'    => __('Même format. Doit être postérieure à la date de début.'),
                             'status'      => __('Un des statuts du tableau ; voir la liste ci-dessous.'),
-                            'assigned'    => __("Le nom d'un collaborateur, à choisir dans la liste. Pour en confier à plusieurs, séparez les noms par une virgule."),
                             'category'    => __("Un domaine existant, à choisir dans la liste. L'ancien intitulé « Catégorie » reste accepté."),
                             'description' => __('Texte libre.'),
                         ];
@@ -85,6 +84,12 @@
                 <br>
                 @lang("La casse et les accents n'ont pas d'importance : « en cours », « En cours » et « EN COURS » sont acceptés.")
                 @lang('Sans statut, la tâche est créée en « Incomplète », comme à la création manuelle.')
+            </p>
+
+            <p class="dck-import__note">
+                <i class="fa fa-user-check mr-1"></i>
+                <strong>@lang('Assignation automatique') :</strong>
+                @lang('Toutes les tâches importées vous sont automatiquement assignées. Vous n\'avez pas besoin de renseigner votre nom dans le fichier.')
             </p>
         </div>
     </div>

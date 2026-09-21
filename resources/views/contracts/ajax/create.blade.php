@@ -74,7 +74,7 @@
 
                         <!-- CONTRACT NUMBER END -->
 
-                    <!-- DILIGENCE RATTACHEE : storeUpdate() affecte deja
+                    <!-- PROJET RATTACHEE : storeUpdate() affecte deja
                          $contract->project_id, le champ etait seulement absent
                          de l'affichage. -->
                     <div class="col-md-6 col-lg-3">

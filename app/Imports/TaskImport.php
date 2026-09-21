@@ -3,6 +3,7 @@
 namespace App\Imports;
 
 use Maatwebsite\Excel\Concerns\ToArray;
+use Maatwebsite\Excel\Concerns\WithCustomCsvSettings;
 
 /**
  * Lecture du fichier d'import des taches.
@@ -12,8 +13,17 @@ use Maatwebsite\Excel\Concerns\ToArray;
  * fixe leur ordre et leur intitule. Cela permet une validation ligne a
  * ligne precise, que l'assistant de correspondance ne permettait pas.
  */
-class TaskImport implements ToArray
+class TaskImport implements ToArray, WithCustomCsvSettings
 {
+
+    /* Le fichier depose, quand on le connait : les reglages CSV se
+       deduisent de son contenu, pas d'une configuration figee. */
+    private ?string $chemin;
+
+    public function __construct(?string $chemin = null)
+    {
+        $this->chemin = $chemin;
+    }
 
     /* Plafond par fichier : l'import est synchrone, on ne veut
        pas bloquer la requete indefiniment. La constante vit ici
@@ -25,6 +35,11 @@ class TaskImport implements ToArray
      * Colonnes du modele, dans l'ordre exact du fichier.
      *
      * « cle » sert au code, « nom » figure dans l'en-tete du modele.
+     *
+     * « anciens » recense les intitules d'autrefois, encore acceptes a
+     * la lecture. Renommer une colonne du modele ne doit pas rejeter
+     * les fichiers deja remplis par les equipes : ils resteraient
+     * valides des semaines apres le changement.
      */
     public static function colonnes(): array
     {
@@ -34,8 +49,8 @@ class TaskImport implements ToArray
             ['cle' => 'start_date',  'nom' => 'Date de début', 'requis' => true],
             ['cle' => 'due_date',    'nom' => 'Date de fin',   'requis' => false],
             ['cle' => 'status',      'nom' => 'Statut',        'requis' => false],
-            ['cle' => 'assigned',    'nom' => 'Assigné à',     'requis' => false],
-            ['cle' => 'category',    'nom' => 'Catégorie',     'requis' => false],
+            ['cle' => 'category',    'nom' => 'Domaine',       'requis' => false,
+             'anciens' => ['Catégorie', 'Catégorie de tâche']],
             ['cle' => 'description', 'nom' => 'Description',   'requis' => false],
         ];
     }
@@ -46,9 +61,89 @@ class TaskImport implements ToArray
         return array_column(self::colonnes(), 'nom');
     }
 
+    /** Tous les intitules qu'une colonne accepte : l'actuel et les anciens. */
+    public static function intitulesAcceptes(array $colonne): array
+    {
+        return array_merge([$colonne['nom']], $colonne['anciens'] ?? []);
+    }
+
     public function array(array $rows): array
     {
         return $rows;
+    }
+
+    /**
+     * Reglages CSV deduits du fichier lui-meme.
+     *
+     * « Enregistrer sous > CSV » d'Excel en configuration francaise
+     * produit un fichier separe par des points-virgules et encode en
+     * Windows-1252. Lu avec la virgule et l'UTF-8 de la configuration,
+     * il n'a plus qu'une seule colonne, et l'import annonce que toutes
+     * les colonnes manquent — un message incomprehensible pour qui
+     * vient d'exporter le modele officiel.
+     *
+     * Ces reglages ne servent qu'aux CSV : un xlsx les ignore.
+     */
+    public function getCsvSettings(): array
+    {
+        return [
+            'delimiter'      => $this->delimiteur(),
+            'input_encoding' => $this->encodage(),
+        ];
+    }
+
+    /**
+     * Le separateur le plus present dans la ligne d'en-tete.
+     *
+     * On compte sur l'en-tete plutot que sur tout le fichier : une
+     * description peut contenir des virgules ou des points-virgules a
+     * foison, l'en-tete non.
+     */
+    private function delimiteur(): string
+    {
+        $entete = $this->premiereLigne();
+
+        if ($entete === '') {
+            return ',';
+        }
+
+        $comptes = [
+            ';'  => substr_count($entete, ';'),
+            ','  => substr_count($entete, ','),
+            "	" => substr_count($entete, "	"),
+        ];
+
+        arsort($comptes);
+        $meilleur = array_key_first($comptes);
+
+        return $comptes[$meilleur] > 0 ? $meilleur : ',';
+    }
+
+    /** UTF-8 s'il est valide, Windows-1252 sinon — le defaut d'Excel. */
+    private function encodage(): string
+    {
+        $entete = $this->premiereLigne();
+
+        return ($entete === '' || mb_check_encoding($entete, 'UTF-8'))
+            ? 'UTF-8' : 'Windows-1252';
+    }
+
+    private function premiereLigne(): string
+    {
+        if (!$this->chemin || !is_readable($this->chemin)) {
+            return '';
+        }
+
+        $poignee = @fopen($this->chemin, 'r');
+
+        if (!$poignee) {
+            return '';
+        }
+
+        $ligne = (string) fgets($poignee, 8192);
+        fclose($poignee);
+
+        return $ligne;
     }
 
 }
