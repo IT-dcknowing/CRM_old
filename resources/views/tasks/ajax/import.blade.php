@@ -82,8 +82,17 @@
                 @lang("La casse et les accents n'ont pas d'importance : « en cours », « En cours » et « EN COURS » sont acceptés.")
                 @lang('Sans statut, la tâche est créée en « Incomplète », comme à la création manuelle.')
             </p>
+
+            <p class="dck-import__note">
+                <i class="fa fa-user-check mr-1"></i>
+                <strong>@lang('Assignation automatique') :</strong>
+                @lang('Toutes les tâches importées vous sont automatiquement assignées. Vous n\'avez pas besoin de renseigner votre nom dans le fichier.')
+            </p>
         </div>
     </div>
+
+    </div>
+    <div class="col-xl-5">
 
     {{-- ── 2. Le fichier ─────────────────────────────────────────── --}}
     <div class="dck-card mb-3">
@@ -146,6 +155,9 @@
                 </button>
             </form>
         </div>
+    </div>
+
+    </div>
     </div>
 
     {{-- ── 3. L'apercu, rempli par la reponse du serveur ─────────── --}}

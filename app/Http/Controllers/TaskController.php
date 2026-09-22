@@ -588,7 +588,7 @@ class TaskController extends AccountBaseController
             ['import_file.mimes' => __('Ce format de fichier ne peut pas être lu. Déposez un tableur : xlsx, xls, ods ou csv. Un PDF ou une image ne peuvent pas être importés.')],
             ['import_file' => __('Fichier')]
         );
-
+                                                                                            
         /* Deplace d'emblee vers un chemin du projet : Excel lit le fichier
            via realpath(), peu fiable sur le fichier temporaire de PHP
            (sous C:\Windows\Temp sur cet environnement). Un chemin dans
@@ -608,14 +608,22 @@ class TaskController extends AccountBaseController
             $jeton = null;
         }
 
-        $this->resultat = $resultat;
-        $this->jeton = $jeton;
+            $this->resultat = $resultat;
+            $this->jeton = $jeton;
 
-        return Reply::dataOnly([
-            'status' => 'success',
-            'html' => view('tasks.ajax.import_apercu', $this->data)->render(),
-            'peutImporter' => $resultat->ok && $resultat->total > 0,
-        ]);
+            return Reply::dataOnly([
+                'status' => 'success',
+                'html' => view('tasks.ajax.import_apercu', $this->data)->render(),
+                'peutImporter' => $resultat->ok && $resultat->total > 0,
+            ]);
+        }
+        catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Import de taches, analyse : ' . $e->getMessage(), [
+                'fichier' => $e->getFile() . ':' . $e->getLine(),
+            ]);
+
+            return Reply::error(__('Le fichier n’a pas pu être analysé.') . ' ' . $e->getMessage());
+        }
     }
 
     /**
@@ -636,14 +644,41 @@ class TaskController extends AccountBaseController
            et le fichier a pu changer entre-temps. */
         $resultat = $this->analyserFichierTaches($chemin, $this->projetDefautChoisi($request));
 
-        if (!$resultat->ok || $resultat->total === 0) {
+        /* Fichier illisible, en-tete incomplet, trop de lignes : il n'y a
+           rien a sauver, le message de l'analyse dit quoi. */
+        if ($resultat->total === 0) {
             @unlink($chemin);
 
             return Reply::error($resultat->message
                 ?: __('Le fichier contient des erreurs. Corrigez-le avant de recommencer.'));
         }
 
-        $creees = $this->creerTachesImportees($resultat->lignes);
+        /* Import partiel : les lignes correctes passent, les autres sont
+           laissees de cote.
+
+           L'ancien comportement — tout ou rien — refusait les cinquante
+           taches d'un fichier pour une date illisible a la ligne 34. Il
+           visait a ne jamais laisser un fichier a moitie importe ; il
+           produisait en pratique un fichier pas importe du tout, et
+           l'utilisateur recommencait l'operation entiere.
+
+           Reprendre le fichier corrige ensuite ne cree pas de doublon :
+           les taches deja enregistrees sont reconnues par leur empreinte
+           et rejoignent les lignes ignorees. */
+        $valides = array_values(array_filter(
+            $resultat->lignes, fn($l) => empty($l->erreurs)
+        ));
+
+        if (!$valides) {
+            @unlink($chemin);
+
+            return Reply::error(
+                __('Aucune ligne de ce fichier n\'est exploitable. Corrigez-le avant de recommencer.')
+            );
+        }
+
+        $creees = $this->creerTachesImportees($valides);
+        $ignorees = $resultat->total - count($valides);
 
         @unlink($chemin);
 

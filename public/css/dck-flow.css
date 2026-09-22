@@ -1446,6 +1446,35 @@ body.sidebar-toggled .dck-chrome.dck-chrome .dck-sect,
 .dck-chrome.dck-chrome .navbar-left,
 .dck-chrome.dck-chrome .navbar-right { display:flex; align-items:center; }
 
+/* Le theme de base coupe l'en-tete en deux moities flottantes de 50 % et
+   fait flotter les icones : quand la place manque, « Creer » et les
+   icones passaient a la ligne. En flex, le titre et la recherche cedent
+   de la place et les actions restent toujours sur une seule ligne. */
+.dck-chrome.dck-chrome.main-header { display:flex; align-items:center; flex-wrap:nowrap; }
+.dck-chrome.dck-chrome.main-header .navbar-left {
+  float:none;
+  flex:1 1 auto;
+  width:auto !important;
+  min-width:0;
+  overflow:hidden;
+}
+.dck-chrome.dck-chrome.main-header .navbar-left .app-title,
+.dck-chrome.dck-chrome.main-header .navbar-left .page-title { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.dck-chrome.dck-chrome.main-header .page-header-right {
+  float:none !important;
+  flex:0 1 auto;
+  width:auto !important;
+  min-width:0;
+}
+.dck-chrome.dck-chrome.main-header .page-header-right > ul {
+  display:flex;
+  align-items:center;
+  flex-wrap:nowrap;
+  flex:0 0 auto;
+  margin:0;
+}
+.dck-chrome.dck-chrome.main-header .page-header-right > ul > li { float:none; flex:0 0 auto; }
+
 .dck-chrome.dck-chrome .app-title,
 .dck-chrome.dck-chrome .page-title {
   font-size:15.5px !important;
@@ -1459,6 +1488,8 @@ body.sidebar-toggled .dck-chrome.dck-chrome .dck-sect,
   align-items:center;
   gap:8px;
   width:min(360px, 34vw);
+  flex:0 1 auto;
+  min-width:160px;
   height:36px;
   margin-right:14px;
   padding:0 11px;
@@ -4941,6 +4972,8 @@ body.dark-theme .dck-chrome.dck-chrome .dck-marque img {
   background:var(--surface-2); border:1px solid var(--line);
 }
 .dck-front.dck-front .dck-import__msg.is-err { background:var(--err-bg); border-color:var(--err-line); }
+/* Avis : ce qui va se produire et merite un regard, sans etre une faute. */
+.dck-front.dck-front .dck-import__msg.is-avis { background:var(--warn-bg); border-color:var(--warn-line); }
 .dck-front.dck-front .dck-import__msg p { margin:4px 0 0; color:var(--tx-2); }
 
 .dck-front.dck-front .dck-import__erreurs { margin:9px 0 0; padding-left:18px; }
@@ -4967,6 +5000,7 @@ body.dark-theme .dck-chrome.dck-chrome .dck-marque img {
 .dck-front.dck-front .dck-import__p.is-ok { background:var(--ok-bg); border-color:var(--ok-line); color:var(--ok); }
 .dck-front.dck-front .dck-import__p.is-err { background:var(--err-bg); border-color:var(--err-line); color:var(--err); }
 .dck-front.dck-front .dck-import__p.is-req { background:var(--warn-bg); border-color:var(--warn-line); color:var(--warn); }
+.dck-front.dck-front .dck-import__p.is-avis { background:var(--warn-bg); border-color:var(--warn-line); color:var(--warn); margin-left:5px; }
 
 .dck-front.dck-front .dck-import__valider {
   display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin-top:16px;
