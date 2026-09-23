@@ -7,8 +7,7 @@ use App\Models\Role;
 use App\Models\User;
 use App\Helper\Files;
 use App\Helper\Reply;
-use App\Models\Invoice;
-use App\Models\Payment; 
+use App\Models\Payment;
 use App\Models\Project;
 use App\Models\BaseModel;
 use App\Models\ClientNote;
@@ -31,19 +30,13 @@ use App\Models\UniversalSearch;
 use App\Models\ClientSubCategory;
 use App\Models\PurposeConsentUser;
 use Illuminate\Support\Facades\DB;
-use App\DataTables\TicketDataTable;
 use App\DataTables\ClientsDataTable;
 use App\DataTables\FiscaleDataTable;
 use App\DataTables\SocialeDatatable;
-use App\DataTables\InvoicesDataTable;
-use App\DataTables\PaymentsDataTable;
 use App\DataTables\ProjectsDataTable;
-use App\DataTables\EstimatesDataTable;
 use App\DataTables\ClientGDPRDataTable;
 use App\DataTables\ClientNotesDataTable;
-use App\DataTables\CreditNotesDataTable;
 use App\DataTables\ClientContactsDataTable;
-use App\DataTables\OrdersDataTable;
 use App\Enums\Salutation;
 use App\Http\Requests\Admin\Employee\ImportRequest;
 use App\Http\Requests\Admin\Client\StoreClientRequest;
@@ -85,7 +78,7 @@ class ClientController extends AccountBaseController
                     'id' => $client->id,
                     'name' => $client->name,
                     'email' => $client->email,
-                    'company_name' => $client->clientDetails ? $client->clientDetails->company_name : 'N/A',
+                    'company_name' => $client->company_name ?: 'N/A',
                     'mobile' => $client->mobile,
                     'image' => $client->image_url,
                 ];
@@ -114,19 +107,6 @@ class ClientController extends AccountBaseController
         }
 
         return $dataTable->render('clients.index', $this->data);
-    }
-
-    public function honoraires($id)
-    {
-        try {
-            $total = \App\Models\Invoice::where('client_id', $id)
-                ->where('status', 'paid')
-                ->sum('total');
-
-            return response()->json(['data' => $total]);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
     }
 
     /**
@@ -270,7 +250,7 @@ class ClientController extends AccountBaseController
         }
 
         if ($request->has('ajax_create')) {
-            $projects = Project::all();
+            $projects = Project::select('id', 'project_name')->get();
             $teams = User::allClients();
             $options = BaseModel::options($projects, null, 'project_name');
 
@@ -288,7 +268,7 @@ class ClientController extends AccountBaseController
                 $teamData .= '<h5 class=\'mb-0 f-13\'>' . $team->name . '</h5>';
                 $teamData .= '<p class=\'my-0 f-11 text-dark-grey\'>' . $team->email . '</p>';
 
-                $teamData .= (!is_null($team->clientDetails->company_name)) ? '<p class=\'my-0 f-11 text-dark-grey\'>' . $team->clientDetails->company_name . '</p>' : '';
+                $teamData .= (!is_null($team->company_name)) ? '<p class=\'my-0 f-11 text-dark-grey\'>' . $team->company_name . '</p>' : '';
                 $teamData .= '</div>';
                 $teamData .= '</div>"';
 
@@ -885,7 +865,9 @@ class ClientController extends AccountBaseController
      */
     public function show($id)
     {
-        $this->client = User::withoutGlobalScope(ActiveScope::class)->findOrFail($id);
+        $this->client = User::withoutGlobalScope(ActiveScope::class)
+            ->when(request('tab') == 'documents', fn ($q) => $q->with('clientDocuments'))
+            ->findOrFail($id);
         $this->clientLanguage = LanguageSetting::where('language_code', $this->client->locale)->first();
         $this->viewPermission = user()->permission('view_clients');
         $this->viewDocumentPermission = user()->permission('view_client_document');
@@ -914,18 +896,8 @@ class ClientController extends AccountBaseController
         switch ($tab) {
         case 'projects':
             return $this->projects();
-        case 'invoices':
-            return $this->invoices();
-        case 'payments':
-            return $this->payments();
-        case 'estimates':
-            return $this->estimates();
-        case 'creditnotes':
-            return $this->creditnotes();
         case 'contacts':
             return $this->contacts();
-        case 'orders':
-            return $this->orders();
         case 'documents':
             abort_403(!($this->viewDocumentPermission == 'all'
                 || ($this->viewDocumentPermission == 'added' && $this->client->clientDetails->added_by == user()->id)
@@ -936,8 +908,6 @@ class ClientController extends AccountBaseController
             break;
         case 'notes':
             return $this->notes();
-        case 'tickets':
-            return $this->tickets();
         case 'notes_workspace':
             $this->notes = \App\Models\Note::where('noteable_id', $id)
                 ->where('noteable_type', \App\Models\User::class)
@@ -1070,63 +1040,6 @@ class ClientController extends AccountBaseController
 
     }
 
-    public function invoices()
-    {
-        $dataTable = new InvoicesDataTable();
-        $viewPermission = user()->permission('view_invoices');
-
-        abort_403(!in_array($viewPermission, ['all', 'added', 'owned', 'both']));
-        $tab = request('tab');
-
-        $this->activeTab = $tab ?: 'profile';
-
-        $this->view = 'clients.ajax.invoices';
-
-        return $dataTable->render('clients.show', $this->data);
-    }
-
-    public function payments()
-    {
-        $dataTable = new PaymentsDataTable();
-        $viewPermission = user()->permission('view_payments');
-
-        abort_403(!($viewPermission == 'all' || $viewPermission == 'added'));
-        $tab = request('tab');
-        $this->activeTab = $tab ?: 'profile';
-
-        $this->view = 'clients.ajax.payments';
-
-        return $dataTable->render('clients.show', $this->data);
-
-    }
-
-    public function estimates()
-    {
-        $dataTable = new EstimatesDataTable();
-        $viewPermission = user()->permission('view_estimates');
-
-        abort_403(!in_array($viewPermission, ['all', 'added', 'owned', 'both']));
-
-        $tab = request('tab');
-        $this->activeTab = $tab ?: 'profile';
-        $this->view = 'clients.ajax.estimates';
-
-        return $dataTable->render('clients.show', $this->data);
-    }
-
-    public function creditnotes()
-    {
-        $dataTable = new CreditNotesDataTable();
-        $viewPermission = user()->permission('view_invoices');
-
-        abort_403($viewPermission == 'none');
-        $tab = request('tab');
-        $this->activeTab = $tab ?: 'profile';
-        $this->view = 'clients.ajax.credit_notes';
-
-        return $dataTable->render('clients.show', $this->data);
-    }
-
     public function contacts()
     {
         $dataTable = new ClientContactsDataTable();
@@ -1147,20 +1060,6 @@ class ClientController extends AccountBaseController
         $tab = request('tab');
         $this->activeTab = $tab ?: 'profile';
         $this->view = 'clients.ajax.notes';
-
-        return $dataTable->render('clients.show', $this->data);
-    }
-
-    public function tickets()
-    {
-        $dataTable = new TicketDataTable();
-        $viewPermission = user()->permission('view_clients');
-
-        abort_403(!($viewPermission == 'all' || $viewPermission == 'added' || $viewPermission == 'both'));
-        $tab = request('tab');
-        $this->activeTab = $tab ?: 'profile';
-
-        $this->view = 'clients.ajax.tickets';
 
         return $dataTable->render('clients.show', $this->data);
     }
@@ -1324,7 +1223,7 @@ class ClientController extends AccountBaseController
                 $teamData .= '<h5 class=\'mb-0 f-13\'>' . $client->name . '</h5>';
                 $teamData .= '<p class=\'my-0 f-11 text-dark-grey\'>' . $client->email . '</p>';
 
-                $teamData .= (!is_null($client->clientDetails->company_name)) ? '<p class=\'my-0 f-11 text-dark-grey\'>' . $client->clientDetails->company_name . '</p>' : '';
+                $teamData .= (!is_null($client->company_name)) ? '<p class=\'my-0 f-11 text-dark-grey\'>' . $client->company_name . '</p>' : '';
                 $teamData .= '</div>';
                 $teamData .= '</div>"';
 
@@ -1361,21 +1260,6 @@ class ClientController extends AccountBaseController
         }
 
         return Reply::dataOnly(['teamData' => $teamData]);
-    }
-
-    public function orders()
-    {
-        $dataTable = new OrdersDataTable();
-        $viewPermission = user()->permission('view_order');
-        abort_403(!in_array($viewPermission, ['all', 'added', 'owned', 'both']));
-
-        $tab = request('tab');
-
-        $this->activeTab = $tab ?: 'profile';
-
-        $this->view = 'clients.ajax.orders';
-
-        return $dataTable->render('clients.show', $this->data);
     }
 
     public function clientEntreprises(EntreprisesDataTable $dataTable)

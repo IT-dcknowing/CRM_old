@@ -56,13 +56,18 @@ class TaskboardColumn extends BaseModel
         return $this->hasOne(UserTaskboardSetting::class, 'board_column_id')->where('user_id', user()->id);
     }
 
+    /** Cache memoire (une requete HTTP) pour eviter les lectures repetees
+     *  du meme slug par les nombreux traits qui appellent ces methodes
+     *  independamment les uns des autres. */
+    private static array $slugCache = [];
+
     public static function completeColumn()
     {
-        return TaskboardColumn::where('slug', 'completed')->first();
+        return static::$slugCache['completed'] ??= TaskboardColumn::where('slug', 'completed')->first();
     }
 
     public static function waitingForApprovalColumn()
     {
-        return TaskboardColumn::where('slug', 'waiting_approval')->first();
+        return static::$slugCache['waiting_approval'] ??= TaskboardColumn::where('slug', 'waiting_approval')->first();
     }
 }

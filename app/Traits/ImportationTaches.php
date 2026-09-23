@@ -35,27 +35,11 @@ trait ImportationTaches
      *
      * @return object lignes analysees, erreurs, et compteurs
      */
-    protected function analyserFichierTaches(string $chemin, ?int $projetDefaut = null, ?string $extension = null): object
+    protected function analyserFichierTaches(string $chemin, ?int $projetDefaut = null): object
     {
-        /* Le type de lecteur est donne explicitement. Un fichier depose
-           est lu depuis le dossier temporaire de PHP, et sous Linux ce
-           fichier n'a pas d'extension (/tmp/phpA1b2C3) : la librairie ne
-           pouvait pas deviner le format et levait NoTypeDetectedException
-           en production, alors que tout passait sous Windows (.tmp). */
-        $extension = strtolower($extension ?: pathinfo($chemin, PATHINFO_EXTENSION));
-
-        $types = [
-            'xlsx' => \Maatwebsite\Excel\Excel::XLSX,
-            'xls'  => \Maatwebsite\Excel\Excel::XLS,
-            'ods'  => \Maatwebsite\Excel\Excel::ODS,
-            'csv'  => \Maatwebsite\Excel\Excel::CSV,
-        ];
-
         /* Le chemin est passe au lecteur : c'est de lui qu'il deduit le
            separateur et l'encodage d'un CSV. */
-        $brut = \Maatwebsite\Excel\Facades\Excel::toArray(
-            new TaskImport($chemin), $chemin, null, $types[$extension] ?? null
-        );
+        $brut = \Maatwebsite\Excel\Facades\Excel::toArray(new TaskImport($chemin), $chemin);
         $feuille = $brut[0] ?? [];
 
         if (count($feuille) < 2) {
@@ -275,29 +259,13 @@ trait ImportationTaches
            besoin de sa valeur definitive — celle du fichier, ou celle
            choisie a l'ecran d'import quand la colonne est vide. */
         $projet = null;
-        $projetACreer = null;
         $nomProjet = $lire('project');
 
         if ($nomProjet !== '') {
             $projet = $refs->projets[$this->normaliser($nomProjet)] ?? null;
 
-            /* Projet absent du cabinet.
-
-               Il n'est pas cree ici : analyser() ne doit rien ecrire. On
-               retient le nom, l'apercu l'annonce, et la creation n'a lieu
-               qu'a la confirmation — sinon un simple coup d'oeil au
-               fichier aurait deja peuple la base.
-
-               Le droit de creer un projet est celui du module projets, et
-               non celui de l'import : sans lui, la ligne reste en erreur
-               comme auparavant. */
             if (!$projet) {
-                if ($refs->creationProjets) {
-                    $projetACreer = $nomProjet;
-                }
-                else {
-                    $erreurs[] = sprintf(__('Ligne %d : le projet « %s » n\'existe pas.'), $numero, $nomProjet);
-                }
+                $erreurs[] = sprintf(__('Ligne %d : le projet « %s » n\'existe pas.'), $numero, $nomProjet);
             }
         }
         elseif ($refs->projetDefaut) {
@@ -307,6 +275,7 @@ trait ImportationTaches
 
         /* Empreinte batie sur le nom reel du projet, et non sur ce que
            porte la cellule : deux lignes rattachees au meme projet — que
+<<<<<<< HEAD
            ce soit par la colonne ou par defaut — sont bien un doublon.
 
            Un projet a creer compte pour son nom : deux lignes qui
@@ -315,6 +284,10 @@ trait ImportationTaches
         $empreinte = $this->normaliser(
             $titre . '|' . ($projet?->project_name ?? $projetACreer ?? '')
         );
+=======
+           ce soit par la colonne ou par defaut — sont bien un doublon. */
+        $empreinte = $this->normaliser($titre . '|' . ($projet->project_name ?? ''));
+>>>>>>> 78245909ce71849cd06ab185d0ebf5b5a979cd17
 
         if ($titre !== '' && isset($vus[$empreinte])) {
             $erreurs[] = sprintf(
@@ -487,19 +460,14 @@ trait ImportationTaches
     {
         $attente = TaskboardColumn::waitingForApprovalColumn();
         $creees = 0;
+        $comptageParProjet = [];
 
         /* Les taches creees et leurs destinataires, retenus pour
            notifier une fois la transaction close : un courriel parti
            depuis une transaction qui echoue serait un mensonge. */
         $aNotifier = [];
 
-        DB::transaction(function () use ($lignes, $attente, &$creees, &$aNotifier) {
-            /* Les projets annonces par l'apercu, crees avant les taches
-               et dans la meme transaction : un projet cree pour une tache
-               qui n'arrive pas serait un projet vide, sorti de nulle
-               part. */
-            $this->creerProjetsManquants($lignes);
-
+        DB::transaction(function () use ($lignes, $attente, &$creees, &$aNotifier, &$comptageParProjet) {
             foreach ($lignes as $l) {
                 $task = new Task();
                 $task->heading = $l->titre;
@@ -529,7 +497,11 @@ trait ImportationTaches
                 /* Meme reference que la creation manuelle : prefixe du
                    projet suivi d'un compteur, ou simple rang. */
                 if ($l->projet) {
-                    $rang = Task::projectTaskCount($l->projet->id);
+                    if (!array_key_exists($l->projet->id, $comptageParProjet)) {
+                        $comptageParProjet[$l->projet->id] = Task::projectTaskCount($l->projet->id);
+                    }
+
+                    $rang = $comptageParProjet[$l->projet->id]++;
 
                     $task->task_short_code = $l->projet->project_short_code
                         ? $l->projet->project_short_code . '-' . $this->getTaskShortCode(

@@ -53,7 +53,6 @@ class ContractController extends AccountBaseController
                 $this->clients = User::allClients();
             }
 
-            $this->contract = Contract::all();
             $this->contractTypes = ContractType::all();
 
             /* Les compteurs portaient sur l'ensemble des contrats, sans les

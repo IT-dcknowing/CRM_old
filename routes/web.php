@@ -140,7 +140,8 @@ Route::group(['middleware' => 'auth', 'prefix' => 'account'], function () {
     Route::get('dashboard-advanced', [DashboardController::class , 'advancedDashboard'])->name('dashboard.advanced');
     Route::post('dashboard/widget/{dashboardType}', [DashboardController::class , 'widget'])->name('dashboard.widget');
     Route::post('dashboard/week-timelog', [DashboardController::class , 'weekTimelog'])->name('dashboard.week_timelog');
-    Route::get('dashboard/lead-data/{id}', [DashboardController::class , 'getLeadStage'])->name('dashboard.deal-stage-data');
+    // [nettoyage-modules] Leads/Deals — methode retiree de DashboardController
+    // Route::get('dashboard/lead-data/{id}', [DashboardController::class , 'getLeadStage'])->name('dashboard.deal-stage-data');
 
     // Route::get('attendances/clock-in-modal', [DashboardController::class , 'clockInModal'])->name('attendances.clock_in_modal');
     // Route::post('attendances/store-clock-in', [DashboardController::class , 'storeClockIn'])->name('attendances.store_clock_in');
@@ -236,8 +237,9 @@ Route::group(['middleware' => 'auth', 'prefix' => 'account'], function () {
     Route::get('employee-docs/download/{id}', [EmployeeDocController::class , 'download'])->name('employee-docs.download');
     Route::resource('employee-docs', EmployeeDocController::class);
 
-    Route::get('employee-leaves/employeeLeaveTypes/{id}', [LeavesQuotaController::class , 'employeeLeaveTypes'])->name('employee-leaves.employee_leave_types');
-    Route::resource('employee-leaves', LeavesQuotaController::class);
+    // [nettoyage-modules] Leave/Attendance
+    // Route::get('employee-leaves/employeeLeaveTypes/{id}', [LeavesQuotaController::class , 'employeeLeaveTypes'])->name('employee-leaves.employee_leave_types');
+    // Route::resource('employee-leaves', LeavesQuotaController::class);
 
     Route::get('designations/designation-hierarchy', [DesignationController::class , 'hierarchyData'])->name('designation.hierarchy');
     Route::post('designations/changeParent', [DesignationController::class , 'changeParent'])->name('designation.changeParent');
@@ -857,7 +859,8 @@ Route::group(['middleware' => 'auth', 'prefix' => 'account'], function () {
         // Route::resource('income-expense-report', IncomeVsExpenseReportController::class);
 
         // Route::get('leave-report/leave-quota', [LeaveReportController::class , 'leaveQuota'])->name('leave-report.leave_quota');
-        Route::get('leave-report/leave-quota/export-all-leave-quota/{id}/{year}/{month}', [LeavesQuotaController::class , 'exportAllLeaveQuota'])->name('leave_quota.export_all_leave_quota');
+        // [nettoyage-modules] Leave/Attendance
+        // Route::get('leave-report/leave-quota/export-all-leave-quota/{id}/{year}/{month}', [LeavesQuotaController::class , 'exportAllLeaveQuota'])->name('leave_quota.export_all_leave_quota');
         // Route::get('leave-report/leave-quota/{id}/{year}/{month}', [LeaveReportController::class , 'employeeLeaveQuota'])->name('leave-report.employee-leave-quota');
         // Route::resource('leave-report', LeaveReportController::class);
 

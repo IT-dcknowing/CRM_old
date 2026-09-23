@@ -4922,7 +4922,7 @@ body.dark-theme .dck-chrome.dck-chrome .dck-marque img {
    l'application ; ne restent ici que les elements qui lui sont
    propres — le bilan de l'analyse et le tableau d'apercu. */
 
-.dck-front.dck-front .dck-import { max-width:1600px; }
+.dck-front.dck-front .dck-import { max-width:1060px; }
 
 /* Numero d'etape, pose dans le titre de la carte. */
 .dck-front.dck-front .dck-import__num {
