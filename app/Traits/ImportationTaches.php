@@ -313,7 +313,7 @@ trait ImportationTaches
            l'annoncent visent bien le meme projet, celui que la
            confirmation creera une seule fois. */
         $empreinte = $this->normaliser(
-            $titre . '|' . ($projet->project_name ?? $projetACreer ?? '')
+            $titre . '|' . ($projet?->project_name ?? $projetACreer ?? '')
         );
 
         if ($titre !== '' && isset($vus[$empreinte])) {
@@ -506,8 +506,8 @@ trait ImportationTaches
                 $task->description = $l->description !== '' ? $l->description : null;
                 $task->start_date = $l->debut;
                 $task->due_date = $l->fin;
-                $task->project_id = $l->projet->id ?? null;
-                $task->task_category_id = $l->categorie->id ?? null;
+                $task->project_id = $l->projet?->id ?? null;
+                $task->task_category_id = $l->categorie?->id ?? null;
                 $task->priority = 'medium';
                 $task->board_column_id = $l->statut->id;
 

@@ -18,7 +18,7 @@
 <div class="content-wrapper">
     <div class="row">
         <div class="col-sm-12">
-            <x-cards.data padding="false" :title="__('app.newNotifications')">
+            <x-cards.data padding="false" :title="__('Nouvelles notifications ')">
 
                 @if ($notifications->total() > 0)
                     <div class="px-3 py-2 border-bottom-grey f-12 text-dark-grey bg-additional-grey d-flex justify-content-between align-items-center">
@@ -30,7 +30,7 @@
                         </div>
                         @if ($nonLues > 0)
                             <a href="javascript:;" class="mark-notification-read text-dark-grey f-12 text-decoration-none">
-                                <i class="fa fa-check-double mr-1"></i>{{ __('app.markAllRead') }}
+                                <i class="fa fa-check-double mr-1"></i>{{ __('Marquer tout comme lu') }}
                             </a>
                         @endif
                     </div>
