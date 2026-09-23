@@ -588,34 +588,34 @@ class TaskController extends AccountBaseController
             ['import_file.mimes' => __('Ce format de fichier ne peut pas être lu. Déposez un tableur : xlsx, xls, ods ou csv. Un PDF ou une image ne peuvent pas être importés.')],
             ['import_file' => __('Fichier')]
         );
-                                                                                            
-        /* Deplace d'emblee vers un chemin du projet : Excel lit le fichier
-           via realpath(), peu fiable sur le fichier temporaire de PHP
-           (sous C:\Windows\Temp sur cet environnement). Un chemin dans
-           storage/ leve l'ambiguite, et sert aussi de conservation pour
-           la confirmation (voir importTaskProcess). */
-        $jeton = 'import-taches-' . user()->id . '-' . time() . '.'
-            . $request->file('import_file')->getClientOriginalExtension();
+        try{                                                                              
+                /* Deplace d'emblee vers un chemin du projet : Excel lit le fichier
+                via realpath(), peu fiable sur le fichier temporaire de PHP
+                (sous C:\Windows\Temp sur cet environnement). Un chemin dans
+                storage/ leve l'ambiguite, et sert aussi de conservation pour
+                la confirmation (voir importTaskProcess). */
+                $jeton = 'import-taches-' . user()->id . '-' . time() . '.'
+                    . $request->file('import_file')->getClientOriginalExtension();
 
-        $chemin = $request->file('import_file')
-            ->move(storage_path('app/imports-taches'), $jeton)
-            ->getPathname();
+                $chemin = $request->file('import_file')
+                    ->move(storage_path('app/imports-taches'), $jeton)
+                    ->getPathname();
 
-        $resultat = $this->analyserFichierTaches($chemin, $this->projetDefautChoisi($request));
+                $resultat = $this->analyserFichierTaches($chemin, $this->projetDefautChoisi($request));
 
-        if ($resultat->total === 0) {
-            @unlink($chemin);
-            $jeton = null;
-        }
+                if ($resultat->total === 0) {
+                    @unlink($chemin);
+                    $jeton = null;
+                }
 
-            $this->resultat = $resultat;
-            $this->jeton = $jeton;
+                    $this->resultat = $resultat;
+                    $this->jeton = $jeton;
 
-            return Reply::dataOnly([
-                'status' => 'success',
-                'html' => view('tasks.ajax.import_apercu', $this->data)->render(),
-                'peutImporter' => $resultat->ok && $resultat->total > 0,
-            ]);
+                    return Reply::dataOnly([
+                        'status' => 'success',
+                        'html' => view('tasks.ajax.import_apercu', $this->data)->render(),
+                        'peutImporter' => $resultat->ok && $resultat->total > 0,
+                    ]);
         }
         catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('Import de taches, analyse : ' . $e->getMessage(), [

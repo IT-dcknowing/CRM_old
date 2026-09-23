@@ -108,8 +108,17 @@
                 <?php echo app('translator')->get("La casse et les accents n'ont pas d'importance : « en cours », « En cours » et « EN COURS » sont acceptés."); ?>
                 <?php echo app('translator')->get('Sans statut, la tâche est créée en « Incomplète », comme à la création manuelle.'); ?>
             </p>
+
+            <p class="dck-import__note">
+                <i class="fa fa-user-check mr-1"></i>
+                <strong><?php echo app('translator')->get('Assignation automatique'); ?> :</strong>
+                <?php echo app('translator')->get('Toutes les tâches importées vous sont automatiquement assignées. Vous n\'avez pas besoin de renseigner votre nom dans le fichier.'); ?>
+            </p>
         </div>
     </div>
+
+    </div>
+    <div class="col-xl-5">
 
     
     <div class="dck-card mb-3">
@@ -166,6 +175,9 @@
                 </button>
             </form>
         </div>
+    </div>
+
+    </div>
     </div>
 
     
@@ -270,7 +282,7 @@
         .then(function (r) { return r.json(); })
         .then(function (rep) {
             if (rep.status === 'success') {
-                window.location.href = rep.redirectUrl || '<?php echo e(route("tasks.index")); ?>';
+                window.location.href = rep.redirectUrl || '<?php echo e(route("taskboards.index")); ?>';
             }
             else {
                 erreur(rep.message || '<?php echo e(__("L’importation a échoué.")); ?>');
