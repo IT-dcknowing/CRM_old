@@ -9,20 +9,15 @@
 <?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag && $constructor = (new ReflectionClass(App\View\Components\Form::class))->getConstructor()): ?>
 <?php $attributes = $attributes->except(collect($constructor->getParameters())->map->getName()->all()); ?>
 <?php endif; ?>
-<?php $component->withAttributes(['id' => 'import-project-data-form']); ?>
-            <div class="add-project bg-white rounded">
+<?php $component->withAttributes(['id' => 'import-client-data-form']); ?>
+            <div class="add-client bg-white rounded">
                 <h4 class="mb-0 p-20 f-21 font-weight-normal  border-bottom-grey">
-                    <?php echo app('translator')->get('app.importProjects'); ?></h4>
-                <div class="col-sm-12 pt-2">
-                    <div class="alert alert-warning" role="alert">
-                        <?php echo app('translator')->get('app.importProjectExcelInfo'); ?>
-                    </div>
-                </div>
+                    <?php echo app('translator')->get('app.importExcelClient'); ?></h4>
                 <div class="row py-20">
                     <div class="col-md-12">
                         <?php if (isset($component)) { $__componentOriginal71f75760ce80416d6aa938be1ae7e8b2 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginal71f75760ce80416d6aa938be1ae7e8b2 = $attributes; } ?>
-<?php $component = App\View\Components\Forms\File::resolve(['fieldLabel' => __('modules.import.file'),'fieldName' => 'import_file','fieldId' => 'project_import'] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? (array) $attributes->getIterator() : [])); ?>
+<?php $component = App\View\Components\Forms\File::resolve(['fieldLabel' => __('modules.import.file'),'fieldName' => 'import_file','fieldId' => 'client_import'] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? (array) $attributes->getIterator() : [])); ?>
 <?php $component->withName('forms.file'); ?>
 <?php if ($component->shouldRender()): ?>
 <?php $__env->startComponent($component->resolveView(), $component->data()); ?>
@@ -83,7 +78,7 @@
 <?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag && $constructor = (new ReflectionClass(App\View\Components\Forms\ButtonPrimary::class))->getConstructor()): ?>
 <?php $attributes = $attributes->except(collect($constructor->getParameters())->map->getName()->all()); ?>
 <?php endif; ?>
-<?php $component->withAttributes(['id' => 'import-project-form','class' => 'mr-3']); ?><?php echo app('translator')->get('app.uploadNext'); ?>
+<?php $component->withAttributes(['id' => 'import-client-form','class' => 'mr-3']); ?><?php echo app('translator')->get('app.uploadNext'); ?>
                      <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginalcf8d12533ff890e0d6573daf32b7618d)): ?>
@@ -96,7 +91,7 @@
 <?php endif; ?>
                     <?php if (isset($component)) { $__componentOriginalc35c79ed7e812580313ad04118477974 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginalc35c79ed7e812580313ad04118477974 = $attributes; } ?>
-<?php $component = App\View\Components\Forms\ButtonCancel::resolve(['link' => route('projects.index')] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? (array) $attributes->getIterator() : [])); ?>
+<?php $component = App\View\Components\Forms\ButtonCancel::resolve(['link' => route('clients.index')] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? (array) $attributes->getIterator() : [])); ?>
 <?php $component->withName('forms.button-cancel'); ?>
 <?php if ($component->shouldRender()): ?>
 <?php $__env->startComponent($component->resolveView(), $component->data()); ?>
@@ -144,22 +139,22 @@
 
     $(document).ready(function() {
 
-        $("#project_import").dropify({
+        $("#client_import").dropify({
             messages: dropifyMessages
         });
 
-        $('body').on('click', '#import-project-form', function() {
-            const url = "<?php echo e(route('projects.import.store')); ?>";
+        $('body').on('click', '#import-client-form', function() {
+            const url = "<?php echo e(route('clients.import.store')); ?>";
 
             $.easyAjax({
                 url: url,
-                container: '#import-project-data-form',
+                container: '#import-client-data-form',
                 type: "POST",
                 disableButton: true,
                 blockUI: true,
-                buttonSelector: "#import-project-form",
+                buttonSelector: "#import-client-form",
                 file: true,
-                data: $('#import-project-data-form').serialize(),
+                data: $('#import-client-data-form').serialize(),
                 success: function(response) {
                     if (response.status == 'success') {
                         $('#import_table').html(response.view);
@@ -169,4 +164,4 @@
         });
     });
 </script>
-<?php /**PATH C:\laragon\www\CRM\resources\views/projects/ajax/import.blade.php ENDPATH**/ ?>
+<?php /**PATH C:\laragon\www\CRM\resources\views/clients/ajax/import.blade.php ENDPATH**/ ?>

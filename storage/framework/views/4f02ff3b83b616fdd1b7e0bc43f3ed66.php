@@ -88,7 +88,7 @@
                     <td>
                         <?php echo e($l->projet->project_name ?? ($l->projetNom ?: '—')); ?>
 
-                        <?php if($l->projetACreer): ?>
+                        <?php if(!empty($l->projetACreer)): ?>
                             <span class="dck-import__p is-avis"><?php echo app('translator')->get('à créer'); ?></span>
                         <?php endif; ?>
                     </td>

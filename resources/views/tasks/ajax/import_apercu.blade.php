@@ -90,7 +90,7 @@
                     <td>{{ \Illuminate\Support\Str::limit($l->titre, 46) ?: '—' }}</td>
                     <td>
                         {{ $l->projet->project_name ?? ($l->projetNom ?: '—') }}
-                        @if ($l->projetACreer)
+                        @if (!empty($l->projetACreer))
                             <span class="dck-import__p is-avis">@lang('à créer')</span>
                         @endif
                     </td>
