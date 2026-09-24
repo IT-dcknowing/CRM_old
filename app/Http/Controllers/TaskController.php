@@ -588,7 +588,7 @@ class TaskController extends AccountBaseController
             ['import_file.mimes' => __('Ce format de fichier ne peut pas être lu. Déposez un tableur : xlsx, xls, ods ou csv. Un PDF ou une image ne peuvent pas être importés.')],
             ['import_file' => __('Fichier')]
         );
-                                                                                            
+                try{                                                                     
         /* Deplace d'emblee vers un chemin du projet : Excel lit le fichier
            via realpath(), peu fiable sur le fichier temporaire de PHP
            (sous C:\Windows\Temp sur cet environnement). Un chemin dans

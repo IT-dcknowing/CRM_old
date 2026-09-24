@@ -1,7 +1,7 @@
 <?php
 $content = "<div class='d-flex align-items-center text-left'>
     <div class='taskEmployeeImg border-0 d-inline-block mr-1'>
-        <img class='rounded-circle' src='".$user->image_url."'>
+        <img class='rounded-circle' loading='lazy' src='".$user->image_url."'>
     </div>
     <div>". htmlentities($user->userBadge());
 

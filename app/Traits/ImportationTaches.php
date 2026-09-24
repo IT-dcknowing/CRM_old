@@ -93,14 +93,14 @@ trait ImportationTaches
            n'aurait demandes. */
         $aCreer = [];
 
-        foreach ($lignes as $l) {
+       /* foreach ($lignes as $l) {
             /* Seules les lignes retenues comptent : une ligne ecartee pour
                une autre raison n'importera pas sa tache, son projet n'a
-               donc pas lieu d'exister. */
+               donc pas lieu d'exister. 
             if ($l->projetACreer && empty($l->erreurs)) {
                 $aCreer[$this->normaliser($l->projetACreer)] = $l->projetACreer;
             }
-        }
+        } */
 
         return (object) [
             'ok'        => empty($erreurs),
@@ -275,19 +275,8 @@ trait ImportationTaches
 
         /* Empreinte batie sur le nom reel du projet, et non sur ce que
            porte la cellule : deux lignes rattachees au meme projet — que
-<<<<<<< HEAD
-           ce soit par la colonne ou par defaut — sont bien un doublon.
-
-           Un projet a creer compte pour son nom : deux lignes qui
-           l'annoncent visent bien le meme projet, celui que la
-           confirmation creera une seule fois. */
-        $empreinte = $this->normaliser(
-            $titre . '|' . ($projet?->project_name ?? $projetACreer ?? '')
-        );
-=======
            ce soit par la colonne ou par defaut — sont bien un doublon. */
         $empreinte = $this->normaliser($titre . '|' . ($projet->project_name ?? ''));
->>>>>>> 78245909ce71849cd06ab185d0ebf5b5a979cd17
 
         if ($titre !== '' && isset($vus[$empreinte])) {
             $erreurs[] = sprintf(
@@ -374,7 +363,7 @@ trait ImportationTaches
             'description' => $lire('description'),
             'projet'      => $projet,
             'projetNom'   => $nomProjet,
-            'projetACreer' => $projetACreer,
+        //'projetACreer' => $projetACreer,
             'categorie'   => $categorie,
             'statut'      => $statut,
             'gens'        => $gens,

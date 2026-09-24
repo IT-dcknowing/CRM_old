@@ -1,3 +1,4 @@
+﻿
 
 
 <?php if (isset($component)) { $__componentOriginale44c97c7bfb598419dda3f1c66ab979c = $component; } ?>
@@ -47,140 +48,137 @@
 <div class="dck-import">
 
     
-    <div class="row">
-    <div class="col-xl-7">
+    <div class="dck-import__top">
 
-    
-    <div class="dck-card mb-3">
-        <div class="dck-card__head d-flex">
-            <h4 class="mb-0"><span class="dck-import__num">1</span> <?php echo app('translator')->get('Téléchargez le modèle'); ?></h4>
-        </div>
-
-        <div class="card-body">
-            <p class="dck-import__intro">
-                <?php echo app('translator')->get("Le modèle contient les colonnes attendues et des menus déroulants bâtis sur vos propres projets, collaborateurs et domaines : vous choisissez au lieu de saisir. Une ligne d'exemple grisée montre le remplissage attendu ; supprimez-la avant d'importer."); ?>
-            </p>
-
-            <a class="btn btn-primary rounded f-14 p-2" href="<?php echo e(route('tasks.import.modele')); ?>">
-                <i class="fa fa-download mr-1"></i>
-                <?php echo app('translator')->get('Télécharger le modèle Excel'); ?>
-            </a>
-
-            <div class="table-responsive mt-4">
-                <table class="table dck-import__cols">
-                    <thead>
-                        <tr>
-                            <th><?php echo app('translator')->get('Colonne'); ?></th>
-                            <th><?php echo app('translator')->get('Obligatoire'); ?></th>
-                            <th><?php echo app('translator')->get('Ce qui est attendu'); ?></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    <?php
-                        $aide = [
-                            'heading'     => __("Le titre de la tâche."),
-                            'project'     => __("À choisir dans la liste, ou laissez vide. Vous pouvez aussi saisir un nom qui n'existe pas encore : le projet sera créé à l'import, après confirmation."),
-                            'start_date'  => __('Format :') . ' ' . company()->date_format,
-                            'due_date'    => __('Même format. Doit être postérieure à la date de début.'),
-                            'status'      => __('Un des statuts du tableau ; voir la liste ci-dessous.'),
-                            'category'    => __("Un domaine existant, à choisir dans la liste. L'ancien intitulé « Catégorie » reste accepté."),
-                            'description' => __('Texte libre.'),
-                        ];
-                    ?>
-                    <?php $__currentLoopData = $colonnes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $c): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                        <tr>
-                            <td><strong><?php echo e($c['nom']); ?></strong></td>
-                            <td>
-                                <?php if($c['requis']): ?>
-                                    <span class="dck-import__p is-req"><?php echo app('translator')->get('oui'); ?></span>
-                                <?php else: ?>
-                                    <span class="dck-import__p"><?php echo app('translator')->get('non'); ?></span>
-                                <?php endif; ?>
-                            </td>
-                            <td><?php echo e($aide[$c['cle']] ?? ''); ?></td>
-                        </tr>
-                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                    </tbody>
-                </table>
+        
+        <div class="dck-card dck-import__col dck-import__col--modele">
+            <div class="dck-card__head d-flex">
+                <h4 class="mb-0"><span class="dck-import__num">1</span> <?php echo app('translator')->get('Téléchargez le modèle'); ?></h4>
             </div>
 
-            <p class="dck-import__note">
-                <strong><?php echo app('translator')->get('Statuts reconnus'); ?> :</strong>
-                <?php echo e(\App\Models\TaskboardColumn::pluck('column_name')->implode(' · ')); ?>.
-                <br>
-                <?php echo app('translator')->get("La casse et les accents n'ont pas d'importance : « en cours », « En cours » et « EN COURS » sont acceptés."); ?>
-                <?php echo app('translator')->get('Sans statut, la tâche est créée en « Incomplète », comme à la création manuelle.'); ?>
-            </p>
+            <div class="card-body">
+                <p class="dck-import__intro">
+                    <?php echo app('translator')->get("Le modèle contient les colonnes attendues et des menus déroulants bâtis sur vos propres projets, collaborateurs et domaines : vous choisissez au lieu de saisir. Une ligne d'exemple grisée montre le remplissage attendu ; supprimez-la avant d'importer."); ?>
+                </p>
 
-            <p class="dck-import__note">
-                <i class="fa fa-user-check mr-1"></i>
-                <strong><?php echo app('translator')->get('Assignation automatique'); ?> :</strong>
-                <?php echo app('translator')->get('Toutes les tâches importées vous sont automatiquement assignées. Vous n\'avez pas besoin de renseigner votre nom dans le fichier.'); ?>
-            </p>
-        </div>
-    </div>
+                <a class="btn btn-primary rounded f-14 p-2" href="<?php echo e(route('tasks.import.modele')); ?>">
+                    <i class="fa fa-download mr-1"></i>
+                    <?php echo app('translator')->get('Télécharger le modèle Excel'); ?>
+                </a>
 
-    </div>
-    <div class="col-xl-5">
-
-    
-    <div class="dck-card mb-3">
-        <div class="dck-card__head d-flex">
-            <h4 class="mb-0"><span class="dck-import__num">2</span> <?php echo app('translator')->get('Déposez votre fichier'); ?></h4>
-        </div>
-
-        <div class="card-body">
-            <form id="form-import-taches" enctype="multipart/form-data">
-                <?php echo csrf_field(); ?>
-
-                <div class="row">
-                    
-                    <div class="col-12">
-                        <div class="form-group mb-3">
-                            <label for="projet_defaut" class="f-14 text-dark-grey mb-2">
-                                <?php echo app('translator')->get('Projet par défaut'); ?>
-                                <span class="f-12 text-lightest">— <?php echo app('translator')->get('facultatif'); ?></span>
-                            </label>
-
-                            <select name="projet_defaut" id="projet_defaut" class="form-control f-14">
-                                <option value=""><?php echo app('translator')->get('Aucun — le projet est lu dans le fichier'); ?></option>
-                                <?php $__currentLoopData = $projets; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $p): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                    <option value="<?php echo e($p->id); ?>"><?php echo e($p->project_name); ?></option>
-                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                            </select>
-
-                            <p class="dck-import__note">
-                                <?php echo app('translator')->get("Appliqué aux lignes dont la colonne « Projet » est vide."); ?>
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="col-12">
-                        <div class="form-group mb-3">
-                            <label for="import_file" class="f-14 text-dark-grey mb-2">
-                                <?php echo app('translator')->get('Fichier'); ?> <sup class="text-danger">*</sup>
-                            </label>
-
-                            <input type="file" name="import_file" id="import_file"
-                                   class="form-control f-14" accept=".xlsx,.xls,.ods,.csv" required>
-
-                            <p class="dck-import__note">
-                                <?php echo app('translator')->get('Formats acceptés : xlsx, xls, ods, csv.'); ?>
-                                <?php echo e(__('Maximum :')); ?> <?php echo e(\App\Imports\TaskImport::MAXIMUM_LIGNES); ?> <?php echo e(__('lignes par import.')); ?>
-
-                            </p>
-                        </div>
-                    </div>
+                <div class="table-responsive mt-4">
+                    <table class="table dck-import__cols">
+                        <thead>
+                            <tr>
+                                <th><?php echo app('translator')->get('Colonne'); ?></th>
+                                <th><?php echo app('translator')->get('Obligatoire'); ?></th>
+                                <th><?php echo app('translator')->get('Ce qui est attendu'); ?></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        <?php
+                            $aide = [
+                                'heading'     => __("Le titre de la tâche."),
+                                'project'     => __("Un projet existant, à choisir dans la liste. Laissez vide si la tâche n'est rattachée à aucun projet, ou si vous indiquez un projet par défaut à l'étape 2."),
+                                'start_date'  => __('Format :') . ' ' . company()->date_format,
+                                'due_date'    => __('Même format. Doit être postérieure à la date de début.'),
+                                'status'      => __('Un des statuts du tableau ; voir la liste ci-dessous.'),
+                                'assigned'    => __("Le nom d'un collaborateur, à choisir dans la liste. Pour en confier à plusieurs, séparez les noms par une virgule."),
+                                'category'    => __("Un domaine existant, à choisir dans la liste. L'ancien intitulé « Catégorie » reste accepté."),
+                                'description' => __('Texte libre.'),
+                            ];
+                        ?>
+                        <?php $__currentLoopData = $colonnes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $c): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <tr>
+                                <td><strong><?php echo e($c['nom']); ?></strong></td>
+                                <td>
+                                    <?php if($c['requis']): ?>
+                                        <span class="dck-import__p is-req"><?php echo app('translator')->get('oui'); ?></span>
+                                    <?php else: ?>
+                                        <span class="dck-import__p"><?php echo app('translator')->get('non'); ?></span>
+                                    <?php endif; ?>
+                                </td>
+                                <td><?php echo e($aide[$c['cle']] ?? ''); ?></td>
+                            </tr>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                        </tbody>
+                    </table>
                 </div>
 
-                <button type="submit" class="btn btn-primary rounded f-14 p-2" id="btn-analyser">
-                    <i class="fa fa-search mr-1"></i> <?php echo app('translator')->get('Analyser le fichier'); ?>
-                </button>
-            </form>
-        </div>
-    </div>
+                <p class="dck-import__note">
+                    <strong><?php echo app('translator')->get('Statuts reconnus'); ?> :</strong>
+                    <?php echo e(\App\Models\TaskboardColumn::pluck('column_name')->implode(' · ')); ?>.
+                    <br>
+                    <?php echo app('translator')->get("La casse et les accents n'ont pas d'importance : « en cours », « En cours » et « EN COURS » sont acceptés."); ?>
+                    <?php echo app('translator')->get('Sans statut, la tâche est créée en « Incomplète », comme à la création manuelle.'); ?>
+                </p>
 
-    </div>
+                <p class="dck-import__note">
+                    <i class="fa fa-user-check mr-1"></i>
+                    <strong><?php echo app('translator')->get('Assignation automatique'); ?> :</strong>
+                    <?php echo app('translator')->get("Toutes les tâches importées vous sont automatiquement assignées. Vous n'avez pas besoin de renseigner votre nom dans le fichier."); ?>
+                </p>
+            </div>
+        </div>
+
+        
+        <div class="dck-card dck-import__col dck-import__col--fichier">
+            <div class="dck-card__head d-flex">
+                <h4 class="mb-0"><span class="dck-import__num">2</span> <?php echo app('translator')->get('Déposez votre fichier'); ?></h4>
+            </div>
+
+            <div class="card-body">
+                <form id="form-import-taches" enctype="multipart/form-data">
+                    <?php echo csrf_field(); ?>
+
+                    <div class="form-group mb-3">
+                        <label for="projet_defaut" class="f-14 text-dark-grey mb-2">
+                            <?php echo app('translator')->get('Projet par défaut'); ?>
+                            <span class="f-12 text-lightest">— <?php echo app('translator')->get('facultatif'); ?></span>
+                        </label>
+
+                        
+                        <select name="projet_defaut" id="projet_defaut" class="form-control f-14">
+                            <option value=""><?php echo app('translator')->get('Aucun — le projet est lu dans le fichier'); ?></option>
+                            <?php $__currentLoopData = $projets; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $p): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <option value="<?php echo e($p->id); ?>"><?php echo e($p->project_name); ?></option>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                        </select>
+
+                        <p class="dck-import__note">
+                            <?php echo app('translator')->get("Appliqué aux lignes dont la colonne « Projet » est vide."); ?>
+                        </p>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="import_file" class="f-14 text-dark-grey mb-2">
+                            <?php echo app('translator')->get('Fichier'); ?> <sup class="text-danger">*</sup>
+                        </label>
+
+                        <div class="dck-import__dropzone" id="dck-dropzone">
+                            <input type="file" name="import_file" id="import_file"
+                                   class="dck-import__dropzone-input" accept=".xlsx,.xls,.ods,.csv" required>
+                            <div class="dck-import__dropzone-label">
+                                <i class="fa fa-cloud-upload-alt dck-import__dropzone-icon"></i>
+                                <span class="dck-import__dropzone-text" id="dck-dropzone-text">
+                                    <?php echo app('translator')->get('Glissez votre fichier ici ou cliquez pour choisir'); ?>
+                                </span>
+                                <span class="dck-import__note mt-1 d-block">
+                                    <?php echo app('translator')->get('Formats acceptés : xlsx, xls, ods, csv.'); ?>
+                                    <?php echo e(__('Maximum :')); ?> <?php echo e(\App\Imports\TaskImport::MAXIMUM_LIGNES); ?> <?php echo e(__('lignes par import.')); ?>
+
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary rounded f-14 p-2 w-100" id="btn-analyser">
+                        <i class="fa fa-search mr-1"></i> <?php echo app('translator')->get('Analyser le fichier'); ?>
+                    </button>
+                </form>
+            </div>
+        </div>
+
     </div>
 
     
@@ -204,6 +202,20 @@
         bouton = document.getElementById('btn-analyser');
 
     if (!form) { return; }
+
+    /* ── Zone de depot : met a jour le libelle quand un fichier est choisi ── */
+    var champ = document.getElementById('import_file'),
+        label = document.getElementById('dck-dropzone-text'),
+        dropzone = document.getElementById('dck-dropzone');
+
+    if (champ && label) {
+        champ.addEventListener('change', function () {
+            label.textContent = champ.files.length
+                ? champ.files[0].name
+                : '<?php echo e(__("Glissez votre fichier ici ou cliquez pour choisir")); ?>';
+            dropzone.classList.toggle('has-file', !!champ.files.length);
+        });
+    }
 
     function erreur(texte) {
         zone.innerHTML = '<div class="dck-import__msg is-err">' + texte + '</div>';
@@ -229,48 +241,24 @@
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         })
         .then(function (r) {
-            /* Une page d'erreur HTML (delai depasse, fichier trop lourd
-               pour le serveur) ne se lit pas en JSON : on garde le code. */
-            return r.json()
-                .catch(function () { return {}; })
-                .then(function (corps) { return { code: r.status, corps: corps }; });
+            return r.json().then(function (corps) { return { code: r.status, corps: corps }; });
         })
         .then(function (r) {
-            /* Un refus de validation — un PDF depose, par exemple —
-               revient en 422, sans apercu. Le serveur dit alors
-               precisement ce qui ne va pas : on affiche son message
-               plutot que d'ouvrir une etape 3 vide. */
             if (r.code === 422) {
                 var e = r.corps.errors || {};
 
                 erreur(e.import_file ? e.import_file[0]
-                    : (r.corps.message || '<?php echo e(__("Le fichier n’a pas pu être analysé.")); ?>'));
+                    : (r.corps.message || '<?php echo e(__("Le fichier n\'a pas pu être analysé.")); ?>'));
 
                 return;
             }
 
-            /* Toute autre reponse sans apercu est un incident : l'etape 3
-               s'ouvrait alors vide, sans rien dire. On affiche la cause. */
-            if (!r.corps.html) {
-                var messages = {
-                    419: '<?php echo e(__("La session a expiré. Rechargez la page puis recommencez.")); ?>',
-                    413: '<?php echo e(__("Le fichier est trop volumineux pour le serveur.")); ?>',
-                    403: '<?php echo e(__("Vous n’avez pas le droit d’importer des tâches.")); ?>'
-                };
-
-                erreur((r.corps.status === 'fail' && r.corps.message) || messages[r.code]
-                    || '<?php echo e(__("Le fichier n’a pas pu être analysé.")); ?>'
-                    + ' (' + '<?php echo e(__("code")); ?>' + ' ' + r.code + ')');
-
-                return;
-            }
-
-            zone.innerHTML = r.corps.html;
+            zone.innerHTML = r.corps.html || '';
             etape.classList.remove('d-none');
             etape.scrollIntoView({ behavior: 'smooth', block: 'start' });
         })
         .catch(function () {
-            erreur('<?php echo e(__("Le fichier n’a pas pu être analysé.")); ?>');
+            erreur('<?php echo e(__("Le fichier n\'a pas pu être analysé.")); ?>');
         })
         .finally(function () {
             bouton.disabled = false;
@@ -305,17 +293,16 @@
         .then(function (r) { return r.json(); })
         .then(function (rep) {
             if (rep.status === 'success') {
-                window.location.href = rep.redirectUrl || '<?php echo e(route("tasks.index")); ?>';
+                window.location.href = rep.redirectUrl || '<?php echo e(route("taskboards.index")); ?>';
             }
             else {
-                erreur(rep.message || '<?php echo e(__("L’importation a échoué.")); ?>');
+                erreur(rep.message || '<?php echo e(__("L\'importation a échoué.")); ?>');
             }
         })
         .catch(function () {
             b.disabled = false;
-            b.innerHTML = '<?php echo e(__("Confirmer l’importation")); ?>';
+            b.innerHTML = '<?php echo e(__("Confirmer l\'importation")); ?>';
         });
     });
 })();
-</script>
-<?php /**PATH C:\laragon\www\CRM\resources\views/tasks/ajax/import.blade.php ENDPATH**/ ?>
+</script><?php /**PATH C:\laragon\www\CRM\resources\views/tasks/ajax/import.blade.php ENDPATH**/ ?>

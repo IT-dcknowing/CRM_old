@@ -1,4 +1,4 @@
-{{--
+﻿{{--
     Importation massive de taches.
 
     Trois temps : telecharger le modele, deposer le fichier rempli,
@@ -8,6 +8,7 @@
     L'ecran suit les composants du front — en-tete de page, cartes et
     boutons de l'application — plutot qu'une mise en page a lui.
 --}}
+
 
 <x-dck.page-head :titre="__('Importer des tâches')"
                  :description="__('Créez plusieurs tâches d\'un coup à partir d\'un fichier tableur.')">
@@ -20,145 +21,143 @@
 
 <div class="dck-import">
 
-    {{-- ── 1. Le modele ──────────────────────────────────────────── --}}
-    <div class="dck-card mb-3">
-        <div class="dck-card__head d-flex">
-            <h4 class="mb-0"><span class="dck-import__num">1</span> @lang('Téléchargez le modèle')</h4>
-        </div>
+    {{-- ── Ligne supérieure : deux colonnes côte à côte ────────────── --}}
+    <div class="dck-import__top">
 
-        <div class="card-body">
-            <p class="dck-import__intro">
-                @lang("Le modèle contient les colonnes attendues et des menus déroulants bâtis sur vos propres projets, collaborateurs et domaines : vous choisissez au lieu de saisir. Une ligne d'exemple grisée montre le remplissage attendu ; supprimez-la avant d'importer.")
-            </p>
-
-            <a class="btn btn-primary rounded f-14 p-2" href="{{ route('tasks.import.modele') }}">
-                <i class="fa fa-download mr-1"></i>
-                @lang('Télécharger le modèle Excel')
-            </a>
-
-            <div class="table-responsive mt-4">
-                <table class="table dck-import__cols">
-                    <thead>
-                        <tr>
-                            <th>@lang('Colonne')</th>
-                            <th>@lang('Obligatoire')</th>
-                            <th>@lang('Ce qui est attendu')</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    @php
-                        $aide = [
-                            'heading'     => __("Le titre de la tâche."),
-                            'project'     => __("Un projet existant, à choisir dans la liste. Laissez vide si la tâche n'est rattachée à aucun projet, ou si vous indiquez un projet par défaut à l'étape 2."),
-                            'start_date'  => __('Format :') . ' ' . company()->date_format,
-                            'due_date'    => __('Même format. Doit être postérieure à la date de début.'),
-                            'status'      => __('Un des statuts du tableau ; voir la liste ci-dessous.'),
-                            'assigned'    => __("Le nom d'un collaborateur, à choisir dans la liste. Pour en confier à plusieurs, séparez les noms par une virgule."),
-                            'category'    => __("Un domaine existant, à choisir dans la liste. L'ancien intitulé « Catégorie » reste accepté."),
-                            'description' => __('Texte libre.'),
-                        ];
-                    @endphp
-                    @foreach ($colonnes as $c)
-                        <tr>
-                            <td><strong>{{ $c['nom'] }}</strong></td>
-                            <td>
-                                @if ($c['requis'])
-                                    <span class="dck-import__p is-req">@lang('oui')</span>
-                                @else
-                                    <span class="dck-import__p">@lang('non')</span>
-                                @endif
-                            </td>
-                            <td>{{ $aide[$c['cle']] ?? '' }}</td>
-                        </tr>
-                    @endforeach
-                    </tbody>
-                </table>
+        {{-- ── 1. Le modèle ────────────────────────────────────────── --}}
+        <div class="dck-card dck-import__col dck-import__col--modele">
+            <div class="dck-card__head d-flex">
+                <h4 class="mb-0"><span class="dck-import__num">1</span> @lang('Téléchargez le modèle')</h4>
             </div>
 
-            <p class="dck-import__note">
-                <strong>@lang('Statuts reconnus') :</strong>
-                {{ \App\Models\TaskboardColumn::pluck('column_name')->implode(' · ') }}.
-                <br>
-                @lang("La casse et les accents n'ont pas d'importance : « en cours », « En cours » et « EN COURS » sont acceptés.")
-                @lang('Sans statut, la tâche est créée en « Incomplète », comme à la création manuelle.')
-            </p>
+            <div class="card-body">
+                <p class="dck-import__intro">
+                    @lang("Le modèle contient les colonnes attendues et des menus déroulants bâtis sur vos propres projets, collaborateurs et domaines : vous choisissez au lieu de saisir. Une ligne d'exemple grisée montre le remplissage attendu ; supprimez-la avant d'importer.")
+                </p>
 
-            <p class="dck-import__note">
-                <i class="fa fa-user-check mr-1"></i>
-                <strong>@lang('Assignation automatique') :</strong>
-                @lang('Toutes les tâches importées vous sont automatiquement assignées. Vous n\'avez pas besoin de renseigner votre nom dans le fichier.')
-            </p>
-        </div>
-    </div>
+                <a class="btn btn-primary rounded f-14 p-2" href="{{ route('tasks.import.modele') }}">
+                    <i class="fa fa-download mr-1"></i>
+                    @lang('Télécharger le modèle Excel')
+                </a>
 
-    </div>
-    <div class="col-xl-5">
-
-    {{-- ── 2. Le fichier ─────────────────────────────────────────── --}}
-    <div class="dck-card mb-3">
-        <div class="dck-card__head d-flex">
-            <h4 class="mb-0"><span class="dck-import__num">2</span> @lang('Déposez votre fichier')</h4>
-        </div>
-
-        <div class="card-body">
-            <form id="form-import-taches" enctype="multipart/form-data">
-                @csrf
-
-                <div class="row">
-                    {{-- Projet par defaut.
-
-                         Un lot de taches concerne le plus souvent un
-                         seul projet ; le choisir une fois ici evite de
-                         recopier son nom sur chaque ligne du fichier.
-                         Une ligne qui porte un projet garde le sien, de
-                         sorte qu'un fichier melangeant plusieurs projets
-                         reste possible. --}}
-                    <div class="col-md-6">
-                        <div class="form-group mb-3">
-                            <label for="projet_defaut" class="f-14 text-dark-grey mb-2">
-                                @lang('Projet par défaut')
-                                <span class="f-12 text-lightest">— @lang('facultatif')</span>
-                            </label>
-
-                            <select name="projet_defaut" id="projet_defaut" class="form-control f-14">
-                                <option value="">@lang('Aucun — le projet est lu dans le fichier')</option>
-                                @foreach ($projets as $p)
-                                    <option value="{{ $p->id }}">{{ $p->project_name }}</option>
-                                @endforeach
-                            </select>
-
-                            <p class="dck-import__note">
-                                @lang("Appliqué aux lignes dont la colonne « Projet » est vide.")
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="form-group mb-3">
-                            <label for="import_file" class="f-14 text-dark-grey mb-2">
-                                @lang('Fichier') <sup class="text-danger">*</sup>
-                            </label>
-
-                            <input type="file" name="import_file" id="import_file"
-                                   class="form-control f-14" accept=".xlsx,.xls,.ods,.csv" required>
-
-                            <p class="dck-import__note">
-                                @lang('Formats acceptés : xlsx, xls, ods, csv.')
-                                {{ __('Maximum :') }} {{ \App\Imports\TaskImport::MAXIMUM_LIGNES }} {{ __('lignes par import.') }}
-                            </p>
-                        </div>
-                    </div>
+                <div class="table-responsive mt-4">
+                    <table class="table dck-import__cols">
+                        <thead>
+                            <tr>
+                                <th>@lang('Colonne')</th>
+                                <th>@lang('Obligatoire')</th>
+                                <th>@lang('Ce qui est attendu')</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        @php
+                            $aide = [
+                                'heading'     => __("Le titre de la tâche."),
+                                'project'     => __("Un projet existant, à choisir dans la liste. Laissez vide si la tâche n'est rattachée à aucun projet, ou si vous indiquez un projet par défaut à l'étape 2."),
+                                'start_date'  => __('Format :') . ' ' . company()->date_format,
+                                'due_date'    => __('Même format. Doit être postérieure à la date de début.'),
+                                'status'      => __('Un des statuts du tableau ; voir la liste ci-dessous.'),
+                                'assigned'    => __("Le nom d'un collaborateur, à choisir dans la liste. Pour en confier à plusieurs, séparez les noms par une virgule."),
+                                'category'    => __("Un domaine existant, à choisir dans la liste. L'ancien intitulé « Catégorie » reste accepté."),
+                                'description' => __('Texte libre.'),
+                            ];
+                        @endphp
+                        @foreach ($colonnes as $c)
+                            <tr>
+                                <td><strong>{{ $c['nom'] }}</strong></td>
+                                <td>
+                                    @if ($c['requis'])
+                                        <span class="dck-import__p is-req">@lang('oui')</span>
+                                    @else
+                                        <span class="dck-import__p">@lang('non')</span>
+                                    @endif
+                                </td>
+                                <td>{{ $aide[$c['cle']] ?? '' }}</td>
+                            </tr>
+                        @endforeach
+                        </tbody>
+                    </table>
                 </div>
 
-                <button type="submit" class="btn btn-primary rounded f-14 p-2" id="btn-analyser">
-                    <i class="fa fa-search mr-1"></i> @lang('Analyser le fichier')
-                </button>
-            </form>
-        </div>
-    </div>
+                <p class="dck-import__note">
+                    <strong>@lang('Statuts reconnus') :</strong>
+                    {{ \App\Models\TaskboardColumn::pluck('column_name')->implode(' · ') }}.
+                    <br>
+                    @lang("La casse et les accents n'ont pas d'importance : « en cours », « En cours » et « EN COURS » sont acceptés.")
+                    @lang('Sans statut, la tâche est créée en « Incomplète », comme à la création manuelle.')
+                </p>
 
-    </div>
-    </div>
+                <p class="dck-import__note">
+                    <i class="fa fa-user-check mr-1"></i>
+                    <strong>@lang('Assignation automatique') :</strong>
+                    @lang("Toutes les tâches importées vous sont automatiquement assignées. Vous n'avez pas besoin de renseigner votre nom dans le fichier.")
+                </p>
+            </div>
+        </div>
+
+        {{-- ── 2. Le fichier ───────────────────────────────────────── --}}
+        <div class="dck-card dck-import__col dck-import__col--fichier">
+            <div class="dck-card__head d-flex">
+                <h4 class="mb-0"><span class="dck-import__num">2</span> @lang('Déposez votre fichier')</h4>
+            </div>
+
+            <div class="card-body">
+                <form id="form-import-taches" enctype="multipart/form-data">
+                    @csrf
+
+                    <div class="form-group mb-3">
+                        <label for="projet_defaut" class="f-14 text-dark-grey mb-2">
+                            @lang('Projet par défaut')
+                            <span class="f-12 text-lightest">— @lang('facultatif')</span>
+                        </label>
+
+                        {{-- Un lot de taches concerne le plus souvent un
+                             seul projet ; le choisir une fois ici evite de
+                             recopier son nom sur chaque ligne du fichier.
+                             Une ligne qui porte un projet garde le sien, de
+                             sorte qu'un fichier melangeant plusieurs projets
+                             reste possible. --}}
+                        <select name="projet_defaut" id="projet_defaut" class="form-control f-14">
+                            <option value="">@lang('Aucun — le projet est lu dans le fichier')</option>
+                            @foreach ($projets as $p)
+                                <option value="{{ $p->id }}">{{ $p->project_name }}</option>
+                            @endforeach
+                        </select>
+
+                        <p class="dck-import__note">
+                            @lang("Appliqué aux lignes dont la colonne « Projet » est vide.")
+                        </p>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="import_file" class="f-14 text-dark-grey mb-2">
+                            @lang('Fichier') <sup class="text-danger">*</sup>
+                        </label>
+
+                        <div class="dck-import__dropzone" id="dck-dropzone">
+                            <input type="file" name="import_file" id="import_file"
+                                   class="dck-import__dropzone-input" accept=".xlsx,.xls,.ods,.csv" required>
+                            <div class="dck-import__dropzone-label">
+                                <i class="fa fa-cloud-upload-alt dck-import__dropzone-icon"></i>
+                                <span class="dck-import__dropzone-text" id="dck-dropzone-text">
+                                    @lang('Glissez votre fichier ici ou cliquez pour choisir')
+                                </span>
+                                <span class="dck-import__note mt-1 d-block">
+                                    @lang('Formats acceptés : xlsx, xls, ods, csv.')
+                                    {{ __('Maximum :') }} {{ \App\Imports\TaskImport::MAXIMUM_LIGNES }} {{ __('lignes par import.') }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary rounded f-14 p-2 w-100" id="btn-analyser">
+                        <i class="fa fa-search mr-1"></i> @lang('Analyser le fichier')
+                    </button>
+                </form>
+            </div>
+        </div>
+
+    </div>{{-- /.dck-import__top --}}
 
     {{-- ── 3. L'apercu, rempli par la reponse du serveur ─────────── --}}
     <div class="dck-card mb-3 d-none" id="etape-apercu">
@@ -181,6 +180,20 @@
         bouton = document.getElementById('btn-analyser');
 
     if (!form) { return; }
+
+    /* ── Zone de depot : met a jour le libelle quand un fichier est choisi ── */
+    var champ = document.getElementById('import_file'),
+        label = document.getElementById('dck-dropzone-text'),
+        dropzone = document.getElementById('dck-dropzone');
+
+    if (champ && label) {
+        champ.addEventListener('change', function () {
+            label.textContent = champ.files.length
+                ? champ.files[0].name
+                : '{{ __("Glissez votre fichier ici ou cliquez pour choisir") }}';
+            dropzone.classList.toggle('has-file', !!champ.files.length);
+        });
+    }
 
     function erreur(texte) {
         zone.innerHTML = '<div class="dck-import__msg is-err">' + texte + '</div>';
@@ -209,15 +222,11 @@
             return r.json().then(function (corps) { return { code: r.status, corps: corps }; });
         })
         .then(function (r) {
-            /* Un refus de validation — un PDF depose, par exemple —
-               revient en 422, sans apercu. Le serveur dit alors
-               precisement ce qui ne va pas : on affiche son message
-               plutot que d'ouvrir une etape 3 vide. */
             if (r.code === 422) {
                 var e = r.corps.errors || {};
 
                 erreur(e.import_file ? e.import_file[0]
-                    : (r.corps.message || '{{ __("Le fichier n’a pas pu être analysé.") }}'));
+                    : (r.corps.message || '{{ __("Le fichier n\'a pas pu être analysé.") }}'));
 
                 return;
             }
@@ -227,7 +236,7 @@
             etape.scrollIntoView({ behavior: 'smooth', block: 'start' });
         })
         .catch(function () {
-            erreur('{{ __("Le fichier n’a pas pu être analysé.") }}');
+            erreur('{{ __("Le fichier n\'a pas pu être analysé.") }}');
         })
         .finally(function () {
             bouton.disabled = false;
@@ -265,12 +274,12 @@
                 window.location.href = rep.redirectUrl || '{{ route("taskboards.index") }}';
             }
             else {
-                erreur(rep.message || '{{ __("L’importation a échoué.") }}');
+                erreur(rep.message || '{{ __("L\'importation a échoué.") }}');
             }
         })
         .catch(function () {
             b.disabled = false;
-            b.innerHTML = '{{ __("Confirmer l’importation") }}';
+            b.innerHTML = '{{ __("Confirmer l\'importation") }}';
         });
     });
 })();
