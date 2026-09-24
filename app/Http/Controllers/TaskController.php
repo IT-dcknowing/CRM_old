@@ -633,59 +633,69 @@ class TaskController extends AccountBaseController
     {
         abort_403(!in_array(user()->permission('add_tasks'), ['all', 'added']));
 
-        $jeton = basename((string) $request->jeton);
-        $chemin = storage_path('app/imports-taches/' . $jeton);
+        try {
+            $jeton = basename((string) $request->jeton);
+            $chemin = storage_path('app/imports-taches/' . $jeton);
 
-        if (!$jeton || !is_file($chemin)) {
-            return Reply::error(__('Le fichier importé est introuvable. Recommencez.'));
-        }
+            if (!$jeton || !is_file($chemin)) {
+                return response()->json(
+                    Reply::error(__('Le fichier importé est introuvable. Recommencez.')), 422
+                );
+            }
 
-        /* Deuxieme analyse : l'apercu affiche n'est pas une autorisation,
-           et le fichier a pu changer entre-temps. */
-        $resultat = $this->analyserFichierTaches($chemin, $this->projetDefautChoisi($request));
+            /* Deuxieme analyse : l'apercu affiche n'est pas une autorisation,
+               et le fichier a pu changer entre-temps. */
+            $resultat = $this->analyserFichierTaches($chemin, $this->projetDefautChoisi($request));
 
-        /* Fichier illisible, en-tete incomplet, trop de lignes : il n'y a
-           rien a sauver, le message de l'analyse dit quoi. */
-        if ($resultat->total === 0) {
+            /* Fichier illisible, en-tete incomplet, trop de lignes : il n'y a
+               rien a sauver, le message de l'analyse dit quoi. */
+            if ($resultat->total === 0) {
+                @unlink($chemin);
+
+                return response()->json(
+                    Reply::error($resultat->message
+                        ?: __('Le fichier contient des erreurs. Corrigez-le avant de recommencer.')),
+                    422
+                );
+            }
+
+            /* Import partiel : les lignes correctes passent, les autres sont
+               laissees de cote. Reprendre le fichier corrige ensuite ne cree
+               pas de doublon : les taches deja enregistrees sont reconnues
+               par leur empreinte et rejoignent les lignes ignorees. */
+            $valides = array_values(array_filter(
+                $resultat->lignes, fn($l) => empty($l->erreurs)
+            ));
+
+            if (!$valides) {
+                @unlink($chemin);
+
+                return response()->json(
+                    Reply::error(__('Aucune ligne de ce fichier n\'est exploitable. Corrigez-le avant de recommencer.')),
+                    422
+                );
+            }
+
+            $creees = $this->creerTachesImportees($valides);
+
             @unlink($chemin);
 
-            return Reply::error($resultat->message
-                ?: __('Le fichier contient des erreurs. Corrigez-le avant de recommencer.'));
-        }
+            return response()->json(
+                Reply::successWithData(
+                    sprintf(__('%d tâches ont été importées.'), $creees),
+                    ['creees' => $creees, 'redirectUrl' => route('taskboards.index')]
+                )
+            );
+        } catch (\Throwable $e) {
+            Log::error('Import de taches, confirmation : ' . $e->getMessage(), [
+                'fichier' => $e->getFile() . ':' . $e->getLine(),
+            ]);
 
-        /* Import partiel : les lignes correctes passent, les autres sont
-           laissees de cote.
-
-           L'ancien comportement — tout ou rien — refusait les cinquante
-           taches d'un fichier pour une date illisible a la ligne 34. Il
-           visait a ne jamais laisser un fichier a moitie importe ; il
-           produisait en pratique un fichier pas importe du tout, et
-           l'utilisateur recommencait l'operation entiere.
-
-           Reprendre le fichier corrige ensuite ne cree pas de doublon :
-           les taches deja enregistrees sont reconnues par leur empreinte
-           et rejoignent les lignes ignorees. */
-        $valides = array_values(array_filter(
-            $resultat->lignes, fn($l) => empty($l->erreurs)
-        ));
-
-        if (!$valides) {
-            @unlink($chemin);
-
-            return Reply::error(
-                __('Aucune ligne de ce fichier n\'est exploitable. Corrigez-le avant de recommencer.')
+            return response()->json(
+                Reply::error(__('Une erreur est survenue lors de l\'importation. Veuillez réessayer.')),
+                500
             );
         }
-
-        $creees = $this->creerTachesImportees($valides);
-        $ignorees = $resultat->total - count($valides);
-
-        @unlink($chemin);
-
-        return Reply::successWithData(
-            sprintf(__('%d tâches ont été importées.'), $creees),
-            ['creees' => $creees, 'redirectUrl' => route('taskboards.index')]
-        );
     }
 
     /**

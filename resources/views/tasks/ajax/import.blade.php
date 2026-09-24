@@ -10,8 +10,8 @@
 --}}
 
 
-<x-dck.page-head :titre="__('Importer des tâches')"
-                 :description="__('Créez plusieurs tâches d\'un coup à partir d\'un fichier tableur.')">
+<x-dck.page-head :titre="__('Importer des taches')"
+                 :description="__('Creez plusieurs taches d\'un coup a partir d\'un fichier tableur.')">
     <x-slot name="actions">
         <x-forms.link-secondary :link="route('tasks.index')" icon="list">
             @lang('app.menu.tasks')
@@ -21,23 +21,23 @@
 
 <div class="dck-import">
 
-    {{-- ── Ligne supérieure : deux colonnes côte à côte ────────────── --}}
+    {{-- Ligne superieure : deux colonnes cote a cote --}}
     <div class="dck-import__top">
 
-        {{-- ── 1. Le modèle ────────────────────────────────────────── --}}
+        {{-- 1. Le modele --}}
         <div class="dck-card dck-import__col dck-import__col--modele">
             <div class="dck-card__head d-flex">
-                <h4 class="mb-0"><span class="dck-import__num">1</span> @lang('Téléchargez le modèle')</h4>
+                <h4 class="mb-0"><span class="dck-import__num">1</span> @lang('Telechargez le modele')</h4>
             </div>
 
             <div class="card-body">
                 <p class="dck-import__intro">
-                    @lang("Le modèle contient les colonnes attendues et des menus déroulants bâtis sur vos propres projets, collaborateurs et domaines : vous choisissez au lieu de saisir. Une ligne d'exemple grisée montre le remplissage attendu ; supprimez-la avant d'importer.")
+                    @lang("Le modele contient les colonnes attendues et des menus deroulants batis sur vos propres projets, collaborateurs et domaines.")
                 </p>
 
                 <a class="btn btn-primary rounded f-14 p-2" href="{{ route('tasks.import.modele') }}">
                     <i class="fa fa-download mr-1"></i>
-                    @lang('Télécharger le modèle Excel')
+                    @lang('Telecharger le modele Excel')
                 </a>
 
                 <div class="table-responsive mt-4">
@@ -52,13 +52,13 @@
                         <tbody>
                         @php
                             $aide = [
-                                'heading'     => __("Le titre de la tâche."),
-                                'project'     => __("Un projet existant, à choisir dans la liste. Laissez vide si la tâche n'est rattachée à aucun projet, ou si vous indiquez un projet par défaut à l'étape 2."),
+                                'heading'     => __("Le titre de la tache."),
+                                'project'     => __("Un projet existant, a choisir dans la liste."),
                                 'start_date'  => __('Format :') . ' ' . company()->date_format,
-                                'due_date'    => __('Même format. Doit être postérieure à la date de début.'),
+                                'due_date'    => __('Meme format. Doit etre posterieure a la date de debut.'),
                                 'status'      => __('Un des statuts du tableau ; voir la liste ci-dessous.'),
-                                'assigned'    => __("Le nom d'un collaborateur, à choisir dans la liste. Pour en confier à plusieurs, séparez les noms par une virgule."),
-                                'category'    => __("Un domaine existant, à choisir dans la liste. L'ancien intitulé « Catégorie » reste accepté."),
+                                'assigned'    => __("Le nom d'un collaborateur, a choisir dans la liste."),
+                                'category'    => __("Un domaine existant, a choisir dans la liste."),
                                 'description' => __('Texte libre.'),
                             ];
                         @endphp
@@ -81,24 +81,24 @@
 
                 <p class="dck-import__note">
                     <strong>@lang('Statuts reconnus') :</strong>
-                    {{ \App\Models\TaskboardColumn::pluck('column_name')->implode(' · ') }}.
+                    {{ \App\Models\TaskboardColumn::pluck('column_name')->implode(' - ') }}.
                     <br>
-                    @lang("La casse et les accents n'ont pas d'importance : « en cours », « En cours » et « EN COURS » sont acceptés.")
-                    @lang('Sans statut, la tâche est créée en « Incomplète », comme à la création manuelle.')
+                    @lang("La casse et les accents n'ont pas d'importance.")
+                    @lang("Sans statut, la tache est creee en Incomplete.")
                 </p>
 
                 <p class="dck-import__note">
                     <i class="fa fa-user-check mr-1"></i>
                     <strong>@lang('Assignation automatique') :</strong>
-                    @lang("Toutes les tâches importées vous sont automatiquement assignées. Vous n'avez pas besoin de renseigner votre nom dans le fichier.")
+                    @lang("Toutes les taches importees vous sont automatiquement assignees.")
                 </p>
             </div>
         </div>
 
-        {{-- ── 2. Le fichier ───────────────────────────────────────── --}}
+        {{-- 2. Le fichier --}}
         <div class="dck-card dck-import__col dck-import__col--fichier">
             <div class="dck-card__head d-flex">
-                <h4 class="mb-0"><span class="dck-import__num">2</span> @lang('Déposez votre fichier')</h4>
+                <h4 class="mb-0"><span class="dck-import__num">2</span> @lang('Deposez votre fichier')</h4>
             </div>
 
             <div class="card-body">
@@ -107,16 +107,10 @@
 
                     <div class="form-group mb-3">
                         <label for="projet_defaut" class="f-14 text-dark-grey mb-2">
-                            @lang('Projet par défaut')
-                            <span class="f-12 text-lightest">— @lang('facultatif')</span>
+                            @lang('Projet par defaut')
+                            <span class="f-12 text-lightest">@lang('facultatif')</span>
                         </label>
 
-                        {{-- Un lot de taches concerne le plus souvent un
-                             seul projet ; le choisir une fois ici evite de
-                             recopier son nom sur chaque ligne du fichier.
-                             Une ligne qui porte un projet garde le sien, de
-                             sorte qu'un fichier melangeant plusieurs projets
-                             reste possible. --}}
                         <select name="projet_defaut" id="projet_defaut" class="form-control f-14">
                             <option value="">@lang('Aucun — le projet est lu dans le fichier')</option>
                             @foreach ($projets as $p)
@@ -125,7 +119,7 @@
                         </select>
 
                         <p class="dck-import__note">
-                            @lang("Appliqué aux lignes dont la colonne « Projet » est vide.")
+                            @lang("Applique aux lignes dont la colonne Projet est vide.")
                         </p>
                     </div>
 
@@ -143,7 +137,7 @@
                                     @lang('Glissez votre fichier ici ou cliquez pour choisir')
                                 </span>
                                 <span class="dck-import__note mt-1 d-block">
-                                    @lang('Formats acceptés : xlsx, xls, ods, csv.')
+                                    @lang('Formats acceptes : xlsx, xls, ods, csv.')
                                     {{ __('Maximum :') }} {{ \App\Imports\TaskImport::MAXIMUM_LIGNES }} {{ __('lignes par import.') }}
                                 </span>
                             </div>
@@ -157,12 +151,12 @@
             </div>
         </div>
 
-    </div>{{-- /.dck-import__top --}}
+    </div>
 
-    {{-- ── 3. L'apercu, rempli par la reponse du serveur ─────────── --}}
+    {{-- 3. L'apercu, rempli par la reponse du serveur --}}
     <div class="dck-card mb-3 d-none" id="etape-apercu">
         <div class="dck-card__head d-flex">
-            <h4 class="mb-0"><span class="dck-import__num">3</span> @lang('Vérifiez avant de confirmer')</h4>
+            <h4 class="mb-0"><span class="dck-import__num">3</span> @lang('Verifiez avant de confirmer')</h4>
         </div>
 
         <div class="card-body" id="zone-apercu"></div>
@@ -174,69 +168,90 @@
 (function () {
     'use strict';
 
-    var form = document.getElementById('form-import-taches'),
-        etape = document.getElementById('etape-apercu'),
-        zone = document.getElementById('zone-apercu'),
-        bouton = document.getElementById('btn-analyser');
+    var form    = document.getElementById('form-import-taches'),
+        etape   = document.getElementById('etape-apercu'),
+        zone    = document.getElementById('zone-apercu'),
+        bouton  = document.getElementById('btn-analyser');
 
     if (!form) { return; }
 
-    /* ── Zone de depot : met a jour le libelle quand un fichier est choisi ── */
-    var champ = document.getElementById('import_file'),
-        label = document.getElementById('dck-dropzone-text'),
+    /* Zone de depot : met a jour le libelle quand un fichier est choisi */
+    var champFichier = document.getElementById('import_file'),
+        labelDropzone = document.getElementById('dck-dropzone-text'),
         dropzone = document.getElementById('dck-dropzone');
 
-    if (champ && label) {
-        champ.addEventListener('change', function () {
-            label.textContent = champ.files.length
-                ? champ.files[0].name
+    if (champFichier && labelDropzone) {
+        champFichier.addEventListener('change', function () {
+            labelDropzone.textContent = champFichier.files.length
+                ? champFichier.files[0].name
                 : '{{ __("Glissez votre fichier ici ou cliquez pour choisir") }}';
-            dropzone.classList.toggle('has-file', !!champ.files.length);
+            dropzone.classList.toggle('has-file', !!champFichier.files.length);
         });
     }
 
-    function erreur(texte) {
-        zone.innerHTML = '<div class="dck-import__msg is-err">' + texte + '</div>';
+    /* Affiche un message d'erreur dans la zone apercu et fait defiler jusqu'a lui. */
+    function afficherErreur(texte) {
+        zone.innerHTML = '<div class="dck-import__msg is-err"><strong>{{ __("Erreur") }}</strong><p>' + texte + '</p></div>';
         etape.classList.remove('d-none');
         etape.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+
+    /* Parse la reponse JSON de maniere securisee : retourne null si le
+       corps n'est pas du JSON valide (Laravel peut renvoyer du HTML
+       dans certains cas d'erreur 500). */
+    function parseJson(reponse) {
+        return reponse.text().then(function (texte) {
+            try {
+                return { code: reponse.status, corps: JSON.parse(texte) };
+            } catch (e) {
+                return { code: reponse.status, corps: { status: 'fail', message: texte.substring(0, 200) } };
+            }
+        });
+    }
+
+    /* ── Etape 2 : analyse du fichier ──────────────────────────── */
 
     form.addEventListener('submit', function (e) {
         e.preventDefault();
 
         var champ = document.getElementById('import_file');
 
-        if (!champ.files.length) { return; }
+        if (!champ || !champ.files.length) { return; }
 
         bouton.disabled = true;
-        bouton.innerHTML = '{{ __("Analyse en cours…") }}';
+        bouton.innerHTML = '<i class="fa fa-spinner fa-spin mr-1"></i> {{ __("Analyse en cours") }}';
 
         var donnees = new FormData(form);
 
         fetch('{{ route("tasks.import.analyse") }}', {
-            method: 'POST',
-            body: donnees,
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            method : 'POST',
+            body   : donnees,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept'          : 'application/json'
+            }
         })
-        .then(function (r) {
-            return r.json().then(function (corps) { return { code: r.status, corps: corps }; });
-        })
+        .then(parseJson)
         .then(function (r) {
             if (r.code === 422) {
-                var e = r.corps.errors || {};
-
-                erreur(e.import_file ? e.import_file[0]
-                    : (r.corps.message || '{{ __("Le fichier n\'a pas pu être analysé.") }}'));
-
+                var errs = r.corps.errors || {};
+                afficherErreur(errs.import_file
+                    ? errs.import_file[0]
+                    : (r.corps.message || '{{ __("Le fichier n\'a pas pu etre analyse.") }}'));
                 return;
             }
 
-            zone.innerHTML = r.corps.html || '';
+            if (!r.corps.html) {
+                afficherErreur(r.corps.message || '{{ __("Le fichier n\'a pas pu etre analyse.") }}');
+                return;
+            }
+
+            zone.innerHTML = r.corps.html;
             etape.classList.remove('d-none');
             etape.scrollIntoView({ behavior: 'smooth', block: 'start' });
         })
-        .catch(function () {
-            erreur('{{ __("Le fichier n\'a pas pu être analysé.") }}');
+        .catch(function (err) {
+            afficherErreur('{{ __("Une erreur reseau est survenue. Verifiez votre connexion et reessayez.") }}');
         })
         .finally(function () {
             bouton.disabled = false;
@@ -244,43 +259,59 @@
         });
     });
 
-    /* Le bouton de confirmation est injecte avec l'apercu : on ecoute
-       donc au niveau du conteneur, qui lui existe des le depart. */
+    /* ── Etape 3 : confirmation de l'importation ───────────────── */
+
+    /* Le bouton est injecte avec l'apercu : on ecoute via delegation
+       sur zone, qui existe des le chargement de la page. */
     zone.addEventListener('click', function (e) {
         var b = e.target.closest('#btn-confirmer-import');
 
         if (!b) { return; }
 
         b.disabled = true;
-        b.innerHTML = '{{ __("Importation en cours…") }}';
+        b.innerHTML = '<i class="fa fa-spinner fa-spin mr-1"></i> {{ __("Importation en cours") }}';
 
         var d = new FormData();
         d.append('_token', '{{ csrf_token() }}');
-        d.append('jeton', b.dataset.jeton);
+        d.append('jeton',  b.dataset.jeton);
 
-        /* Le meme projet par defaut qu'a l'analyse : la confirmation
-           relit le fichier, elle doit le relire dans les memes termes. */
-        var projet = document.getElementById('projet_defaut');
-        d.append('projet_defaut', projet ? projet.value : '');
+        /* Transmet le meme projet par defaut : la confirmation relit
+           le fichier conserve cote serveur, elle doit le relire dans
+           les memes termes que l'analyse. */
+        var projetSelect = document.getElementById('projet_defaut');
+        d.append('projet_defaut', projetSelect ? projetSelect.value : '');
 
         fetch('{{ route("tasks.import.process") }}', {
-            method: 'POST',
-            body: d,
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            method : 'POST',
+            body   : d,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept'          : 'application/json'
+            }
         })
-        .then(function (r) { return r.json(); })
-        .then(function (rep) {
-            if (rep.status === 'success') {
-                window.location.href = rep.redirectUrl || '{{ route("taskboards.index") }}';
+        .then(parseJson)
+        .then(function (r) {
+            if (r.corps && r.corps.status === 'success') {
+                /* Redirection vers le tableau de bord des taches. */
+                window.location.href = r.corps.redirectUrl || '{{ route("taskboards.index") }}';
+                return;
             }
-            else {
-                erreur(rep.message || '{{ __("L\'importation a échoué.") }}');
-            }
+
+            /* Echec serveur : on reaffiche le message et on libere le bouton. */
+            var msg = (r.corps && r.corps.message)
+                ? r.corps.message
+                : '{{ __("L\'importation a echoue. Veuillez reessayer.") }}';
+
+            afficherErreur(msg);
+            b.disabled = false;
+            b.innerHTML = '<i class="fa fa-check mr-1"></i> {{ __("Confirmer l\'importation") }}';
         })
         .catch(function () {
+            afficherErreur('{{ __("Une erreur reseau est survenue. Verifiez votre connexion et reessayez.") }}');
             b.disabled = false;
-            b.innerHTML = '{{ __("Confirmer l\'importation") }}';
+            b.innerHTML = '<i class="fa fa-check mr-1"></i> {{ __("Confirmer l\'importation") }}';
         });
     });
+
 })();
 </script>
