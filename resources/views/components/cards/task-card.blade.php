@@ -44,7 +44,7 @@
     </div>
 
     {{-- Intitule --}}
-    <a href="{{ route('tasks.show', [$task->id]) }}" class="dck-tk__titre openRightModal">
+    <a href="{{ route('tasks.show', [$task->id]) }}" class="dck-tk__titre openRightModal" data-redirect-url="{{ url()->full() }}">
         {{ $task->heading }}
     </a>
 

@@ -513,6 +513,7 @@ class TaskController extends AccountBaseController
         $this->allEmployees = User::allEmployees(null, true, 'all');
         $this->allClients = User::allClients();
 
+        $this->backUrl = $this->determinerUrlRetour();
         $this->view = 'tasks.ajax.create';
 
         if (request()->ajax()) {
@@ -1150,6 +1151,7 @@ class TaskController extends AccountBaseController
         $this->allEmployees = User::allEmployees(null, true, 'all');
         $this->allClients = User::allClients();
 
+        $this->backUrl = $this->determinerUrlRetour((int) $id);
         $this->view = 'tasks.ajax.edit';
 
         if (request()->ajax()) {
@@ -1527,6 +1529,8 @@ class TaskController extends AccountBaseController
                 break;
         }
 
+        $this->backUrl = $this->determinerUrlRetour((int) $id);
+
         if (request()->ajax()) {
             $view = request('json') ? $this->tab : 'tasks.ajax.show';
 
@@ -1538,6 +1542,37 @@ class TaskController extends AccountBaseController
 
         return view('tasks.create', $this->data);
 
+    }
+
+    /**
+     * Determine l'URL de retour vers la vue d'origine (tableau des taches par defaut),
+     * en preservant les filtres de navigation.
+     */
+    private function determinerUrlRetour(?int $taskId = null): string
+    {
+        $referer = request('redirectUrl') ?: request()->header('referer');
+
+        if ($referer) {
+            if (str_starts_with($referer, 'http%3A') || str_starts_with($referer, 'https%3A')) {
+                $referer = urldecode($referer);
+            }
+
+            // On ne memorise pas l'URL si elle boucle sur le detail de cette tache
+            $isSelf = $taskId ? str_contains($referer, '/account/tasks/' . $taskId) : false;
+
+            if (!$isSelf && (str_contains($referer, '/account/taskboards') || str_contains($referer, '/account/tasks'))) {
+                session(['task_back_url' => $referer]);
+            }
+        }
+
+        $backUrl = session('task_back_url');
+
+        // Si aucune URL memorisee ou si elle boucle sur la tache courante, retour au tableau des taches
+        if (!$backUrl || ($taskId && str_contains($backUrl, '/account/tasks/' . $taskId))) {
+            $backUrl = route('taskboards.index');
+        }
+
+        return $backUrl;
     }
 
     public function storePin(Request $request)

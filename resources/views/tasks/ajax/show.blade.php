@@ -51,40 +51,7 @@
                                 @endif
                             @endif
 
-                            @if ($task->boardColumn->slug != 'completed' && !is_null($task->is_task_user) && in_array('timelogs', user_modules()))
-                                @if (is_null($task->userActiveTimer))
-                                    @if($task->approval_send == 0)
-                                        <x-forms.button-secondary id="start-task-timer" icon="play">
-                                            @lang('modules.timeLogs.startTimer')
-                                        </x-forms.button-secondary>
-                                    @endif
-                                @else
-                                    <span class="border p-2 rounded mr-2 bg-light"><i
-                                            class="fa fa-clock mr-1"></i><span
-                                            id="active-task-timer">{{ $task->userActiveTimer->timer }}</span></span>
 
-                                    @if (is_null($task->userActiveTimer->activeBreak))
-                                        <x-forms.button-secondary icon="pause-circle"
-                                                                  data-time-id="{{ $task->userActiveTimer->id }}"
-                                                                  id="pause-timer-btn" class="mr-2"
-                                                                  data-url="{{ url()->current() }}">@lang('modules.timeLogs.pauseTimer')
-                                        </x-forms.button-secondary>
-
-                                        <x-forms.button-secondary data-time-id="{{ $task->userActiveTimer->id }}"
-                                                                  id="stop-task-timer" icon="stop-circle"
-                                                                  data-url="{{ url()->current() }}">
-                                            @lang('modules.timeLogs.stopTimer')
-                                        </x-forms.button-secondary>
-                                    @else
-                                        <x-forms.button-secondary id="resume-timer-btn" icon="play-circle"
-                                                                  data-url="{{ url()->current() }}"
-                                                                  data-time-id="{{ $task->userActiveTimer->activeBreak->id }}">
-                                            @lang('modules.timeLogs.resumeTimer')
-                                        </x-forms.button-secondary>
-                                    @endif
-
-                                @endif
-                            @endif
                         </div>
                         <div class="col-2 col-lg-4 d-flex justify-content-end text-right">
                             <div class="dropdown">
@@ -258,12 +225,7 @@
                         </div>
                     @endif
 
-                    <div class="col-12 px-0 pb-3 d-block d-lg-flex d-md-flex">
-                        <p class="mb-0 text-lightest f-14 w-30 d-inline-block ">@lang('modules.taskShortCode')</p>
-                        <p class="mb-0 text-dark-grey f-14 w-70">
-                            {{ ($task->task_short_code) ?  : '--' }}
-                        </p>
-                    </div>
+
 
                     <x-cards.data-row :label="__('modules.projects.milestones')"
                                       :value="$task->milestone->milestone_title ?? '--'"/>
@@ -451,12 +413,7 @@
                     @endif
                 @endif
 
-                <div class="col-12 px-0 pb-3 d-lg-flex d-block">
-                    <p class="mb-0 text-lightest w-50 f-14 ">
-                        {{ __('modules.expensesRecurring.created_at') }}
-                    </p>
-                    <p class="mb-0 text-dark-grey w-50 f-14">{{ $task->created_at->timezone(company()->timezone)->format(company()->date_format . ' ' . company()->time_format) }}</p>
-                </div>
+
 
                 @if (($taskSettings->start_date == 'yes' && in_array('client', user_roles())) || in_array('admin', user_roles()) || in_array('employee', user_roles()))
                     <div class="col-12 px-0 pb-3 d-lg-flex d-block">
@@ -515,14 +472,7 @@
                     $timeLog = \Carbon\CarbonInterval::formatHuman($totalMinutes);
                 @endphp
 
-                @if ((($taskSettings->hours_logged == 'yes' && in_array('client', user_roles())) || in_array('admin', user_roles()) || in_array('employee', user_roles())) && in_array('timelogs', user_modules()))
-                    <div class="col-12 px-0 pb-3 d-lg-flex d-block">
-                        <p class="mb-0 text-lightest w-50 f-14 ">
-                            {{ __('modules.employees.hoursLogged') }}
-                        </p>
-                        <p class="mb-0 text-dark-grey w-50 f-14">{{ $timeLog }}</p>
-                    </div>
-                @endif
+
 
             </x-cards.data>
 
@@ -1231,7 +1181,7 @@
                             },
                             success: function (response) {
                                 if (response.status == "success") {
-                                    window.location.href = "{{ route('tasks.index') }}";
+                                    window.location.href = "{{ $backUrl ?? route('taskboards.index') }}";
                                 }
                             }
                         });
