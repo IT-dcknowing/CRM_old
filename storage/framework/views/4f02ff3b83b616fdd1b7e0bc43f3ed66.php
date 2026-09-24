@@ -115,13 +115,8 @@
             <button type="button" class="btn btn-primary rounded f-14 p-2" id="btn-confirmer-import"
                     data-jeton="<?php echo e($jeton); ?>">
                 <i class="fa fa-check mr-1"></i>
-                <?php if($resultat->enErreur > 0): ?>
-                    <?php echo e(sprintf(__('Importer les %d lignes valides'), $resultat->valides)); ?>
+                <?php echo e(sprintf(__('Importer les %d tâches'), $resultat->total)); ?>
 
-                <?php else: ?>
-                    <?php echo e(sprintf(__('Importer les %d tâches'), $resultat->total)); ?>
-
-                <?php endif; ?>
             </button>
             <span class="dck-import__note">
                 <?php if($resultat->enErreur > 0): ?>

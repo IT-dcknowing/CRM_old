@@ -67,35 +67,7 @@
     <div class="px-4 py-2 border-top-0 emp-dashboard dck-front">
 
         <!-- WELOCOME START -->
-        <?php if(!is_null($checkTodayLeave)): ?>
-            <div class="row pt-4">
-                <div class="col-md-12">
-                    <?php if (isset($component)) { $__componentOriginal5194778a3a7b899dcee5619d0610f5cf = $component; } ?>
-<?php if (isset($attributes)) { $__attributesOriginal5194778a3a7b899dcee5619d0610f5cf = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.alert','data' => ['type' => 'info','icon' => 'info-circle']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? (array) $attributes->getIterator() : [])); ?>
-<?php $component->withName('alert'); ?>
-<?php if ($component->shouldRender()): ?>
-<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
-<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag && $constructor = (new ReflectionClass(Illuminate\View\AnonymousComponent::class))->getConstructor()): ?>
-<?php $attributes = $attributes->except(collect($constructor->getParameters())->map->getName()->all()); ?>
-<?php endif; ?>
-<?php $component->withAttributes(['type' => 'info','icon' => 'info-circle']); ?>
-                        <a href="<?php echo e((Route::has('leaves.show') ? route('leaves.show', $checkTodayLeave->id) : '')); ?>" class="openRightModal text-dark-grey">
-                            <u><?php echo app('translator')->get('messages.youAreOnLeave'); ?> </u>
-                        </a>
-                     <?php echo $__env->renderComponent(); ?>
-<?php endif; ?>
-<?php if (isset($__attributesOriginal5194778a3a7b899dcee5619d0610f5cf)): ?>
-<?php $attributes = $__attributesOriginal5194778a3a7b899dcee5619d0610f5cf; ?>
-<?php unset($__attributesOriginal5194778a3a7b899dcee5619d0610f5cf); ?>
-<?php endif; ?>
-<?php if (isset($__componentOriginal5194778a3a7b899dcee5619d0610f5cf)): ?>
-<?php $component = $__componentOriginal5194778a3a7b899dcee5619d0610f5cf; ?>
-<?php unset($__componentOriginal5194778a3a7b899dcee5619d0610f5cf); ?>
-<?php endif; ?>
-                </div>
-            </div>
-        <?php elseif(!is_null($checkTodayHoliday)): ?>
+        <?php if(!is_null($checkTodayHoliday)): ?>
             <div class="row pt-4">
                 <div class="col-md-12">
                     <?php if (isset($component)) { $__componentOriginal5194778a3a7b899dcee5619d0610f5cf = $component; } ?>
@@ -165,83 +137,10 @@
                 class="ml-auto d-flex clock-in-out mb-3 mb-lg-0 mb-md-0 m mt-4 mt-lg-0 mt-md-0 justify-content-between">
                 <p
                     class="mb-0 text-lg-right text-md-right f-18 font-weight-bold text-dark-grey d-grid align-items-center">
-                    <input type="hidden" id="current-latitude" name="current_latitude">
-                    <input type="hidden" id="current-longitude" name="current_longitude">
-
                     
                     <span id="dashboard-clock"><?php echo now()->timezone(company()->timezone)->translatedFormat(company()->time_format) . '</span><span class="f-10 font-weight-normal">' . now()->timezone(company()->timezone)->translatedFormat('l d F Y') . '</span>'; ?>
 
-
-                    <?php if(!is_null($currentClockIn)): ?>
-                        <span class="f-11 font-weight-normal text-lightest">
-                            <?php echo app('translator')->get('app.clockInAt'); ?> -
-                            <?php echo e($currentClockIn->clock_in_time->timezone(company()->timezone)->translatedFormat(company()->time_format)); ?>
-
-                        </span>
-                    <?php endif; ?>
                 </p>
-
-                <?php
-                    $currentDateTime = now()->timezone(company()->timezone);
-                    $msg = null;
-                    $start_time = \Carbon\Carbon::createFromFormat('H:i:s', $attendanceSettings->office_start_time, company()->timezone);
-                    $mid_time = \Carbon\Carbon::createFromFormat('H:i:s', $attendanceSettings->halfday_mark_time, company()->timezone);
-                    $end_time = \Carbon\Carbon::createFromFormat('H:i:s', $attendanceSettings->office_end_time, company()->timezone);
-
-                    if ($start_time->gt($end_time)) { // check if shift end time is less then current time then shift not ended yet
-                        if(
-                            now(company()->timezone)->lessThan($end_time)
-                            || (now(company()->timezone)->greaterThan($end_time) && now(company()->timezone)->lessThan($start_time))
-                        ){
-                            $start_time->subDay();
-                            $mid_time->subDay();
-                        }else{
-                            $mid_time->addDay();
-                            $end_time->addDay();
-                        }
-                    }
-                    // dd($checkTodayHoliday);
-
-                    $current_user_id = auth()->user()->id;
-                    $leaveApplied = $leave->where('user_id', $current_user_id)->where('status', 'approved')->first();
-
-                    if($leaveApplied != null && ($leaveApplied->duration === 'single' || $leaveApplied->duration === 'multiple') && $currentDateTime->between($start_time, $end_time)){
-                        $msg = __('messages.leaveApplied');
-                    }elseif ($leaveApplied != null  && $leaveApplied->duration === 'half day' && $leaveApplied->half_day_type === 'first_half' && $currentDateTime->lt($mid_time) && $currentDateTime->between($start_time, $mid_time)){
-                        $msg = __('messages.leaveForFirstHalf');
-                    }elseif ($leaveApplied != null  && $leaveApplied->duration === 'half day' && $leaveApplied->half_day_type === 'second_half' && $currentDateTime->gt($mid_time) && $currentDateTime->between($mid_time, $end_time)){
-                        $msg = __('messages.leaveForSecondHalf');
-                    }else if(!is_null($checkTodayHoliday) && $checkTodayHoliday->exists){
-                        $msg = __('messages.todayHoliday');
-                    }else if($cannotLogin == true){
-                        $msg = __('messages.notInOfficeHours');
-                    }
-                    /*
-                        true means shift is near to cross with auto clock time adding clock out show
-                        false means show clock in
-                    */
-                    $flagbtn = now()->timezone(company()->timezone)->addHours($attendanceSettings->auto_clock_out_time)->gt($shiftEndDateTime);
-
-
-
-                ?>
-                
-                <?php if(false): ?>
-                    <?php if(is_null($currentClockIn) && $checkJoiningDate == true || (is_null($currentClockIn) && $flagbtn == false)): ?>
-                        <button type="button" class="btn-primary rounded f-15 ml-4" id="clock-in"
-                            <?php if(($cannotLogin || !is_null($msg)) && ($user->isAdmin($user->id) || $user->isEmployee($user->id))): ?>
-                                disabled
-                                data-toggle="tooltip" data-placement="top" title="<?php echo e(__($msg)); ?>"
-                            <?php endif; ?>
-                        ><i
-                        class="icons icon-login mr-2"></i><?php echo app('translator')->get('modules.attendance.clock_in'); ?></button>
-                    <?php endif; ?>
-
-                    <?php if(!is_null($currentClockIn) && is_null($currentClockIn->clock_out_time) || (!is_null($currentClockIn) && $flagbtn == true)): ?>
-                        <button type="button" class="btn-danger rounded f-15 ml-4" id="clock-out"><i
-                                class="icons icon-login mr-2"></i><?php echo app('translator')->get('modules.attendance.clock_out'); ?></button>
-                    <?php endif; ?>
-                <?php endif; ?>
 
                 <?php if(in_array('admin', user_roles())): ?>
                     <div class="private-dash-settings d-flex align-self-center">
@@ -544,10 +443,6 @@
 
                                 <?php echo $__env->make('dashboard.employee.widgets.appreciation', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
 
-                                <?php echo $__env->make('dashboard.employee.widgets.leave', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
-
-                                <?php echo $__env->make('dashboard.employee.widgets.work_from_home', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
-
                                 <?php echo $__env->make('dashboard.employee.widgets.work_anniversary', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
 
                                 <?php echo $__env->make('dashboard.employee.widgets.notice-period', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
@@ -594,16 +489,14 @@
                         </div>
                     <?php endif; ?>
 
-                    <?php echo $__env->make('dashboard.employee.widgets.projects', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+                    <!-- <?php echo $__env->make('dashboard.employee.widgets.projects', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
                     <?php echo $__env->make('dashboard.employee.widgets.lead', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
-                    <?php echo $__env->make('dashboard.employee.widgets.week_timelog', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+                    <?php echo $__env->make('dashboard.employee.widgets.week_timelog', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?> -->
                 </div>
                 <!-- EMP DASHBOARD TASKS PROJECTS END -->
                 <?php echo $__env->make('dashboard.employee.widgets.my_tasks', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
-                <?php echo $__env->make('dashboard.employee.widgets.tickets', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
                 <?php endif; ?>
                 <?php echo $__env->make('dashboard.employee.widgets.my_calendar', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
-                <?php echo $__env->make('dashboard.employee.widgets.notices', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
 
             </div>
             <!-- EMP DASHBOARD TASKS PROJECTS EVENTS END -->
@@ -624,55 +517,6 @@
         ): ?>
         <script src="<?php echo e(asset('vendor/full-calendar/main.min.js')); ?>"  defer="defer"></script>
         <script src="<?php echo e(asset('vendor/full-calendar/locales-all.min.js')); ?>"  defer="defer"></script>
-        <script>
-
-            var clockInButton = document.getElementById('clock-in');
-
-            if (clockInButton) {
-
-                var cannotLogin = "<?php echo e($cannotLogin); ?>";
-                var checkTodayHoliday = "<?php echo e($checkTodayHoliday?->exists); ?>";
-                var leaveApplied = "<?php echo e($leave->where('user_id', auth()->user()->id)->where('status', 'approved')->first()?->exists); ?>";
-
-                var currentDateTime = "<?php echo e($currentDateTime); ?>";
-                var startTime = "<?php echo e($start_time); ?>";
-                var midTime = "<?php echo e($mid_time); ?>";
-                var endTime = "<?php echo e($end_time); ?>";
-
-                if (
-                    cannotLogin === 'false' ||
-                    (cannotLogin === '' && (checkTodayHoliday == false && leaveApplied == false))
-                ) {
-
-                    clockInButton.disabled = false;
-                    $(clockInButton).tooltip();
-
-                } else if(leaveApplied == true){
-
-                    var leaveDuration = "<?php echo e($leaveApplied?->duration); ?>";
-                    var halfDayType = "<?php echo e($leaveApplied?->half_day_type); ?>";
-
-                    if(
-                        ((leaveDuration === 'single' || leaveDuration === 'multiple') && currentDateTime >= startTime && currentDateTime <= endTime) ||
-                        (leaveDuration === 'half day' && halfDayType === 'first_half' && currentDateTime < midTime && currentDateTime >= startTime && currentDateTime <= midTime) ||
-                        (leaveDuration === 'half day' && halfDayType === 'second_half' && currentDateTime > midTime && currentDateTime >= midTime && currentDateTime <= endTime)
-                    ){
-
-                        clockInButton.disabled = true;
-                        $(clockInButton).tooltip('dispose');
-                    }
-                }else if(checkTodayHoliday == true && currentDateTime >= startTime && currentDateTime <= midTime){
-
-                    clockInButton.disabled = true;
-                    $(clockInButton).tooltip('dispose');
-
-                }else {
-
-                    clockInButton.disabled = true;
-                    $(clockInButton).tooltip('dispose');
-                }
-            }
-        </script>
         <script>
 
             $(document).ready(function () {
@@ -876,12 +720,6 @@
             })
         });
 
-        $('#clock-in').click(function() {
-            const url = "<?php echo e((Route::has('attendances.clock_in_modal') ? route('attendances.clock_in_modal') : '')); ?>";
-            $(MODAL_LG + ' ' + MODAL_HEADING).html('...');
-            $.ajaxModal(MODAL_LG, url);
-        });
-
         $('.request-shift-change').click(function() {
             var id = $(this).data('shift-schedule-id');
             var date = $(this).data('shift-schedule-date');
@@ -898,40 +736,6 @@
             $(MODAL_XL + ' ' + MODAL_HEADING).html('...');
             $.ajaxModal(MODAL_XL, url);
         });
-
-        <?php if(!is_null($currentClockIn)): ?>
-            $('#clock-out').click(function() {
-                var url = "<?php echo e((Route::has('attendances.show_clocked_hours') ? route('attendances.show_clocked_hours') : '')); ?>?aid=<?php echo e($currentClockIn->id); ?>";
-
-                $(MODAL_DEFAULT + ' ' + MODAL_HEADING).html('...');
-                $.ajaxModal(MODAL_LG, url);
-
-            });
-
-            function clockOut()
-            {
-
-                var token = "<?php echo e(csrf_token()); ?>";
-                var currentLatitude = document.getElementById("current-latitude").value;
-                var currentLongitude = document.getElementById("current-longitude").value;
-
-                $.easyAjax({
-                    url: "<?php echo e((Route::has('attendances.update_clock_in') ? route('attendances.update_clock_in') : '')); ?>",
-                    type: "GET",
-                    data: {
-                        currentLatitude: currentLatitude,
-                        currentLongitude: currentLongitude,
-                        _token: token,
-                        id: '<?php echo e($currentClockIn->id); ?>'
-                    },
-                    success: function(response) {
-                        if (response.status == 'success') {
-                            window.location.reload();
-                        }
-                    }
-                });
-            }
-        <?php endif; ?>
 
         $('.keep-open .dropdown-menu').on({
             "click": function(e) {
@@ -1000,31 +804,6 @@
             });
         <?php endif; ?>
     </script>
-
-    <?php if(attendance_setting()->radius_check == 'yes' || attendance_setting()->save_current_location): ?>
-    <script>
-        function setCurrentLocation() {
-            const currentLatitude = document.getElementById("current-latitude");
-            const currentLongitude = document.getElementById("current-longitude");
-
-            function getLocation() {
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(showPosition);
-                }
-            }
-
-            function showPosition(position) {
-                currentLatitude.value = position.coords.latitude;
-                currentLongitude.value = position.coords.longitude;
-            }
-            getLocation();
-
-        }
-
-        setCurrentLocation();
-    </script>
-
-    <?php endif; ?>
 <?php $__env->stopPush(); ?>
 
 <?php echo $__env->make('layouts.app', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\laragon\www\CRM\resources\views/dashboard/employee/index.blade.php ENDPATH**/ ?>
