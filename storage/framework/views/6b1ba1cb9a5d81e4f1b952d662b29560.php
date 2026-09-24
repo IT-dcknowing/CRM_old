@@ -1,3 +1,5 @@
+
+
 <?php $__env->startPush('styles'); ?>
     <!-- Drag and Drop CSS -->
     <link rel='stylesheet' href="<?php echo e(asset('vendor/css/dragula.css')); ?>" type='text/css' />
