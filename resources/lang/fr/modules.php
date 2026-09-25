@@ -580,6 +580,10 @@ return [
         'companyLogo'    => 'Logo de la société',
 
         'profilePicture'           => 'Photo de profil',
+        'yourName'                 => 'Nom complet',
+        'yourEmail'                => 'Adresse e-mail',
+        'yourPassword'             => 'Mot de passe',
+        'yourAddress'              => 'Adresse postale',
     ],
 
     'invoices' => [
@@ -609,6 +613,16 @@ return [
         'state'                    => 'Région',
         'country'                  => 'Pays',
         'postalCode'               => 'Code postal',
+    ],
+
+    'accountSettings' => [
+        'changeLanguage'           => 'Changer la langue',
+    ],
+
+    'twofactor' => [
+        'twoFaInfo'                  => 'Renforcez la sécurité de votre compte en activant l\'authentification à deux facteurs (2FA).',
+        'setupEmail'                 => 'Configuration via e-mail',
+        'setupGoogleAuthenticator'   => 'Configuration via Google Authenticator',
     ],
 
 ];

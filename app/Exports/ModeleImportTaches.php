@@ -21,10 +21,9 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
  * configuration reelle du cabinet, sans modele a maintenir a la main.
  *
  * Le classeur porte un second onglet, « Listes », d'ou les colonnes
- * Projet, Statut, Assigne a et Domaine tirent des menus deroulants.
+ * Projet, Domaine et Statut tirent leurs menus deroulants.
  * Sans lui, remplir le fichier supposait de connaitre par coeur
- * quatre-vingt-dix projets et quatre cents collaborateurs, orthographe
- * comprise — ce que personne ne peut faire.
+ * quatre-vingt-dix projets et leurs codes, orthographe comprise.
  */
 class ModeleImportTaches implements FromArray, WithHeadings, WithStyles, WithEvents
 {
@@ -34,7 +33,6 @@ class ModeleImportTaches implements FromArray, WithHeadings, WithStyles, WithEve
     private const DERNIERE_LIGNE = TaskImport::MAXIMUM_LIGNES + 1;
 
     private array $projets;
-    private array $gens;
     private array $categories;
     private array $statuts;
 
@@ -45,13 +43,6 @@ class ModeleImportTaches implements FromArray, WithHeadings, WithStyles, WithEve
         $this->projets = DB::table('projects')->whereNull('deleted_at')
             ->where('company_id', $societe)
             ->orderBy('project_name')->pluck('project_name')->all();
-
-        /* Tous les comptes actifs, et non les seuls employes : l'import
-           accepte deja n'importe quel utilisateur, la liste doit dire
-           la meme chose que le controle. */
-        $this->gens = DB::table('users')
-            ->where('company_id', $societe)->where('status', 'active')
-            ->orderBy('name')->pluck('name')->unique()->values()->all();
 
         $this->categories = DB::table('task_category')
             ->where('company_id', $societe)
@@ -80,7 +71,6 @@ class ModeleImportTaches implements FromArray, WithHeadings, WithStyles, WithEve
                 now()->format($format),
                 now()->addDays(7)->format($format),
                 TaskboardColumn::where('slug', 'to_do')->value('column_name') ?: 'À faire',
-                $this->gens[0] ?? '',
                 $this->categories[0] ?? '',
                 'Ligne d’exemple : supprimez-la avant d’importer.',
             ],
@@ -107,7 +97,7 @@ class ModeleImportTaches implements FromArray, WithHeadings, WithStyles, WithEve
                 $this->ecrireListes($feuille->getParent());
                 $this->poserMenus($feuille);
 
-                foreach (range('A', 'H') as $colonne) {
+                foreach (range('A', 'G') as $colonne) {
                     $feuille->getColumnDimension($colonne)->setAutoSize(true);
                 }
 
@@ -129,11 +119,18 @@ class ModeleImportTaches implements FromArray, WithHeadings, WithStyles, WithEve
         $listes = $classeur->createSheet();
         $listes->setTitle('Listes');
 
+        /* L'onglet est masque : il ne sert qu'aux menus deroulants de
+           l'onglet principal. Le montrer encouragerait les utilisateurs
+           a le modifier ou a le supprimer, ce qui casserait les listes.
+           « hidden » suffit ; « veryHidden » exigerait du VBA pour le
+           retrouver — trop restrictif si un administrateur a besoin de
+           l'inspecter. */
+        $listes->setSheetState(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet::SHEETSTATE_HIDDEN);
+
         $colonnes = [
-            'A' => ['Projets', $this->projets],
-            'B' => ['Collaborateurs', $this->gens],
-            'C' => ['Domaines', $this->categories],
-            'D' => ['Statuts', $this->statuts],
+            'A' => ['Projets',  $this->projets],
+            'B' => ['Domaines', $this->categories],
+            'C' => ['Statuts',  $this->statuts],
         ];
 
         foreach ($colonnes as $lettre => [$titre, $valeurs]) {
@@ -146,27 +143,24 @@ class ModeleImportTaches implements FromArray, WithHeadings, WithStyles, WithEve
             $listes->getColumnDimension($lettre)->setAutoSize(true);
         }
 
-        $listes->getStyle('A1:D1')->getFont()->setBold(true);
+        $listes->getStyle('A1:C1')->getFont()->setBold(true);
     }
 
     /**
-     * Menus deroulants sur les quatre colonnes a referentiel.
+     * Menus deroulants sur les colonnes a referentiel.
      *
-     * Assigne a fait exception : sa liste n'est qu'une aide, la saisie
-     * reste libre, sans quoi l'on ne pourrait plus ecrire deux noms
-     * separes par une virgule pour confier une tache a plusieurs
-     * personnes.
+     * Trois colonnes sont guidees : Projet (B), Statut (E) et Domaine (F).
+     * La validation est bloquante sur les referentiels stricts pour eviter
+     * les fautes d'orthographe silencieuses a l'import.
      */
     private function poserMenus(Worksheet $feuille): void
     {
         $menus = [
             'B' => ['liste' => $this->projets,    'colonne' => 'A', 'strict' => true,
                     'aide' => 'Choisissez un projet dans la liste, ou laissez vide.'],
-            'E' => ['liste' => $this->statuts,    'colonne' => 'D', 'strict' => true,
+            'E' => ['liste' => $this->statuts,    'colonne' => 'C', 'strict' => true,
                     'aide' => 'Choisissez un statut. Vide, la tâche sera « Incomplète ».'],
-            'F' => ['liste' => $this->gens,       'colonne' => 'B', 'strict' => false,
-                    'aide' => 'Choisissez un collaborateur. Pour en confier à plusieurs, séparez les noms par une virgule.'],
-            'G' => ['liste' => $this->categories, 'colonne' => 'C', 'strict' => true,
+            'F' => ['liste' => $this->categories, 'colonne' => 'B', 'strict' => true,
                     'aide' => 'Choisissez un domaine dans la liste, ou laissez vide.'],
         ];
 
