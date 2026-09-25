@@ -625,4 +625,11 @@ return [
         'setupGoogleAuthenticator'   => 'Configuration via Google Authenticator',
     ],
 
+    'emergencyContact' => [
+        'emergencyContact'         => 'Contacts d\'urgence',
+        'viewEmergencyContact'     => 'Voir le contact d\'urgence',
+        'editEmergencyContact'     => 'Modifier le contact d\'urgence',
+        'addNewEmergencyContact'   => 'Ajouter un contact d\'urgence',
+    ],
+
 ];
