@@ -93,14 +93,14 @@ trait ImportationTaches
            n'aurait demandes. */
         $aCreer = [];
 
-        foreach ($lignes as $l) {
+       /* foreach ($lignes as $l) {
             /* Seules les lignes retenues comptent : une ligne ecartee pour
                une autre raison n'importera pas sa tache, son projet n'a
-               donc pas lieu d'exister. */
-            // if ($l->projetACreer && empty($l->erreurs)) {
-            //     $aCreer[$this->normaliser($l->projetACreer)] = $l->projetACreer;
-            // }
-        }
+               donc pas lieu d'exister. 
+            if ($l->projetACreer && empty($l->erreurs)) {
+                $aCreer[$this->normaliser($l->projetACreer)] = $l->projetACreer;
+            }
+        } */
 
         return (object) [
             'ok'        => empty($erreurs),
@@ -363,7 +363,7 @@ trait ImportationTaches
             'description' => $lire('description'),
             'projet'      => $projet,
             'projetNom'   => $nomProjet,
-        //    'projetACreer' => $projetACreer,
+        //'projetACreer' => $projetACreer,
             'categorie'   => $categorie,
             'statut'      => $statut,
             'gens'        => $gens,

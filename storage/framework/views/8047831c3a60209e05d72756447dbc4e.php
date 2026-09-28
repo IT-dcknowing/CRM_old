@@ -33,4 +33,4 @@ $content = "<div class='d-flex align-items-center text-left'>
         <?php echo e($user->name_salutation); ?>
 
     </option>
-<?php /**PATH C:\laragon\www\dc_knowing\CRM\resources\views/components/user-option.blade.php ENDPATH**/ ?>
+<?php /**PATH C:\laragon\www\CRM\resources\views/components/user-option.blade.php ENDPATH**/ ?>
