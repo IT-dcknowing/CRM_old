@@ -16,7 +16,7 @@
      #task-detail-section et #nav-tabContent au changement d'onglet,
      ce qui emporterait le bouton s'il etait a l'interieur. --}}
 <div class="content-wrapper dck-front">
-    <x-dck.back :href="route('tasks.index')" :libelle="__('app.dckBack.tasks')" :barre="false" />
+    <x-dck.back :href="$backUrl ?? route('taskboards.index')" :libelle="__('app.dckBack.tasks')" :barre="false" />
 
     @include($view)
 </div>
