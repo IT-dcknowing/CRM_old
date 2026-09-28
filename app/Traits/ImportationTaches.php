@@ -230,7 +230,7 @@ trait ImportationTaches
             'statuts'    => $statuts,
             'existantes' => $existantes,
             'projetDefaut' => $projetDefaut ? ($projets->firstWhere('id', $projetDefaut) ?: null) : null,
-            'defaut'     => TaskboardColumn::where('slug', 'incomplete')->first(),
+            'defaut'     => TaskboardColumn::where('slug', 'incomplete')->first() ?? TaskboardColumn::first(),
 
             /* Le meme droit que le formulaire de creation d'un projet.
                L'import ne doit pas etre un moyen d'obtenir ce qu'on ne
@@ -329,6 +329,9 @@ trait ImportationTaches
             }
         }
 
+        /* Priorité : medium par defaut */
+        $priorite = 'medium';
+
         /* Collaborateurs : l'assignation est desormais automatique.
            L'utilisateur connecte sera assigne a toutes ses taches a la
            creation. La colonne « Assigne a » n'existe plus dans le modele. */
@@ -362,14 +365,19 @@ trait ImportationTaches
             'titre'       => $titre,
             'description' => $lire('description'),
             'projet'      => $projet,
+            'projet_id'   => $projet?->id,
             'projetNom'   => $nomProjet,
-        //'projetACreer' => $projetACreer,
             'categorie'   => $categorie,
+            'categorie_id'=> $categorie?->id,
             'statut'      => $statut,
+            'statut_id'   => $statut?->id,
+            'priorite'    => $priorite,
             'gens'        => $gens,
             'gensNoms'    => $nomsGens,
             'debut'       => $debut,
+            'debut_str'   => $debut ? $debut->format(company()->date_format) : ($lire('start_date') ?: ''),
             'fin'         => $fin,
+            'fin_str'     => $fin ? $fin->format(company()->date_format) : ($lire('due_date') ?: ''),
             'erreurs'     => $erreurs,
         ];
     }
@@ -430,11 +438,138 @@ trait ImportationTaches
 
         /* Espaces insecables compris : un copier-coller depuis le web en
            seme, et « Date de début » cesse alors de correspondre. */
-        $v = str_replace(["Â ", "â¯"], ' ', $v);
+        $v = str_replace(["Â ", "â€¯"], ' ', $v);
 
         $v = Str::ascii(trim($v));
 
         return strtolower(preg_replace('/\s+/', ' ', $v));
+    }
+
+    /**
+     * Valide et crée les tâches à partir des données éditées dans le DataTable.
+     *
+     * @param array $lignesDonnees Tableau de lignes envoyées depuis l'interface
+     * @return int Nombre de tâches créées
+     */
+    protected function creerTachesDepuisDonneesEditables(array $lignesDonnees): int
+    {
+        $societe = company()->id;
+        $projetsValides = DB::table('projects')
+            ->whereNull('deleted_at')->where('company_id', $societe)
+            ->pluck('project_name', 'id');
+
+        $categoriesValides = DB::table('task_category')
+            ->where('company_id', $societe)
+            ->pluck('category_name', 'id');
+
+        $statutsValides = TaskboardColumn::all()->keyBy('id');
+        $statutDefaut = TaskboardColumn::where('slug', 'incomplete')->first() ?? TaskboardColumn::first();
+
+        $attente = TaskboardColumn::waitingForApprovalColumn();
+        $creees = 0;
+        $comptageParProjet = [];
+        $aNotifier = [];
+
+        DB::transaction(function () use (
+            $lignesDonnees, $projetsValides, $categoriesValides, $statutsValides,
+            $statutDefaut, $attente, &$creees, &$aNotifier, &$comptageParProjet
+        ) {
+            foreach ($lignesDonnees as $index => $item) {
+                $titre = trim((string)($item['heading'] ?? ''));
+                if ($titre === '') {
+                    continue; // Skip lines without title if any slipped through
+                }
+
+                $task = new Task();
+                $task->heading = $titre;
+                $description = trim((string)($item['description'] ?? ''));
+                $task->description = $description !== '' ? $description : null;
+
+                // Dates
+                $dateDebut = $this->lireDate($item['start_date'] ?? null) ?: now()->startOfDay();
+                $dateFin = $this->lireDate($item['due_date'] ?? null);
+
+                if ($dateFin && $dateFin->lt($dateDebut)) {
+                    $dateFin = $dateDebut->copy();
+                }
+
+                $task->start_date = $dateDebut;
+                $task->due_date = $dateFin;
+
+                // Projet
+                $projectId = !empty($item['project_id']) && isset($projetsValides[$item['project_id']])
+                    ? (int)$item['project_id']
+                    : null;
+                $task->project_id = $projectId;
+
+                // Catégorie
+                $categoryId = !empty($item['category_id']) && isset($categoriesValides[$item['category_id']])
+                    ? (int)$item['category_id']
+                    : null;
+                $task->task_category_id = $categoryId;
+
+                // Priorité
+                $priorite = in_array($item['priority'] ?? '', ['high', 'medium', 'low'])
+                    ? $item['priority']
+                    : 'medium';
+                $task->priority = $priorite;
+
+                // Statut
+                $boardColumnId = !empty($item['board_column_id']) && isset($statutsValides[$item['board_column_id']])
+                    ? (int)$item['board_column_id']
+                    : $statutDefaut->id;
+                $task->board_column_id = $boardColumnId;
+
+                request()->merge(['board_column_id' => $boardColumnId]);
+                $task->approval_send = ($attente && $boardColumnId === $attente->id) ? 1 : 0;
+                $task->is_private = 0;
+                $task->billable = 0;
+
+                // Short code
+                if ($projectId) {
+                    $projectObj = Project::find($projectId);
+                    if ($projectObj) {
+                        if (!array_key_exists($projectId, $comptageParProjet)) {
+                            $comptageParProjet[$projectId] = Task::projectTaskCount($projectId);
+                        }
+
+                        $rang = $comptageParProjet[$projectId]++;
+
+                        $task->task_short_code = $projectObj->project_short_code
+                            ? $projectObj->project_short_code . '-' . $this->getTaskShortCode(
+                                $projectObj->project_short_code, $rang + 1)
+                            : $rang + 1;
+                    }
+                }
+
+                $task->save();
+
+                /* Sécurité stricte : L'utilisateur connecté est SYSTÉMATIQUEMENT
+                   l'assigné et le créateur. */
+                $task->users()->sync([user()->id]);
+
+                // Historique
+                $dejaTrace = DB::table('task_history')->where('task_id', $task->id)->exists();
+                if (!$dejaTrace) {
+                    DB::table('task_history')->insert([
+                        'task_id'         => $task->id,
+                        'user_id'         => user()->id,
+                        'board_column_id' => $task->board_column_id,
+                        'details'         => 'createActivity',
+                        'created_at'      => now(),
+                        'updated_at'      => now(),
+                    ]);
+                }
+
+                $aNotifier[] = ['task' => $task, 'gens' => [user()->id]];
+                $creees++;
+            }
+        });
+
+        request()->request->remove('board_column_id');
+        $this->notifierAffectations($aNotifier);
+
+        return $creees;
     }
 
     /**
@@ -465,7 +600,7 @@ trait ImportationTaches
                 $task->due_date = $l->fin;
                 $task->project_id = $l->projet?->id ?? null;
                 $task->task_category_id = $l->categorie?->id ?? null;
-                $task->priority = 'medium';
+                $task->priority = $l->priorite ?? 'medium';
                 $task->board_column_id = $l->statut->id;
 
                 /* TaskObserver::creating() ecrase board_column_id par le
@@ -479,7 +614,7 @@ trait ImportationTaches
                    corriger la ligne apres coup : la valeur est ainsi
                    posee avant l'insertion, et non rattrapee ensuite. */
                 request()->merge(['board_column_id' => $l->statut->id]);
-                $task->approval_send = $l->statut->id === $attente->id ? 1 : 0;
+                $task->approval_send = ($attente && $l->statut->id === $attente->id) ? 1 : 0;
                 $task->is_private = 0;
                 $task->billable = 0;
 
@@ -506,17 +641,7 @@ trait ImportationTaches
                    detourner l'attribution vers un autre compte. */
                 $task->users()->sync([user()->id]);
 
-                /* Historique.
-
-                   TaskObserver l'ecrit deja, mais uniquement hors
-                   contexte console : le bloc entier est enveloppe dans
-                   « if (!isRunningInConsoleOrSeeding()) ». On ne peut
-                   donc ni s'y fier depuis une commande, ni le verifier
-                   par un test automatise, qui s'execute toujours en CLI.
-
-                   On l'ecrit ici, apres avoir verifie qu'il ne l'a pas
-                   deja fait : la tache porte alors la meme trace, qu'elle
-                   vienne du formulaire ou d'un fichier. */
+                /* Historique. */
                 $dejaTrace = DB::table('task_history')
                     ->where('task_id', $task->id)
                     ->exists();
@@ -532,10 +657,6 @@ trait ImportationTaches
                     ]);
                 }
 
-                /* L'utilisateur qui importe est notifie s'il le souhaite,
-                   mais notifierAffectations() exclut deja user() de ses
-                   propres notifications. On passe le tableau vide ici :
-                   l'appel reste pour la robustesse future. */
                 $aNotifier[] = ['task' => $task, 'gens' => [user()->id]];
 
                 $creees++;

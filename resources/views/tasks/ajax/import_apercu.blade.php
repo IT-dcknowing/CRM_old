@@ -1,9 +1,5 @@
 {{--
-    Apercu renvoye apres analyse du fichier.
-
-    Il ne sert qu'a montrer : la confirmation relance une analyse cote
-    serveur, de sorte que rien de ce qui est affiche ici ne fait
-    autorite.
+    DataTable de Prévisualisation et d'Édition Interactive des Tâches avant Import
 --}}
 
 @if ($resultat->total === 0)
@@ -15,94 +11,140 @@
 
 @else
 
-    {{-- ── Bilan ─────────────────────────────────────────────────── --}}
-    <div class="dck-import__bilan">
-        <div class="dck-import__k">
-            <span class="dck-import__kl">@lang('Lignes détectées')</span>
-            <span class="dck-import__kv">{{ $resultat->total }}</span>
+    {{-- ── En-tête de prévisualisation & infos fichier ────────────────────── --}}
+    <div class="dck-import__preview-header mb-3 p-3 bg-light rounded border d-flex flex-wrap align-items-center justify-content-between">
+        <div>
+            <span class="badge badge-primary px-2 py-1 mr-2"><i class="fa fa-file-excel mr-1"></i> {{ $nomFichier ?? 'Fichier chargé' }}</span>
+            <span class="f-14 font-weight-bold text-dark">{{ $resultat->total }} {{ trans_choice('tâche détectée|tâches détectées', $resultat->total) }}</span>
+            <span class="text-muted f-12 ml-2 d-none d-md-inline">— @lang('Modifiez directement les champs ci-dessous avant validation')</span>
         </div>
-        <div class="dck-import__k is-ok">
-            <span class="dck-import__kl">@lang('Valides')</span>
-            <span class="dck-import__kv">{{ $resultat->valides }}</span>
-        </div>
-        <div class="dck-import__k {{ $resultat->enErreur > 0 ? 'is-err' : '' }}">
-            <span class="dck-import__kl">@lang('En erreur')</span>
-            <span class="dck-import__kv">{{ $resultat->enErreur }}</span>
+        <div class="d-flex align-items-center mt-2 mt-md-0">
+            <span class="badge badge-success mr-2 px-2 py-1" id="badge-valides"><i class="fa fa-check-circle mr-1"></i> <span id="count-valides">{{ $resultat->valides }}</span> valides</span>
+            <span class="badge {{ $resultat->enErreur > 0 ? 'badge-danger' : 'badge-secondary' }} px-2 py-1" id="badge-erreurs"><i class="fa fa-exclamation-triangle mr-1"></i> <span id="count-erreurs">{{ $resultat->enErreur }}</span> en erreur</span>
         </div>
     </div>
 
-    {{-- ── Les erreurs, s'il y en a ──────────────────────────────── --}}
-    @if ($resultat->enErreur > 0)
-        <div class="dck-import__msg is-err">
-            <strong>{{ $resultat->enErreur }}
-                {{ trans_choice('ligne comporte une erreur|lignes comportent des erreurs', $resultat->enErreur) }}.</strong>
-            <p>@lang("Ces lignes ne seront pas importées ; les autres le seront. Vous pourrez corriger votre fichier et le déposer à nouveau : les tâches déjà créées ne seront pas créées deux fois.")</p>
-
-            <ul class="dck-import__erreurs">
-                @foreach (array_slice($resultat->erreurs, 0, 40) as $e)
-                    <li>{{ $e }}</li>
-                @endforeach
-            </ul>
-
-            @if (count($resultat->erreurs) > 40)
-                <p class="dck-import__note">
-                    … {{ count($resultat->erreurs) - 40 }} @lang('autres erreurs non affichées.')
-                </p>
-            @endif
-        </div>
-    @endif
-
-    {{-- ── Les projets qui seront crees ──────────────────────────── --}}
-    @if (!empty($resultat->projetsACreer))
-        <div class="dck-import__msg is-avis">
-            <strong>{{ count($resultat->projetsACreer) }}
-                {{ trans_choice('projet sera créé|projets seront créés', count($resultat->projetsACreer)) }}
-                @lang('en même temps que les tâches.')</strong>
-
-            <p>@lang("Ces noms ne correspondent à aucun projet existant. Vérifiez qu'il ne s'agit pas d'une faute de frappe : un projet créé par erreur devra être supprimé à la main.")</p>
-
-            <ul class="dck-import__erreurs">
-                @foreach ($resultat->projetsACreer as $nom)
-                    <li>{{ $nom }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
-
-    {{-- ── Le detail des lignes ──────────────────────────────────── --}}
-    <div class="dck-import__scroll">
-        <table class="dck-import__tbl">
-            <thead>
+    {{-- ── DataTable interactif d'édition ────────────────────────────────── --}}
+    <div class="dck-import__scroll mb-3" style="max-height: 520px; overflow-y: auto;">
+        <table class="dck-import__tbl table table-bordered table-hover mb-0" id="table-import-preview">
+            <thead class="thead-light" style="position: sticky; top: 0; z-index: 10;">
                 <tr>
-                    <th>@lang('Ligne')</th>
-                    <th>@lang('Tâche')</th>
-                    <th>@lang('Projet')</th>
-                    <th>@lang('Statut')</th>
-                    <th>@lang('Début')</th>
-                    <th>@lang('Fin')</th>
-                    <th>@lang('État')</th>
+                    <th style="width: 45px; text-align: center;">#</th>
+                    <th style="min-width: 220px;">@lang('app.task') <span class="text-danger">*</span></th>
+                    <th style="min-width: 170px;">@lang('app.project')</th>
+                    <th style="min-width: 150px;">@lang('modules.tasks.taskCategory')</th>
+                    <th style="min-width: 140px;">@lang('app.status')</th>
+                    <th style="min-width: 125px;">@lang('modules.tasks.priority')</th>
+                    <th style="min-width: 135px;">@lang('modules.projects.startDate') <span class="text-danger">*</span></th>
+                    <th style="min-width: 135px;">@lang('app.dueDate')</th>
+                    <th style="min-width: 180px;">@lang('app.description')</th>
+                    <th style="min-width: 140px;">@lang('modules.tasks.assignTo')</th>
+                    <th style="width: 50px; text-align: center;">@lang('app.action')</th>
                 </tr>
             </thead>
             <tbody>
-            @foreach ($resultat->lignes as $l)
-                <tr class="{{ $l->erreurs ? 'est-erreur' : '' }}">
-                    <td class="dck-import__n">{{ $l->numero }}</td>
-                    <td>{{ \Illuminate\Support\Str::limit($l->titre, 46) ?: '—' }}</td>
-                    <td>
-                        {{ $l->projet->project_name ?? ($l->projetNom ?: '—') }}
-                        @if (!empty($l->projetACreer))
-                            <span class="dck-import__p is-avis">@lang('à créer')</span>
-                        @endif
+            @foreach ($resultat->lignes as $idx => $l)
+                <tr class="row-task {{ $l->erreurs ? 'table-warning' : '' }}" data-index="{{ $idx }}" id="row-{{ $idx }}">
+                    <td class="text-center font-weight-bold text-muted align-middle">
+                        <span class="row-num">{{ $l->numero }}</span>
+                        <input type="hidden" name="tasks[{{ $idx }}][numero]" value="{{ $l->numero }}">
                     </td>
-                    <td>{{ $l->statut->column_name ?? '—' }}</td>
-                    <td class="dck-import__n">{{ $l->debut?->format(company()->date_format) ?: '—' }}</td>
-                    <td class="dck-import__n">{{ $l->fin?->format(company()->date_format) ?: '—' }}</td>
-                    <td>
-                        @if ($l->erreurs)
-                            <span class="dck-import__p is-err">@lang('erreur')</span>
-                        @else
-                            <span class="dck-import__p is-ok">@lang('valide')</span>
-                        @endif
+
+                    {{-- 1. Titre (Texte requis) --}}
+                    <td class="align-middle">
+                        <input type="text" 
+                               name="tasks[{{ $idx }}][heading]" 
+                               class="form-control form-control-sm field-heading {{ empty($l->titre) ? 'is-invalid' : '' }}" 
+                               value="{{ $l->titre }}" 
+                               placeholder="@lang('placeholders.task')" 
+                               required>
+                        <div class="invalid-feedback f-11">@lang('Le titre est requis')</div>
+                    </td>
+
+                    {{-- 2. Projet (Select) --}}
+                    <td class="align-middle">
+                        <select name="tasks[{{ $idx }}][project_id]" class="form-control form-control-sm field-project">
+                            <option value="">-- @lang('Aucun') --</option>
+                            @foreach ($projets as $p)
+                                <option value="{{ $p->id }}" @selected($l->projet_id == $p->id)>
+                                    {{ $p->project_name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </td>
+
+                    {{-- 3. Catégorie / Domaine (Select) --}}
+                    <td class="align-middle">
+                        <select name="tasks[{{ $idx }}][category_id]" class="form-control form-control-sm field-category">
+                            <option value="">-- @lang('Aucun') --</option>
+                            @foreach ($categories as $cat)
+                                <option value="{{ $cat->id }}" @selected($l->categorie_id == $cat->id)>
+                                    {{ $cat->category_name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </td>
+
+                    {{-- 4. Statut (Select) --}}
+                    <td class="align-middle">
+                        <select name="tasks[{{ $idx }}][board_column_id]" class="form-control form-control-sm field-status">
+                            @foreach ($statuts as $st)
+                                <option value="{{ $st->id }}" @selected($l->statut_id == $st->id)>
+                                    {{ $st->column_name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </td>
+
+                    {{-- 5. Priorité (Select) --}}
+                    <td class="align-middle">
+                        <select name="tasks[{{ $idx }}][priority]" class="form-control form-control-sm field-priority">
+                            <option value="high" @selected($l->priorite == 'high')>🔴 @lang('modules.tasks.high')</option>
+                            <option value="medium" @selected($l->priorite == 'medium')>🟡 @lang('modules.tasks.medium')</option>
+                            <option value="low" @selected($l->priorite == 'low')>🟢 @lang('modules.tasks.low')</option>
+                        </select>
+                    </td>
+
+                    {{-- 6. Date début (Date picker) --}}
+                    <td class="align-middle">
+                        <input type="text" 
+                               name="tasks[{{ $idx }}][start_date]" 
+                               class="form-control form-control-sm field-start-date import-datepicker {{ empty($l->debut_str) ? 'is-invalid' : '' }}" 
+                               value="{{ $l->debut_str }}" 
+                               placeholder="{{ company()->date_format }}" 
+                               required>
+                    </td>
+
+                    {{-- 7. Date fin (Date picker) --}}
+                    <td class="align-middle">
+                        <input type="text" 
+                               name="tasks[{{ $idx }}][due_date]" 
+                               class="form-control form-control-sm field-due-date import-datepicker" 
+                               value="{{ $l->fin_str }}" 
+                               placeholder="{{ company()->date_format }}">
+                    </td>
+
+                    {{-- 8. Description (Text input / modal) --}}
+                    <td class="align-middle">
+                        <input type="text" 
+                               name="tasks[{{ $idx }}][description]" 
+                               class="form-control form-control-sm field-description" 
+                               value="{{ $l->description }}" 
+                               placeholder="@lang('Description...')">
+                    </td>
+
+                    {{-- 9. Assigné à (Fixe non éditable : connecté) --}}
+                    <td class="align-middle">
+                        <span class="badge badge-light border text-dark p-2 w-100 text-left font-weight-normal" title="@lang('Assigné automatiquement à votre compte')" data-toggle="tooltip">
+                            <i class="fa fa-user-lock text-primary mr-1"></i> {{ user()->name }}
+                        </span>
+                    </td>
+
+                    {{-- 10. Actions (Supprimer de la liste) --}}
+                    <td class="text-center align-middle">
+                        <button type="button" class="btn btn-sm btn-outline-danger border-0 btn-delete-row" title="@lang('app.delete')" data-toggle="tooltip">
+                            <i class="fa fa-trash"></i>
+                        </button>
                     </td>
                 </tr>
             @endforeach
@@ -110,24 +152,25 @@
         </table>
     </div>
 
-    {{-- ── La confirmation ───────────────────────────────────────── --}}
-    {{-- Le bouton s'ouvre des qu'une ligne est exploitable : un fichier
-         imparfait n'est plus un fichier perdu. --}}
-    @if ($resultat->valides > 0 && $jeton)
-        <div class="dck-import__valider">
-            <button type="button" class="btn btn-primary rounded f-14 p-2" id="btn-confirmer-import"
-                    data-jeton="{{ $jeton }}">
-                <i class="fa fa-check mr-1"></i>
-                {{ sprintf(__('Importer les %d tâches'), $resultat->total) }}
+    {{-- ── Zone d'avertissements et alertes ───────────────────────────────── --}}
+    <div id="import-validation-summary" class="d-none alert alert-warning py-2 px-3 mb-3">
+        <i class="fa fa-exclamation-circle mr-1"></i> <span id="validation-summary-text"></span>
+    </div>
+
+    {{-- ── Actions de validation / annulation ─────────────────────────────── --}}
+    <div class="d-flex flex-wrap align-items-center justify-content-between pt-2 border-top">
+        <div>
+            <button type="button" class="btn btn-secondary rounded f-14 p-2 mr-2" id="btn-annuler-import">
+                <i class="fa fa-times mr-1"></i> @lang('Annuler l\'import')
             </button>
-            <span class="dck-import__note">
-                @if ($resultat->enErreur > 0)
-                    {{ sprintf(trans_choice('%d ligne sera laissée de côté.|%d lignes seront laissées de côté.', $resultat->enErreur), $resultat->enErreur) }}
-                @else
-                    @lang("Les tâches seront créées comme si elles avaient été saisies une à une.")
-                @endif
-            </span>
         </div>
-    @endif
+
+        <div class="d-flex align-items-center">
+            <button type="button" class="btn btn-primary rounded f-14 p-2 font-weight-bold" id="btn-confirmer-import" data-jeton="{{ $jeton }}">
+                <i class="fa fa-check-circle mr-1"></i> @lang('Importer les tâches')
+            </button>
+        </div>
+    </div>
 
 @endif
+

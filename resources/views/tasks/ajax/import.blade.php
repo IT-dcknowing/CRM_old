@@ -1,4 +1,4 @@
-﻿{{--
+{{--
     Importation massive de taches.
 
     Trois temps : telecharger le modele, deposer le fichier rempli,
@@ -196,9 +196,72 @@
         etape.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    /* Parse la reponse JSON de maniere securisee : retourne null si le
-       corps n'est pas du JSON valide (Laravel peut renvoyer du HTML
-       dans certains cas d'erreur 500). */
+    /* Initialise les datepickers dans la zone de prévisualisation */
+    function initDatepickers() {
+        if (typeof datepicker === 'function') {
+            zone.querySelectorAll('.import-datepicker').forEach(function (el) {
+                datepicker(el, {
+                    position: 'bl',
+                    ...(typeof datepickerConfig !== 'undefined' ? datepickerConfig : {}),
+                    onSelect: function (instance, date) {
+                        verifierValidationLignes();
+                    }
+                });
+            });
+        }
+    }
+
+    /* Recalcule et met à jour les indicateurs de validation */
+    function verifierValidationLignes() {
+        var rows = zone.querySelectorAll('.row-task');
+        var valides = 0;
+        var erreurs = 0;
+
+        rows.forEach(function (row) {
+            var headingInput = row.querySelector('.field-heading');
+            var startDateInput = row.querySelector('.field-start-date');
+            var isRowValid = true;
+
+            if (!headingInput || !headingInput.value.trim()) {
+                isRowValid = false;
+                if (headingInput) { headingInput.classList.add('is-invalid'); }
+            } else {
+                if (headingInput) { headingInput.classList.remove('is-invalid'); }
+            }
+
+            if (!startDateInput || !startDateInput.value.trim()) {
+                isRowValid = false;
+                if (startDateInput) { startDateInput.classList.add('is-invalid'); }
+            } else {
+                if (startDateInput) { startDateInput.classList.remove('is-invalid'); }
+            }
+
+            if (isRowValid) {
+                valides++;
+                row.classList.remove('table-warning', 'table-danger');
+            } else {
+                erreurs++;
+                row.classList.add('table-warning');
+            }
+        });
+
+        var countValidesEl = document.getElementById('count-valides');
+        var countErreursEl = document.getElementById('count-erreurs');
+        var badgeErreursEl = document.getElementById('badge-erreurs');
+
+        if (countValidesEl) { countValidesEl.textContent = valides; }
+        if (countErreursEl) { countErreursEl.textContent = erreurs; }
+        if (badgeErreursEl) {
+            badgeErreursEl.className = 'badge ' + (erreurs > 0 ? 'badge-danger' : 'badge-secondary') + ' px-2 py-1';
+        }
+
+        var btnImport = document.getElementById('btn-confirmer-import');
+        if (btnImport) {
+            btnImport.disabled = (valides === 0);
+        }
+    }
+
+    /* Parse la reponse JSON de maniere securisee */
     function parseJson(reponse) {
         return reponse.text().then(function (texte) {
             try {
@@ -223,7 +286,7 @@
 
         var donnees = new FormData(form);
 
-        fetch('{{ route("tasks.import.analyse") }}', {
+        fetch('{{ route("tasks.import.analyse", [], false) }}', {
             method : 'POST',
             body   : donnees,
             headers: {
@@ -249,9 +312,17 @@
             zone.innerHTML = r.corps.html;
             etape.classList.remove('d-none');
             etape.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            try {
+                initDatepickers();
+                verifierValidationLignes();
+            } catch (e) {
+                console.warn('Initialisation partielle du DataTable:', e);
+            }
         })
         .catch(function (err) {
-            afficherErreur('{{ __("Une erreur reseau est survenue. Verifiez votre connexion et reessayez.") }}');
+            console.error('Erreur import analyse:', err);
+            afficherErreur('{{ __("Une erreur est survenue lors de l\'analyse du fichier :") }} ' + (err.message || '{{ __("Vérifiez votre connexion et réessayez.") }}'));
         })
         .finally(function () {
             bouton.disabled = false;
@@ -259,32 +330,115 @@
         });
     });
 
-    /* ── Etape 3 : confirmation de l'importation ───────────────── */
+    /* ── Écouteurs interactifs dans le DataTable ─────────────────── */
 
-    /* Le bouton est injecte avec l'apercu : on ecoute via delegation
-       sur zone, qui existe des le chargement de la page. */
+    // 1. Validation en direct lors de la saisie
+    zone.addEventListener('input', function (e) {
+        if (e.target.classList.contains('field-heading') || e.target.classList.contains('field-start-date')) {
+            verifierValidationLignes();
+        }
+    });
+
+    // 2. Suppression de ligne
+    zone.addEventListener('click', function (e) {
+        var btnDelete = e.target.closest('.btn-delete-row');
+        if (btnDelete) {
+            var tr = btnDelete.closest('tr');
+            if (tr) {
+                tr.remove();
+                verifierValidationLignes();
+            }
+            return;
+        }
+
+        // 3. Annulation de l'import
+        var btnAnnuler = e.target.closest('#btn-annuler-import');
+        if (btnAnnuler) {
+            zone.innerHTML = '';
+            etape.classList.add('d-none');
+            if (champFichier) { champFichier.value = ''; }
+            if (labelDropzone) { labelDropzone.textContent = '{{ __("Glissez votre fichier ici ou cliquez pour choisir") }}'; }
+            if (dropzone) { dropzone.classList.remove('has-file'); }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            return;
+        }
+    });
+
+    /* ── Etape 3 : confirmation de l'importation définitive ──────── */
+
     zone.addEventListener('click', function (e) {
         var b = e.target.closest('#btn-confirmer-import');
 
         if (!b) { return; }
 
+        // Récupération de toutes les lignes du DataTable
+        var rows = zone.querySelectorAll('.row-task');
+        if (rows.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: '{{ __("Aucune tâche") }}',
+                text: '{{ __("Il n'y a aucune tâche à importer.") }}',
+                showConfirmButton: true
+            });
+            return;
+        }
+
+        var tasksData = [];
+        var hasError = false;
+
+        rows.forEach(function (row, idx) {
+            var heading = (row.querySelector('.field-heading') ? row.querySelector('.field-heading').value.trim() : '');
+            var projectId = (row.querySelector('.field-project') ? row.querySelector('.field-project').value : '');
+            var categoryId = (row.querySelector('.field-category') ? row.querySelector('.field-category').value : '');
+            var statusId = (row.querySelector('.field-status') ? row.querySelector('.field-status').value : '');
+            var priority = (row.querySelector('.field-priority') ? row.querySelector('.field-priority').value : 'medium');
+            var startDate = (row.querySelector('.field-start-date') ? row.querySelector('.field-start-date').value.trim() : '');
+            var dueDate = (row.querySelector('.field-due-date') ? row.querySelector('.field-due-date').value.trim() : '');
+            var description = (row.querySelector('.field-description') ? row.querySelector('.field-description').value.trim() : '');
+
+            if (!heading || !startDate) {
+                hasError = true;
+            }
+
+            tasksData.push({
+                numero: idx + 1,
+                heading: heading,
+                project_id: projectId,
+                category_id: categoryId,
+                board_column_id: statusId,
+                priority: priority,
+                start_date: startDate,
+                due_date: dueDate,
+                description: description
+            });
+        });
+
+        if (hasError) {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'error',
+                    title: '{{ __("Données incomplètes") }}',
+                    text: '{{ __("Certaines tâches ont des champs obligatoires manquants (Titre ou Date de début). Veuillez les corriger avant d\'importer.") }}',
+                    showConfirmButton: true
+                });
+            } else {
+                alert('{{ __("Certaines tâches ont des champs obligatoires manquants (Titre ou Date de début). Veuillez les corriger avant d\'importer.") }}');
+            }
+            return;
+        }
+
         b.disabled = true;
         b.innerHTML = '<i class="fa fa-spinner fa-spin mr-1"></i> {{ __("Importation en cours") }}';
 
-        var d = new FormData();
-        d.append('_token', '{{ csrf_token() }}');
-        d.append('jeton',  b.dataset.jeton);
-
-        /* Transmet le meme projet par defaut : la confirmation relit
-           le fichier conserve cote serveur, elle doit le relire dans
-           les memes termes que l'analyse. */
-        var projetSelect = document.getElementById('projet_defaut');
-        d.append('projet_defaut', projetSelect ? projetSelect.value : '');
-
-        fetch('{{ route("tasks.import.process") }}', {
+        fetch('{{ route("tasks.import.process", [], false) }}', {
             method : 'POST',
-            body   : d,
+            body   : JSON.stringify({
+                _token: '{{ csrf_token() }}',
+                jeton: b.dataset.jeton,
+                tasks: tasksData
+            }),
             headers: {
+                'Content-Type'    : 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
                 'Accept'          : 'application/json'
             }
@@ -292,24 +446,37 @@
         .then(parseJson)
         .then(function (r) {
             if (r.corps && r.corps.status === 'success') {
-                /* Redirection vers le tableau de bord des taches. */
-                window.location.href = r.corps.redirectUrl || '{{ route("taskboards.index") }}';
+                /* Notification de succès et redirection */
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '{{ __("Importation réussie") }}',
+                        text: r.corps.message || '{{ __("Les tâches ont été importées avec succès.") }}',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(function () {
+                        window.location.href = r.corps.redirectUrl || '{{ route("taskboards.index") }}';
+                    });
+                } else {
+                    window.location.href = r.corps.redirectUrl || '{{ route("taskboards.index") }}';
+                }
                 return;
             }
 
-            /* Echec serveur : on reaffiche le message et on libere le bouton. */
+            /* Échec serveur */
             var msg = (r.corps && r.corps.message)
                 ? r.corps.message
-                : '{{ __("L\'importation a echoue. Veuillez reessayer.") }}';
+                : '{{ __("L\'importation a échoué. Veuillez vérifier les données saisies.") }}';
 
             afficherErreur(msg);
             b.disabled = false;
-            b.innerHTML = '<i class="fa fa-check mr-1"></i> {{ __("Confirmer l\'importation") }}';
+            b.innerHTML = '<i class="fa fa-check-circle mr-1"></i> {{ __("Importer les tâches") }}';
         })
-        .catch(function () {
-            afficherErreur('{{ __("Une erreur reseau est survenue. Verifiez votre connexion et reessayez.") }}');
+        .catch(function (err) {
+            console.error('Erreur import:', err);
+            afficherErreur('{{ __("Une erreur est survenue lors de la communication avec le serveur :") }} ' + (err.message || ''));
             b.disabled = false;
-            b.innerHTML = '<i class="fa fa-check mr-1"></i> {{ __("Confirmer l\'importation") }}';
+            b.innerHTML = '<i class="fa fa-check-circle mr-1"></i> {{ __("Importer les tâches") }}';
         });
     });
 
