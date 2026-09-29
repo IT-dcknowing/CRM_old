@@ -641,26 +641,41 @@ class TaskController extends AccountBaseController
             // Si des tâches modifiées sont transmises directement via le DataTable
             $tachesModifiees = $request->input('tasks');
 
-            if (is_array($tachesModifiees) && !empty($tachesModifiees)) {
-                // Validation de base des tâches éditées
+            if (is_array($tachesModifiees)) {
+                if (empty($tachesModifiees)) {
+                    return response()->json(
+                        Reply::error(__('Aucune tâche à importer.')),
+                        422
+                    );
+                }
+
+                // Validation de base des tâches éditées et manuelles
                 $tachesValides = [];
                 $erreurs = [];
 
                 foreach ($tachesModifiees as $idx => $t) {
                     $ligneNum = $t['numero'] ?? ($idx + 1);
                     $titre = trim((string)($t['heading'] ?? ''));
+                    $dateDebut = trim((string)($t['start_date'] ?? ''));
 
                     if ($titre === '') {
                         $erreurs[] = sprintf(__('Ligne %d : le titre de la tâche est obligatoire.'), $ligneNum);
-                        continue;
                     }
 
-                    if (empty($t['start_date'])) {
+                    if ($dateDebut === '') {
                         $erreurs[] = sprintf(__('Ligne %d : la date de début est obligatoire.'), $ligneNum);
-                        continue;
                     }
 
-                    $tachesValides[] = $t;
+                    if ($titre !== '' && $dateDebut !== '') {
+                        $tachesValides[] = $t;
+                    }
+                }
+
+                if (!empty($erreurs)) {
+                    return response()->json(
+                        Reply::error(implode('<br>', $erreurs)),
+                        422
+                    );
                 }
 
                 if (empty($tachesValides)) {
@@ -670,15 +685,38 @@ class TaskController extends AccountBaseController
                     );
                 }
 
-                $creees = $this->creerTachesDepuisDonneesEditables($tachesValides);
+                $resultatCreation = $this->creerTachesDepuisDonneesEditables($tachesValides);
+                $creees   = $resultatCreation->creees;
+                $ignorees = $resultatCreation->ignorees;
 
                 if ($chemin && is_file($chemin)) {
                     @unlink($chemin);
                 }
 
+                if ($creees === 0 && $ignorees > 0) {
+                    return response()->json(
+                        Reply::error(
+                            $ignorees === 1
+                                ? __('La tâche n\'a pas été importée car elle existe déjà en base.')
+                                : sprintf(__('Aucune tâche importée : les %d tâches existent déjà en base.'), $ignorees)
+                        ),
+                        422
+                    );
+                }
+
+                $message = sprintf(__('%d tâches ont été importées avec succès.'), $creees);
+                if ($ignorees > 0) {
+                    $message .= ' ' . sprintf(
+                        $ignorees === 1
+                            ? __('(%d tâche ignorée car déjà existante.)')
+                            : __('(%d tâches ignorées car déjà existantes.)'),
+                        $ignorees
+                    );
+                }
+
                 return response()->json(
                     Reply::successWithData(
-                        sprintf(__('%d tâches ont été importées avec succès.'), $creees),
+                        $message,
                         ['creees' => $creees, 'redirectUrl' => route('taskboards.index')]
                     )
                 );

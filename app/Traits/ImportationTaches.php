@@ -449,9 +449,9 @@ trait ImportationTaches
      * Valide et crée les tâches à partir des données éditées dans le DataTable.
      *
      * @param array $lignesDonnees Tableau de lignes envoyées depuis l'interface
-     * @return int Nombre de tâches créées
+     * @return object Objet contenant 'creees' et 'ignorees'
      */
-    protected function creerTachesDepuisDonneesEditables(array $lignesDonnees): int
+    protected function creerTachesDepuisDonneesEditables(array $lignesDonnees): object
     {
         $societe = company()->id;
         $projetsValides = DB::table('projects')
@@ -466,18 +466,70 @@ trait ImportationTaches
         $statutDefaut = TaskboardColumn::where('slug', 'incomplete')->first() ?? TaskboardColumn::first();
 
         $attente = TaskboardColumn::waitingForApprovalColumn();
-        $creees = 0;
+        $creees   = 0;
+        $ignorees = 0;
         $comptageParProjet = [];
         $aNotifier = [];
 
+        $doublonsImportCourant = [];
+
         DB::transaction(function () use (
             $lignesDonnees, $projetsValides, $categoriesValides, $statutsValides,
-            $statutDefaut, $attente, &$creees, &$aNotifier, &$comptageParProjet
+            $statutDefaut, $attente, &$creees, &$ignorees, &$aNotifier, &$comptageParProjet,
+            &$doublonsImportCourant
         ) {
             foreach ($lignesDonnees as $index => $item) {
                 $titre = trim((string)($item['heading'] ?? ''));
                 if ($titre === '') {
-                    continue; // Skip lines without title if any slipped through
+                    continue;
+                }
+
+                // Projet
+                $projectId = !empty($item['project_id']) && isset($projetsValides[$item['project_id']])
+                    ? (int)$item['project_id']
+                    : null;
+
+                /* ── Déduplication basée sur le libellé ──────────────────────────
+                   Une tâche est considérée comme un doublon si une tâche
+                   portant le même libellé (titre / heading) existe déjà
+                   pour ce projet (ou sans projet) dans l'entreprise,
+                   indépendamment des dates de début/fin ou du créateur.
+
+                   On vérifie également les doublons au sein du même lot
+                   d'import (même libellé + même projet). ─────────────────────── */
+                $cleDoublon = mb_strtolower($titre) . '|' . ($projectId ?? 'sans_projet');
+
+                // 1. Doublon dans le lot courant
+                if (in_array($cleDoublon, $doublonsImportCourant, true)) {
+                    Log::info('Import taches : doublon dans le lot ignoré — « ' . $titre . ' »');
+                    $ignorees++;
+                    continue;
+                }
+                $doublonsImportCourant[] = $cleDoublon;
+
+                // 2. Doublon avec la base existante (vérification par libellé)
+                $dejaExistant = Task::where(function ($query) use ($projectId) {
+                        if ($projectId) {
+                            $query->where('project_id', $projectId);
+                        } else {
+                            $query->whereNull('project_id');
+                        }
+                    })
+                    ->whereRaw('LOWER(TRIM(heading)) = ?', [mb_strtolower($titre)])
+                    ->exists();
+
+                if ($dejaExistant) {
+                    Log::info('Import taches : tâche avec même libellé déjà existante ignorée — « ' . $titre . ' »');
+                    $ignorees++;
+                    continue;
+                }
+
+                // Dates
+                $dateDebut = $this->lireDate($item['start_date'] ?? null) ?: now()->startOfDay();
+                $dateFin   = $this->lireDate($item['due_date'] ?? null);
+
+                if ($dateFin && $dateFin->lt($dateDebut)) {
+                    $dateFin = $dateDebut->copy();
                 }
 
                 $task = new Task();
@@ -485,21 +537,8 @@ trait ImportationTaches
                 $description = trim((string)($item['description'] ?? ''));
                 $task->description = $description !== '' ? $description : null;
 
-                // Dates
-                $dateDebut = $this->lireDate($item['start_date'] ?? null) ?: now()->startOfDay();
-                $dateFin = $this->lireDate($item['due_date'] ?? null);
-
-                if ($dateFin && $dateFin->lt($dateDebut)) {
-                    $dateFin = $dateDebut->copy();
-                }
-
                 $task->start_date = $dateDebut;
-                $task->due_date = $dateFin;
-
-                // Projet
-                $projectId = !empty($item['project_id']) && isset($projetsValides[$item['project_id']])
-                    ? (int)$item['project_id']
-                    : null;
+                $task->due_date   = $dateFin;
                 $task->project_id = $projectId;
 
                 // Catégorie
@@ -523,7 +562,7 @@ trait ImportationTaches
                 request()->merge(['board_column_id' => $boardColumnId]);
                 $task->approval_send = ($attente && $boardColumnId === $attente->id) ? 1 : 0;
                 $task->is_private = 0;
-                $task->billable = 0;
+                $task->billable   = 0;
 
                 // Short code
                 if ($projectId) {
@@ -542,6 +581,7 @@ trait ImportationTaches
                     }
                 }
 
+                $task->created_by = user()->id;
                 $task->save();
 
                 /* Sécurité stricte : L'utilisateur connecté est SYSTÉMATIQUEMENT
@@ -569,7 +609,7 @@ trait ImportationTaches
         request()->request->remove('board_column_id');
         $this->notifierAffectations($aNotifier);
 
-        return $creees;
+        return (object) ['creees' => $creees, 'ignorees' => $ignorees];
     }
 
     /**
@@ -585,20 +625,48 @@ trait ImportationTaches
         $attente = TaskboardColumn::waitingForApprovalColumn();
         $creees = 0;
         $comptageParProjet = [];
+        $doublonsImportCourant = [];
 
         /* Les taches creees et leurs destinataires, retenus pour
            notifier une fois la transaction close : un courriel parti
            depuis une transaction qui echoue serait un mensonge. */
         $aNotifier = [];
 
-        DB::transaction(function () use ($lignes, $attente, &$creees, &$aNotifier, &$comptageParProjet) {
+        DB::transaction(function () use ($lignes, $attente, &$creees, &$aNotifier, &$comptageParProjet, &$doublonsImportCourant) {
             foreach ($lignes as $l) {
+                $titre = trim((string)($l->titre ?? ''));
+                if ($titre === '') {
+                    continue;
+                }
+
+                $projectId = $l->projet?->id ?? null;
+                $cleDoublon = mb_strtolower($titre) . '|' . ($projectId ?? 'sans_projet');
+
+                if (in_array($cleDoublon, $doublonsImportCourant, true)) {
+                    continue;
+                }
+                $doublonsImportCourant[] = $cleDoublon;
+
+                $dejaExistant = Task::where(function ($query) use ($projectId) {
+                        if ($projectId) {
+                            $query->where('project_id', $projectId);
+                        } else {
+                            $query->whereNull('project_id');
+                        }
+                    })
+                    ->whereRaw('LOWER(TRIM(heading)) = ?', [mb_strtolower($titre)])
+                    ->exists();
+
+                if ($dejaExistant) {
+                    continue;
+                }
+
                 $task = new Task();
-                $task->heading = $l->titre;
+                $task->heading = $titre;
                 $task->description = $l->description !== '' ? $l->description : null;
                 $task->start_date = $l->debut;
                 $task->due_date = $l->fin;
-                $task->project_id = $l->projet?->id ?? null;
+                $task->project_id = $projectId;
                 $task->task_category_id = $l->categorie?->id ?? null;
                 $task->priority = $l->priorite ?? 'medium';
                 $task->board_column_id = $l->statut->id;

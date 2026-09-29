@@ -173,6 +173,8 @@
         zone    = document.getElementById('zone-apercu'),
         bouton  = document.getElementById('btn-analyser');
 
+    var nextRowIndex = 1000;
+
     if (!form) { return; }
 
     /* Zone de depot : met a jour le libelle quand un fichier est choisi */
@@ -196,10 +198,15 @@
         etape.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    /* Initialise les datepickers dans la zone de prévisualisation */
-    function initDatepickers() {
+    /* Initialise les datepickers dans un conteneur donné */
+    function initDatepickers(container) {
+        var target = container || zone;
         if (typeof datepicker === 'function') {
-            zone.querySelectorAll('.import-datepicker').forEach(function (el) {
+            target.querySelectorAll('.import-datepicker').forEach(function (el) {
+                if (el.dataset.datepickerInitialized === 'true') {
+                    return;
+                }
+                el.dataset.datepickerInitialized = 'true';
                 datepicker(el, {
                     position: 'bl',
                     ...(typeof datepickerConfig !== 'undefined' ? datepickerConfig : {}),
@@ -208,6 +215,35 @@
                     }
                 });
             });
+        }
+    }
+
+    /* Met à jour la numérotation des lignes et le compteur global */
+    function mettreAJourNumerotation() {
+        var rows = zone.querySelectorAll('.row-task');
+        var total = rows.length;
+
+        rows.forEach(function (row, idx) {
+            var num = idx + 1;
+            var numSpan = row.querySelector('.row-num');
+            var numInput = row.querySelector('.field-numero');
+            if (numSpan) { numSpan.textContent = num; }
+            if (numInput) { numInput.value = num; }
+        });
+
+        var countTotalNumEl = document.getElementById('count-total-num');
+        var countTotalTextEl = document.getElementById('count-total-text');
+        var noTaskRow = document.getElementById('no-task-row');
+
+        if (countTotalNumEl) { countTotalNumEl.textContent = total; }
+        if (countTotalTextEl) {
+            countTotalTextEl.textContent = total <= 1
+                ? '{{ __("tâche prête à être importée") }}'
+                : '{{ __("tâches prêtes à être importées") }}';
+        }
+
+        if (noTaskRow) {
+            noTaskRow.classList.toggle('d-none', total > 0);
         }
     }
 
@@ -252,12 +288,55 @@
         if (countValidesEl) { countValidesEl.textContent = valides; }
         if (countErreursEl) { countErreursEl.textContent = erreurs; }
         if (badgeErreursEl) {
-            badgeErreursEl.className = 'badge ' + (erreurs > 0 ? 'badge-danger' : 'badge-secondary') + ' px-2 py-1';
+            badgeErreursEl.className = 'badge ' + (erreurs > 0 ? 'badge-danger' : 'badge-secondary') + ' px-2 py-1 f-12';
         }
 
-        var btnImport = document.getElementById('btn-confirmer-import');
-        if (btnImport) {
-            btnImport.disabled = (valides === 0);
+        var btnsImport = zone.querySelectorAll('.btn-confirmer-import');
+        btnsImport.forEach(function (btn) {
+            btn.disabled = (rows.length === 0);
+        });
+    }
+
+    /* Ajoute une nouvelle ligne éditable dans le DataTable */
+    function ajouterNouvelleLigne() {
+        var tpl = document.getElementById('template-nouvelle-tache');
+        var tbody = document.getElementById('tbody-import-tasks');
+
+        if (!tpl || !tbody) { return; }
+
+        var currentRows = tbody.querySelectorAll('.row-task');
+        var newNum = currentRows.length + 1;
+        var newIdx = nextRowIndex++;
+
+        var html = tpl.innerHTML
+            .replace(/__INDEX__/g, newIdx)
+            .replace(/__NUMERO__/g, newNum);
+
+        var tempDiv = document.createElement('tbody');
+        tempDiv.innerHTML = html;
+        var newRow = tempDiv.firstElementChild;
+
+        // Insérer avant la ligne 'no-task-row' si présente
+        var noTaskRow = document.getElementById('no-task-row');
+        if (noTaskRow) {
+            tbody.insertBefore(newRow, noTaskRow);
+        } else {
+            tbody.appendChild(newRow);
+        }
+
+        initDatepickers(newRow);
+        mettreAJourNumerotation();
+        verifierValidationLignes();
+
+        if (typeof $ !== 'undefined' && $.fn.tooltip) {
+            $(newRow).find('[data-toggle="tooltip"]').tooltip();
+        }
+
+        // Focus immédiat sur le titre de la nouvelle tâche
+        var headingInput = newRow.querySelector('.field-heading');
+        if (headingInput) {
+            headingInput.focus();
+            headingInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
     }
 
@@ -314,8 +393,12 @@
             etape.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
             try {
-                initDatepickers();
+                initDatepickers(zone);
+                mettreAJourNumerotation();
                 verifierValidationLignes();
+                if (typeof $ !== 'undefined' && $.fn.tooltip) {
+                    $('[data-toggle="tooltip"]').tooltip();
+                }
             } catch (e) {
                 console.warn('Initialisation partielle du DataTable:', e);
             }
@@ -339,20 +422,29 @@
         }
     });
 
-    // 2. Suppression de ligne
+    // 2. Gestion des clics (Ajout, Suppression, Annulation, Confirmation)
     zone.addEventListener('click', function (e) {
+        // A. Bouton « Ajouter une tâche »
+        var btnAdd = e.target.closest('.btn-ajouter-tache');
+        if (btnAdd) {
+            ajouterNouvelleLigne();
+            return;
+        }
+
+        // B. Suppression de ligne
         var btnDelete = e.target.closest('.btn-delete-row');
         if (btnDelete) {
             var tr = btnDelete.closest('tr');
             if (tr) {
                 tr.remove();
+                mettreAJourNumerotation();
                 verifierValidationLignes();
             }
             return;
         }
 
-        // 3. Annulation de l'import
-        var btnAnnuler = e.target.closest('#btn-annuler-import');
+        // C. Annulation de l'import
+        var btnAnnuler = e.target.closest('.btn-annuler-import');
         if (btnAnnuler) {
             zone.innerHTML = '';
             etape.classList.add('d-none');
@@ -362,122 +454,170 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
             return;
         }
-    });
 
-    /* ── Etape 3 : confirmation de l'importation définitive ──────── */
-
-    zone.addEventListener('click', function (e) {
-        var b = e.target.closest('#btn-confirmer-import');
-
-        if (!b) { return; }
-
-        // Récupération de toutes les lignes du DataTable
-        var rows = zone.querySelectorAll('.row-task');
-        if (rows.length === 0) {
-            Swal.fire({
-                icon: 'warning',
-                title: '{{ __("Aucune tâche") }}',
-                text: '{{ __("Il n'y a aucune tâche à importer.") }}',
-                showConfirmButton: true
-            });
-            return;
-        }
-
-        var tasksData = [];
-        var hasError = false;
-
-        rows.forEach(function (row, idx) {
-            var heading = (row.querySelector('.field-heading') ? row.querySelector('.field-heading').value.trim() : '');
-            var projectId = (row.querySelector('.field-project') ? row.querySelector('.field-project').value : '');
-            var categoryId = (row.querySelector('.field-category') ? row.querySelector('.field-category').value : '');
-            var statusId = (row.querySelector('.field-status') ? row.querySelector('.field-status').value : '');
-            var priority = (row.querySelector('.field-priority') ? row.querySelector('.field-priority').value : 'medium');
-            var startDate = (row.querySelector('.field-start-date') ? row.querySelector('.field-start-date').value.trim() : '');
-            var dueDate = (row.querySelector('.field-due-date') ? row.querySelector('.field-due-date').value.trim() : '');
-            var description = (row.querySelector('.field-description') ? row.querySelector('.field-description').value.trim() : '');
-
-            if (!heading || !startDate) {
-                hasError = true;
-            }
-
-            tasksData.push({
-                numero: idx + 1,
-                heading: heading,
-                project_id: projectId,
-                category_id: categoryId,
-                board_column_id: statusId,
-                priority: priority,
-                start_date: startDate,
-                due_date: dueDate,
-                description: description
-            });
-        });
-
-        if (hasError) {
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({
-                    icon: 'error',
-                    title: '{{ __("Données incomplètes") }}',
-                    text: '{{ __("Certaines tâches ont des champs obligatoires manquants (Titre ou Date de début). Veuillez les corriger avant d\'importer.") }}',
-                    showConfirmButton: true
-                });
-            } else {
-                alert('{{ __("Certaines tâches ont des champs obligatoires manquants (Titre ou Date de début). Veuillez les corriger avant d\'importer.") }}');
-            }
-            return;
-        }
-
-        b.disabled = true;
-        b.innerHTML = '<i class="fa fa-spinner fa-spin mr-1"></i> {{ __("Importation en cours") }}';
-
-        fetch('{{ route("tasks.import.process", [], false) }}', {
-            method : 'POST',
-            body   : JSON.stringify({
-                _token: '{{ csrf_token() }}',
-                jeton: b.dataset.jeton,
-                tasks: tasksData
-            }),
-            headers: {
-                'Content-Type'    : 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept'          : 'application/json'
-            }
-        })
-        .then(parseJson)
-        .then(function (r) {
-            if (r.corps && r.corps.status === 'success') {
-                /* Notification de succès et redirection */
+        // D. Confirmation de l'importation définitive
+        var b = e.target.closest('.btn-confirmer-import');
+        if (b) {
+            var rows = zone.querySelectorAll('.row-task');
+            if (rows.length === 0) {
                 if (typeof Swal !== 'undefined') {
                     Swal.fire({
-                        icon: 'success',
-                        title: '{{ __("Importation réussie") }}',
-                        text: r.corps.message || '{{ __("Les tâches ont été importées avec succès.") }}',
-                        timer: 1500,
-                        showConfirmButton: false
-                    }).then(function () {
-                        window.location.href = r.corps.redirectUrl || '{{ route("taskboards.index") }}';
+                        icon: 'warning',
+                        title: '{{ __("Aucune tâche") }}',
+                        text: '{{ __("Il n'y a aucune tâche à importer. Cliquez sur \"Ajouter une tâche\" pour en créer une.") }}',
+                        showConfirmButton: true
                     });
                 } else {
-                    window.location.href = r.corps.redirectUrl || '{{ route("taskboards.index") }}';
+                    alert('{{ __("Il n'y a aucune tâche à importer.") }}');
                 }
                 return;
             }
 
-            /* Échec serveur */
-            var msg = (r.corps && r.corps.message)
-                ? r.corps.message
-                : '{{ __("L\'importation a échoué. Veuillez vérifier les données saisies.") }}';
+            var tasksData = [];
+            var erreursList = [];
+            var firstInvalidInput = null;
 
-            afficherErreur(msg);
-            b.disabled = false;
-            b.innerHTML = '<i class="fa fa-check-circle mr-1"></i> {{ __("Importer les tâches") }}';
-        })
-        .catch(function (err) {
-            console.error('Erreur import:', err);
-            afficherErreur('{{ __("Une erreur est survenue lors de la communication avec le serveur :") }} ' + (err.message || ''));
-            b.disabled = false;
-            b.innerHTML = '<i class="fa fa-check-circle mr-1"></i> {{ __("Importer les tâches") }}';
-        });
+            rows.forEach(function (row, idx) {
+                var num = idx + 1;
+                var headingInput = row.querySelector('.field-heading');
+                var startDateInput = row.querySelector('.field-start-date');
+
+                var heading = headingInput ? headingInput.value.trim() : '';
+                var projectId = row.querySelector('.field-project') ? row.querySelector('.field-project').value : '';
+                var categoryId = row.querySelector('.field-category') ? row.querySelector('.field-category').value : '';
+                var statusId = row.querySelector('.field-status') ? row.querySelector('.field-status').value : '';
+                var priority = row.querySelector('.field-priority') ? row.querySelector('.field-priority').value : 'medium';
+                var startDate = startDateInput ? startDateInput.value.trim() : '';
+                var dueDate = row.querySelector('.field-due-date') ? row.querySelector('.field-due-date').value.trim() : '';
+                var description = row.querySelector('.field-description') ? row.querySelector('.field-description').value.trim() : '';
+
+                var rowHasError = false;
+
+                if (!heading) {
+                    erreursList.push('{{ __("Ligne") }} ' + num + ' : {{ __("le titre de la tâche est obligatoire.") }}');
+                    if (headingInput) {
+                        headingInput.classList.add('is-invalid');
+                        if (!firstInvalidInput) { firstInvalidInput = headingInput; }
+                    }
+                    rowHasError = true;
+                }
+
+                if (!startDate) {
+                    erreursList.push('{{ __("Ligne") }} ' + num + ' : {{ __("la date de début est obligatoire.") }}');
+                    if (startDateInput) {
+                        startDateInput.classList.add('is-invalid');
+                        if (!firstInvalidInput) { firstInvalidInput = startDateInput; }
+                    }
+                    rowHasError = true;
+                }
+
+                if (rowHasError) {
+                    row.classList.add('table-warning');
+                }
+
+                tasksData.push({
+                    numero: num,
+                    heading: heading,
+                    project_id: projectId,
+                    category_id: categoryId,
+                    board_column_id: statusId,
+                    priority: priority,
+                    start_date: startDate,
+                    due_date: dueDate,
+                    description: description
+                });
+            });
+
+            if (erreursList.length > 0) {
+                var errorHtml = '<div class="text-left"><ul class="mb-0 pl-3">' + erreursList.slice(0, 10).map(function (err) {
+                    return '<li>' + err + '</li>';
+                }).join('') + (erreursList.length > 10 ? '<li><em>... {{ __("et d\'autres erreurs.") }}</em></li>' : '') + '</ul></div>';
+
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: '{{ __("Données incomplètes") }}',
+                        html: errorHtml,
+                        showConfirmButton: true
+                    });
+                } else {
+                    alert(erreursList.join('\n'));
+                }
+
+                if (firstInvalidInput) {
+                    firstInvalidInput.focus();
+                    firstInvalidInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                return;
+            }
+
+            var allBtnsImport = zone.querySelectorAll('.btn-confirmer-import');
+            allBtnsImport.forEach(function (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa fa-spinner fa-spin mr-1"></i> {{ __("Importation en cours") }}';
+            });
+
+            fetch('{{ route("tasks.import.process", [], false) }}', {
+                method : 'POST',
+                body   : JSON.stringify({
+                    _token: '{{ csrf_token() }}',
+                    jeton: b.dataset.jeton,
+                    tasks: tasksData
+                }),
+                headers: {
+                    'Content-Type'    : 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept'          : 'application/json'
+                }
+            })
+            .then(parseJson)
+            .then(function (r) {
+                if (r.corps && r.corps.status === 'success') {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: '{{ __("Importation réussie") }}',
+                            text: r.corps.message || '{{ __("Les tâches ont été importées avec succès.") }}',
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(function () {
+                            window.location.href = r.corps.redirectUrl || '{{ route("taskboards.index") }}';
+                        });
+                    } else {
+                        window.location.href = r.corps.redirectUrl || '{{ route("taskboards.index") }}';
+                    }
+                    return;
+                }
+
+                var msg = (r.corps && r.corps.message)
+                    ? r.corps.message
+                    : '{{ __("L\'importation a échoué. Veuillez vérifier les données saisies.") }}';
+
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: '{{ __("Erreur lors de l\'importation") }}',
+                        html: msg,
+                        showConfirmButton: true
+                    });
+                } else {
+                    afficherErreur(msg);
+                }
+
+                allBtnsImport.forEach(function (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa fa-check-circle mr-1"></i> {{ __("Importer les tâches") }}';
+                });
+            })
+            .catch(function (err) {
+                console.error('Erreur import:', err);
+                afficherErreur('{{ __("Une erreur est survenue lors de la communication avec le serveur :") }} ' + (err.message || ''));
+                allBtnsImport.forEach(function (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa fa-check-circle mr-1"></i> {{ __("Importer les tâches") }}';
+                });
+            });
+        }
     });
 
 })();
