@@ -573,41 +573,41 @@ class TaskController extends AccountBaseController
     }
 
     /**
-     * Analyse le fichier et renvoie l'apercu, sans rien enregistrer.
+     * Analyse le fichier et renvoie l'apercu éditable, sans rien enregistrer.
      */
     public function importTaskAnalyse(Request $request)
     {
         abort_403(!in_array(user()->permission('add_tasks'), ['all', 'added']));
 
-        /* Les tableurs que PhpSpreadsheet sait lire. Le PDF en est
-           volontairement absent : il decrit une mise en page, pas des
-           lignes et des colonnes, et rien n'y distingue une cellule
-           vide d'un blanc typographique. Mieux vaut le dire que de
-           laisser croire a un incident. */
         $request->validate(
             ['import_file' => 'required|file|mimes:xlsx,xls,csv,ods'],
             ['import_file.mimes' => __('Ce format de fichier ne peut pas être lu. Déposez un tableur : xlsx, xls, ods ou csv. Un PDF ou une image ne peuvent pas être importés.')],
             ['import_file' => __('Fichier')]
         );
-                try{                                                                     
-        /* Deplace d'emblee vers un chemin du projet : Excel lit le fichier
-           via realpath(), peu fiable sur le fichier temporaire de PHP
-           (sous C:\Windows\Temp sur cet environnement). Un chemin dans
-           storage/ leve l'ambiguite, et sert aussi de conservation pour
-           la confirmation (voir importTaskProcess). */
-        $jeton = 'import-taches-' . user()->id . '-' . time() . '.'
-            . $request->file('import_file')->getClientOriginalExtension();
 
-        $chemin = $request->file('import_file')
-            ->move(storage_path('app/imports-taches'), $jeton)
-            ->getPathname();
+        try {
+            $jeton = 'import-taches-' . user()->id . '-' . time() . '.'
+                . $request->file('import_file')->getClientOriginalExtension();
 
-        $resultat = $this->analyserFichierTaches($chemin, $this->projetDefautChoisi($request));
+            $chemin = $request->file('import_file')
+                ->move(storage_path('app/imports-taches'), $jeton)
+                ->getPathname();
 
-        if ($resultat->total === 0) {
-            @unlink($chemin);
-            $jeton = null;
-        }
+            $resultat = $this->analyserFichierTaches($chemin, $this->projetDefautChoisi($request));
+
+            if ($resultat->total === 0) {
+                @unlink($chemin);
+                $jeton = null;
+            }
+
+            // Référentiels pour le DataTable éditable
+            $societe = company()->id;
+            $this->projets = Project::where('company_id', $societe)
+                ->orderBy('project_name')->get(['id', 'project_name']);
+            $this->categories = TaskCategory::where('company_id', $societe)
+                ->orderBy('category_name')->get(['id', 'category_name']);
+            $this->statuts = TaskboardColumn::orderBy('priority')->get(['id', 'column_name', 'slug', 'label_color']);
+            $this->nomFichier = $request->file('import_file')->getClientOriginalName();
 
             $this->resultat = $resultat;
             $this->jeton = $jeton;
@@ -615,7 +615,7 @@ class TaskController extends AccountBaseController
             return Reply::dataOnly([
                 'status' => 'success',
                 'html' => view('tasks.ajax.import_apercu', $this->data)->render(),
-                'peutImporter' => $resultat->ok && $resultat->total > 0,
+                'peutImporter' => $resultat->total > 0,
             ]);
         }
         catch (\Throwable $e) {
@@ -628,7 +628,7 @@ class TaskController extends AccountBaseController
     }
 
     /**
-     * Cree les taches, apres une nouvelle analyse du fichier conserve.
+     * Cree les taches en base à partir des données éditées dans le DataTable.
      */
     public function importTaskProcess(Request $request)
     {
@@ -636,20 +636,101 @@ class TaskController extends AccountBaseController
 
         try {
             $jeton = basename((string) $request->jeton);
-            $chemin = storage_path('app/imports-taches/' . $jeton);
+            $chemin = $jeton ? storage_path('app/imports-taches/' . $jeton) : null;
 
-            if (!$jeton || !is_file($chemin)) {
+            // Si des tâches modifiées sont transmises directement via le DataTable
+            $tachesModifiees = $request->input('tasks');
+
+            if (is_array($tachesModifiees)) {
+                if (empty($tachesModifiees)) {
+                    return response()->json(
+                        Reply::error(__('Aucune tâche à importer.')),
+                        422
+                    );
+                }
+
+                // Validation de base des tâches éditées et manuelles
+                $tachesValides = [];
+                $erreurs = [];
+
+                foreach ($tachesModifiees as $idx => $t) {
+                    $ligneNum = $t['numero'] ?? ($idx + 1);
+                    $titre = trim((string)($t['heading'] ?? ''));
+                    $dateDebut = trim((string)($t['start_date'] ?? ''));
+
+                    if ($titre === '') {
+                        $erreurs[] = sprintf(__('Ligne %d : le titre de la tâche est obligatoire.'), $ligneNum);
+                    }
+
+                    if ($dateDebut === '') {
+                        $erreurs[] = sprintf(__('Ligne %d : la date de début est obligatoire.'), $ligneNum);
+                    }
+
+                    if ($titre !== '' && $dateDebut !== '') {
+                        $tachesValides[] = $t;
+                    }
+                }
+
+                if (!empty($erreurs)) {
+                    return response()->json(
+                        Reply::error(implode('<br>', $erreurs)),
+                        422
+                    );
+                }
+
+                if (empty($tachesValides)) {
+                    return response()->json(
+                        Reply::error(__('Aucune tâche valide à importer. Veuillez renseigner au moins un titre et une date de début.')),
+                        422
+                    );
+                }
+
+                $resultatCreation = $this->creerTachesDepuisDonneesEditables($tachesValides);
+                $creees   = $resultatCreation->creees;
+                $ignorees = $resultatCreation->ignorees;
+
+                if ($chemin && is_file($chemin)) {
+                    @unlink($chemin);
+                }
+
+                if ($creees === 0 && $ignorees > 0) {
+                    return response()->json(
+                        Reply::error(
+                            $ignorees === 1
+                                ? __('La tâche n\'a pas été importée car elle existe déjà en base.')
+                                : sprintf(__('Aucune tâche importée : les %d tâches existent déjà en base.'), $ignorees)
+                        ),
+                        422
+                    );
+                }
+
+                $message = sprintf(__('%d tâches ont été importées avec succès.'), $creees);
+                if ($ignorees > 0) {
+                    $message .= ' ' . sprintf(
+                        $ignorees === 1
+                            ? __('(%d tâche ignorée car déjà existante.)')
+                            : __('(%d tâches ignorées car déjà existantes.)'),
+                        $ignorees
+                    );
+                }
+
+                return response()->json(
+                    Reply::successWithData(
+                        $message,
+                        ['creees' => $creees, 'redirectUrl' => route('taskboards.index')]
+                    )
+                );
+            }
+
+            // Fallback : import direct depuis le fichier conservé si aucune donnée JSON
+            if (!$jeton || !$chemin || !is_file($chemin)) {
                 return response()->json(
                     Reply::error(__('Le fichier importé est introuvable. Recommencez.')), 422
                 );
             }
 
-            /* Deuxieme analyse : l'apercu affiche n'est pas une autorisation,
-               et le fichier a pu changer entre-temps. */
             $resultat = $this->analyserFichierTaches($chemin, $this->projetDefautChoisi($request));
 
-            /* Fichier illisible, en-tete incomplet, trop de lignes : il n'y a
-               rien a sauver, le message de l'analyse dit quoi. */
             if ($resultat->total === 0) {
                 @unlink($chemin);
 
@@ -660,10 +741,6 @@ class TaskController extends AccountBaseController
                 );
             }
 
-            /* Import partiel : les lignes correctes passent, les autres sont
-               laissees de cote. Reprendre le fichier corrige ensuite ne cree
-               pas de doublon : les taches deja enregistrees sont reconnues
-               par leur empreinte et rejoignent les lignes ignorees. */
             $valides = array_values(array_filter(
                 $resultat->lignes, fn($l) => empty($l->erreurs)
             ));
@@ -683,7 +760,7 @@ class TaskController extends AccountBaseController
 
             return response()->json(
                 Reply::successWithData(
-                    sprintf(__('%d tâches ont été importées.'), $creees),
+                    sprintf(__('%d tâches ont été importées avec succès.'), $creees),
                     ['creees' => $creees, 'redirectUrl' => route('taskboards.index')]
                 )
             );
@@ -693,7 +770,7 @@ class TaskController extends AccountBaseController
             ]);
 
             return response()->json(
-                Reply::error(__('Une erreur est survenue lors de l\'importation. Veuillez réessayer.')),
+                Reply::error(__('Une erreur est survenue lors de l\'importation : ') . $e->getMessage()),
                 500
             );
         }
