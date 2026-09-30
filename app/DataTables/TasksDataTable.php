@@ -496,6 +496,84 @@ class TasksDataTable extends BaseDataTable
                 }
                 );
             }
+
+            /*
+             * REGLE DE CONFIDENTIALITE DES TACHES ENTRE COLLABORATEURS
+             *
+             * Un collaborateur (non-admin) ne doit voir que les taches qui
+             * le concernent directement, quelle que soit sa permission
+             * view_tasks (meme 'all') :
+             *   - les taches qu'il a creees (added_by = user_id)
+             *   - les taches qui lui sont assignees (task_users.user_id)
+             *   - les taches ou il est mentionne (mention_users.user_id)
+             *
+             * Seuls les utilisateurs ADMIN conservent la visibilite globale.
+             *
+             * Cette restriction s'applique avant les filtres de permission
+             * (owned/added/both) et les complete sans les remplacer.
+             */
+            if ($this->projectView == false
+                && !in_array('client', user_roles())
+                && !($request->has('project_admin') && $request->project_admin == 1)
+            ) {
+                // REGLE STRICTE : un employé ne voit QUE les tâches qu'il a créées
+                // ou qui lui sont assignées / où il est mentionné.
+                // On n'ajoute PAS orWhereDoesntHave('users') ici car cela ferait
+                // apparaître les tâches non-assignées d'AUTRES employés.
+                $model->where(function ($q) {
+                    $q->where('task_users.user_id', user()->id)
+                      ->orWhere('tasks.added_by', user()->id)
+                      ->orWhere('mention_users.user_id', user()->id);
+                });
+            }
+
+            // Filtres de permission secondaires (owned/added/both).
+            if (($request->has('project_admin') && $request->project_admin != 1) || !$request->has('project_admin')) {
+                if ($this->viewTaskPermission == 'owned' && $this->projectView == false) {
+                    $model->where(
+                        function ($q) use ($request) {
+                        $q->where('task_users.user_id', '=', user()->id);
+                        $q->orWhere('mention_users.user_id', user()->id);
+
+                        if (in_array('client', user_roles())) {
+                            $q->orWhere('projects.client_id', '=', user()->id);
+                        }
+                    }
+                    );
+
+                    if ($projectId != 0 && $projectId != null && $projectId != 'all' && !in_array('client', user_roles())) {
+                        $model->where(
+                            function ($q) {
+                            $q->where('projects.project_admin', '<>', user()->id)
+                                ->orWhere('mention_users.user_id', user()->id);
+                        }
+                        );
+                    }
+                }
+
+                if ($this->viewTaskPermission == 'added' && $this->projectView == false) {
+                    $model->where(
+                        function ($q) {
+                        $q->where('tasks.added_by', '=', user()->id)
+                            ->orWhere('mention_users.user_id', user()->id);
+                    }
+                    );
+                }
+
+                if ($this->viewTaskPermission == 'both' && $this->projectView == false) {
+                    $model->where(
+                        function ($q) use ($request) {
+                        $q->where('task_users.user_id', '=', user()->id);
+                        $q->orWhere('tasks.added_by', '=', user()->id)
+                            ->orWhere('mention_users.user_id', user()->id);
+
+                        if (in_array('client', user_roles())) {
+                            $q->orWhere('projects.client_id', '=', user()->id);
+                        }
+                    }
+                    );
+                }
+            }
         }
 
         if ($request->assignedTo == 'unassigned' && $this->viewUnassignedTasksPermission == 'all' && !in_array('client', user_roles())) {

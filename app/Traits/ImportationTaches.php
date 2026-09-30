@@ -129,7 +129,8 @@ trait ImportationTaches
         $manquantes = [];
 
         foreach (TaskImport::colonnes() as $c) {
-            if ($this->positionColonne($c, $normalise) === null) {
+            // Seules les colonnes marquées comme obligatoires sont bloquantes
+            if (!empty($c['requis']) && $this->positionColonne($c, $normalise) === null) {
                 $manquantes[] = $c['nom'];
             }
         }
@@ -161,10 +162,20 @@ trait ImportationTaches
     private function positionColonne(array $colonne, array $entetesNormalises): ?int
     {
         foreach (TaskImport::intitulesAcceptes($colonne) as $intitule) {
-            $p = array_search($this->normaliser($intitule), $entetesNormalises, true);
+            $normIntitule = $this->normaliser($intitule);
 
+            // 1. Correspondance exacte
+            $p = array_search($normIntitule, $entetesNormalises, true);
             if ($p !== false) {
                 return $p;
+            }
+
+            // 2. Correspondance souple (sans astérisques, parenthèses ou deux-points éventuels dans l'Excel)
+            foreach ($entetesNormalises as $idx => $entete) {
+                $enteteEpure = trim(preg_replace('/[\*\(\)\:]+/', '', $entete));
+                if ($enteteEpure === $normIntitule) {
+                    return $idx;
+                }
             }
         }
 
@@ -385,42 +396,88 @@ trait ImportationTaches
     /**
      * Lit une date au format de la societe, aux formats courants, ou au
      * numero de serie d'Excel — une cellule formatee en date arrive
-     * souvent sous forme de nombre.
+     * souvent sous forme de nombre ou de DateTime.
      */
     private function lireDate($valeur): ?Carbon
     {
+        if ($valeur === null) {
+            return null;
+        }
+
+        if ($valeur instanceof \DateTimeInterface) {
+            return Carbon::instance($valeur)->startOfDay();
+        }
+
         $valeur = trim((string) $valeur);
+        $valeur = str_replace(["Â ", "â€¯", "\xc2\xa0"], ' ', $valeur);
+        $valeur = trim($valeur);
 
         if ($valeur === '') {
             return null;
         }
 
-        if (is_numeric($valeur) && (float) $valeur > 20000) {
+        // Si c'est un numéro de série Excel (ex: 45564)
+        if (is_numeric($valeur) && (float) $valeur > 20000 && (float) $valeur < 100000) {
             try {
                 return Carbon::instance(
                     \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject((float) $valeur)
                 )->startOfDay();
             }
             catch (\Throwable $e) {
-                return null;
+                // continuer vers le parsing de chaîne
             }
         }
 
-        $formats = array_unique([
-            company()->date_format, 'd/m/Y', 'd-m-Y', 'Y-m-d', 'd.m.Y', 'm/d/Y',
-        ]);
+        // Nettoyer l'éventuelle heure si présente pour tester les formats date purs (ex: "2026-09-29 00:00:00" -> "2026-09-29")
+        $dateSansHeure = preg_replace('/\s+[0-9]{1,2}:[0-9]{1,2}(:[0-9]{1,2})?(\.[0-9]+)?$/', '', $valeur);
+        $dateSansHeure = preg_replace('/T[0-9]{1,2}:[0-9]{1,2}(:[0-9]{1,2})?.*$/i', '', $dateSansHeure);
+        $dateSansHeure = trim($dateSansHeure);
 
-        foreach ($formats as $f) {
-            try {
-                $d = Carbon::createFromFormat($f, $valeur);
+        $formats = array_filter(array_unique([
+            company()->date_format ?? null,
+            'd/m/Y', 'd-m-Y', 'Y-m-d', 'd.m.Y', 'm/d/Y', 'Y/m/d',
+            'j/n/Y', 'j-n-Y', 'j.n.Y', 'Y-n-j', 'Y/n/j',
+            'd/m/y', 'd-m-y', 'j/n/y', 'j-n-y',
+            'Y-m-d H:i:s', 'd/m/Y H:i:s', 'd-m-Y H:i:s', 'Y-m-d H:i', 'd/m/Y H:i', 'd-m-Y H:i'
+        ]));
 
-                if ($d && $d->format($f) === $valeur) {
-                    return $d->startOfDay();
+        // 1. Essai avec formats stricts
+        foreach ([$valeur, $dateSansHeure] as $valTest) {
+            if ($valTest === '') continue;
+            foreach ($formats as $f) {
+                try {
+                    $d = Carbon::createFromFormat($f, $valTest);
+                    if ($d && $d->year >= 1970 && $d->year <= 2100) {
+                        return $d->startOfDay();
+                    }
+                }
+                catch (\Throwable $e) {
+                    // format suivant
                 }
             }
-            catch (\Throwable $e) {
-                // format suivant
+        }
+
+        // 2. Essai avec décomposition jour/mois/année
+        if (preg_match('/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})$/', $dateSansHeure !== '' ? $dateSansHeure : $valeur, $m)) {
+            $j = (int)$m[1];
+            $m_ = (int)$m[2];
+            $a = (int)$m[3];
+            if ($a < 100) { $a += 2000; }
+            if (checkdate($m_, $j, $a)) {
+                return Carbon::createFromDate($a, $m_, $j)->startOfDay();
             }
+        }
+
+        // 3. Essai avec Carbon::parse en dernier recours
+        try {
+            $chaineParse = $dateSansHeure !== '' ? $dateSansHeure : $valeur;
+            $d = Carbon::parse($chaineParse);
+            if ($d && $d->year >= 1970 && $d->year <= 2100) {
+                return $d->startOfDay();
+            }
+        }
+        catch (\Throwable $e) {
+            // illisible
         }
 
         return null;
@@ -434,11 +491,12 @@ trait ImportationTaches
         /* Excel prefixe ses « CSV UTF-8 » d'une marque d'ordre des
            octets. Invisible a l'ecran, elle colle a la premiere en-tete
            et la rend introuvable. */
+        $v = preg_replace('/^\xEF\xBB\xBF/', '', $v);
         $v = preg_replace('/^ï»¿/', '', $v);
 
         /* Espaces insecables compris : un copier-coller depuis le web en
            seme, et « Date de début » cesse alors de correspondre. */
-        $v = str_replace(["Â ", "â€¯"], ' ', $v);
+        $v = str_replace(["Â ", "â€¯", "\xc2\xa0"], ' ', $v);
 
         $v = Str::ascii(trim($v));
 

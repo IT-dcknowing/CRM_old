@@ -211,6 +211,7 @@
                     position: 'bl',
                     ...(typeof datepickerConfig !== 'undefined' ? datepickerConfig : {}),
                     onSelect: function (instance, date) {
+                        el.classList.remove('field-missing');
                         verifierValidationLignes();
                     }
                 });
@@ -238,8 +239,8 @@
         if (countTotalNumEl) { countTotalNumEl.textContent = total; }
         if (countTotalTextEl) {
             countTotalTextEl.textContent = total <= 1
-                ? '{{ __("tâche prête à être importée") }}'
-                : '{{ __("tâches prêtes à être importées") }}';
+                ? '{{ __("tâche détectée") }}'
+                : '{{ __("tâches détectées") }}';
         }
 
         if (noTaskRow) {
@@ -247,53 +248,54 @@
         }
     }
 
-    /* Recalcule et met à jour les indicateurs de validation */
+    /* Ajuste la hauteur de tous les textareas auto-extensibles pour afficher tout le texte sans tronquer */
+    function ajusterHauteurTextareas(container) {
+        var target = container || zone;
+        target.querySelectorAll('textarea.dck-auto-expand').forEach(function (ta) {
+            ta.style.height = 'auto';
+            if (ta.scrollHeight > 38) {
+                ta.style.height = (ta.scrollHeight + 4) + 'px';
+            }
+        });
+    }
+
+    /* Met à jour les compteurs et l'état général sans afficher d'erreurs agressives */
     function verifierValidationLignes() {
         var rows = zone.querySelectorAll('.row-task');
-        var valides = 0;
-        var erreurs = 0;
+        var total = rows.length;
+        var incompletes = 0;
 
         rows.forEach(function (row) {
             var headingInput = row.querySelector('.field-heading');
             var startDateInput = row.querySelector('.field-start-date');
-            var isRowValid = true;
 
-            if (!headingInput || !headingInput.value.trim()) {
-                isRowValid = false;
-                if (headingInput) { headingInput.classList.add('is-invalid'); }
-            } else {
-                if (headingInput) { headingInput.classList.remove('is-invalid'); }
+            var heading = headingInput ? headingInput.value.trim() : '';
+            var startDate = startDateInput ? startDateInput.value.trim() : '';
+
+            // Si le champ a été renseigné, retirer la surbrillance
+            if (heading && headingInput) {
+                headingInput.classList.remove('field-missing');
+            }
+            if (startDate && startDateInput) {
+                startDateInput.classList.remove('field-missing');
             }
 
-            if (!startDateInput || !startDateInput.value.trim()) {
-                isRowValid = false;
-                if (startDateInput) { startDateInput.classList.add('is-invalid'); }
-            } else {
-                if (startDateInput) { startDateInput.classList.remove('is-invalid'); }
-            }
-
-            if (isRowValid) {
-                valides++;
-                row.classList.remove('table-warning', 'table-danger');
-            } else {
-                erreurs++;
-                row.classList.add('table-warning');
+            if (!heading || !startDate) {
+                incompletes++;
             }
         });
 
-        var countValidesEl = document.getElementById('count-valides');
-        var countErreursEl = document.getElementById('count-erreurs');
-        var badgeErreursEl = document.getElementById('badge-erreurs');
+        var badgeIncompletesEl = document.getElementById('badge-incompletes');
+        var countIncompletesEl = document.getElementById('count-incompletes');
 
-        if (countValidesEl) { countValidesEl.textContent = valides; }
-        if (countErreursEl) { countErreursEl.textContent = erreurs; }
-        if (badgeErreursEl) {
-            badgeErreursEl.className = 'badge ' + (erreurs > 0 ? 'badge-danger' : 'badge-secondary') + ' px-2 py-1 f-12';
+        if (badgeIncompletesEl && countIncompletesEl) {
+            countIncompletesEl.textContent = incompletes;
+            badgeIncompletesEl.classList.toggle('d-none', incompletes === 0);
         }
 
         var btnsImport = zone.querySelectorAll('.btn-confirmer-import');
         btnsImport.forEach(function (btn) {
-            btn.disabled = (rows.length === 0);
+            btn.disabled = (total === 0);
         });
     }
 
@@ -325,6 +327,7 @@
         }
 
         initDatepickers(newRow);
+        ajusterHauteurTextareas(newRow);
         mettreAJourNumerotation();
         verifierValidationLignes();
 
@@ -394,6 +397,7 @@
 
             try {
                 initDatepickers(zone);
+                ajusterHauteurTextareas(zone);
                 mettreAJourNumerotation();
                 verifierValidationLignes();
                 if (typeof $ !== 'undefined' && $.fn.tooltip) {
@@ -415,8 +419,17 @@
 
     /* ── Écouteurs interactifs dans le DataTable ─────────────────── */
 
-    // 1. Validation en direct lors de la saisie
+    // 1. Redimensionnement et mise à jour en direct lors de la saisie
     zone.addEventListener('input', function (e) {
+        if (e.target.tagName === 'TEXTAREA' && e.target.classList.contains('dck-auto-expand')) {
+            e.target.style.height = 'auto';
+            if (e.target.scrollHeight > 38) {
+                e.target.style.height = (e.target.scrollHeight + 4) + 'px';
+            }
+        }
+        if (e.target.classList.contains('field-missing') && e.target.value.trim() !== '') {
+            e.target.classList.remove('field-missing');
+        }
         if (e.target.classList.contains('field-heading') || e.target.classList.contains('field-start-date')) {
             verifierValidationLignes();
         }
@@ -462,10 +475,14 @@
             if (rows.length === 0) {
                 if (typeof Swal !== 'undefined') {
                     Swal.fire({
-                        icon: 'warning',
+                        icon: 'info',
                         title: '{{ __("Aucune tâche") }}',
-                        text: '{{ __("Il n'y a aucune tâche à importer. Cliquez sur \"Ajouter une tâche\" pour en créer une.") }}',
-                        showConfirmButton: true
+                        text: '{{ __("Il n'y a aucune tâche dans le tableau. Cliquez sur \"Ajouter une tâche\" pour en créer une.") }}',
+                        confirmButtonText: '{{ __("D'accord") }}',
+                        customClass: {
+                            confirmButton: 'btn btn-primary rounded p-2 px-3 font-weight-bold'
+                        },
+                        buttonsStyling: false
                     });
                 } else {
                     alert('{{ __("Il n'y a aucune tâche à importer.") }}');
@@ -474,8 +491,13 @@
             }
 
             var tasksData = [];
-            var erreursList = [];
+            var missingCount = 0;
             var firstInvalidInput = null;
+
+            // Retirer les éventuelles anciennes surbrillances
+            zone.querySelectorAll('.field-missing').forEach(function (el) {
+                el.classList.remove('field-missing');
+            });
 
             rows.forEach(function (row, idx) {
                 var num = idx + 1;
@@ -491,28 +513,26 @@
                 var dueDate = row.querySelector('.field-due-date') ? row.querySelector('.field-due-date').value.trim() : '';
                 var description = row.querySelector('.field-description') ? row.querySelector('.field-description').value.trim() : '';
 
-                var rowHasError = false;
+                var rowHasMissing = false;
 
                 if (!heading) {
-                    erreursList.push('{{ __("Ligne") }} ' + num + ' : {{ __("le titre de la tâche est obligatoire.") }}');
                     if (headingInput) {
-                        headingInput.classList.add('is-invalid');
+                        headingInput.classList.add('field-missing');
                         if (!firstInvalidInput) { firstInvalidInput = headingInput; }
                     }
-                    rowHasError = true;
+                    rowHasMissing = true;
                 }
 
                 if (!startDate) {
-                    erreursList.push('{{ __("Ligne") }} ' + num + ' : {{ __("la date de début est obligatoire.") }}');
                     if (startDateInput) {
-                        startDateInput.classList.add('is-invalid');
+                        startDateInput.classList.add('field-missing');
                         if (!firstInvalidInput) { firstInvalidInput = startDateInput; }
                     }
-                    rowHasError = true;
+                    rowHasMissing = true;
                 }
 
-                if (rowHasError) {
-                    row.classList.add('table-warning');
+                if (rowHasMissing) {
+                    missingCount++;
                 }
 
                 tasksData.push({
@@ -528,20 +548,24 @@
                 });
             });
 
-            if (erreursList.length > 0) {
-                var errorHtml = '<div class="text-left"><ul class="mb-0 pl-3">' + erreursList.slice(0, 10).map(function (err) {
-                    return '<li>' + err + '</li>';
-                }).join('') + (erreursList.length > 10 ? '<li><em>... {{ __("et d\'autres erreurs.") }}</em></li>' : '') + '</ul></div>';
+            if (missingCount > 0) {
+                var messageAlert = missingCount === 1
+                    ? '{{ __("Veuillez renseigner le titre et la date de début pour la tâche en surbrillance avant de finaliser l\'importation.") }}'
+                    : '{{ __("Veuillez renseigner le titre et la date de début pour les tâches en surbrillance avant de finaliser l\'importation.") }}';
 
                 if (typeof Swal !== 'undefined') {
                     Swal.fire({
-                        icon: 'error',
-                        title: '{{ __("Données incomplètes") }}',
-                        html: errorHtml,
-                        showConfirmButton: true
+                        icon: 'info',
+                        title: '{{ __("Informations nécessaires avant l\'import") }}',
+                        text: messageAlert,
+                        confirmButtonText: '{{ __("J\'ai compris") }}',
+                        customClass: {
+                            confirmButton: 'btn btn-primary rounded p-2 px-3 font-weight-bold'
+                        },
+                        buttonsStyling: false
                     });
                 } else {
-                    alert(erreursList.join('\n'));
+                    alert(messageAlert);
                 }
 
                 if (firstInvalidInput) {

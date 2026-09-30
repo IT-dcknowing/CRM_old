@@ -41,15 +41,15 @@ class BaseNotification extends Notification implements ShouldQueue
         $company = $this->company;
         $globalSetting = GlobalSetting::first();
 
-        $locale = $notifiable->locale ?? 'en';
+        $defaultLocale = (!is_null($company) && !empty($company->locale)) ? $company->locale : ($globalSetting->locale ?? config('app.locale', 'fr'));
+        $locale = $notifiable->locale ?? $defaultLocale;
 
-        // Set the application locale based on the company's locale or global settings
-        if (isset($locale)) {
-            App::setLocale($locale ?? (!is_null($company) ? $company->locale : 'en'));
+        // Si l'utilisateur est resté sur la valeur par défaut 'en' alors que l'entreprise est configurée en 'fr'
+        if (($locale === 'en' || $locale === 'eng') && $defaultLocale === 'fr') {
+            $locale = 'fr';
         }
-        else {
-            App::setLocale(session('locale') ?: $globalSetting->locale);
-        }
+
+        App::setLocale($locale ?: 'fr');
 
         // Retrieve SMTP settings
         $smtpSetting = SmtpSetting::first();
@@ -247,11 +247,11 @@ class BaseNotification extends Notification implements ShouldQueue
         $globalSetting = GlobalSetting::first();
 
         // Set the application locale based on the company's locale or global settings
-        if (!is_null($company)) {
-            App::setLocale($company->locale ?? 'en');
+        if (!is_null($company) && !empty($company->locale)) {
+            App::setLocale($company->locale);
         }
         else {
-            App::setLocale(session('locale') ?: $globalSetting->locale);
+            App::setLocale(session('locale') ?: ($globalSetting->locale ?? 'fr'));
         }
     }
 
