@@ -379,8 +379,17 @@ class TaskController extends AccountBaseController
 
         $taskUsers = $task->users->pluck('id')->toArray();
 
+        /*
+         * AUTORISATION DE SUPPRESSION (backend)
+         *
+         * Un collaborateur (non-admin) ne peut supprimer une tâche que s'il
+         * en est le créateur ou l'assigné. Protège contre la suppression
+         * par manipulation de l'ID dans l'URL.
+         */
         abort_403(
-            !($this->deletePermission == 'all'
+            !(in_array('admin', user_roles())
+            || est_arbitre()
+            || ($this->deletePermission == 'all' && ($task->added_by == user()->id || in_array(user()->id, $taskUsers)))
             || ($this->deletePermission == 'owned' && in_array(user()->id, $taskUsers))
             || ($task->project && ($task->project->project_admin == user()->id))
             || ($this->deletePermission == 'added' && $task->added_by == user()->id)
@@ -1119,8 +1128,17 @@ class TaskController extends AccountBaseController
         $editTaskPermission = user()->permission('edit_tasks');
         $this->task = Task::with('users', 'label', 'project', )->findOrFail($id)->withCustomFields();
         $this->taskUsers = $taskUsers = $this->task->users->pluck('id')->toArray();
+        /*
+         * AUTORISATION D'EDITION (backend)
+         *
+         * Un collaborateur (non-admin) ne peut modifier une tâche que s'il
+         * en est le créateur ou l'assigné. La vérification est faite côté
+         * serveur pour éviter les contournements par manipulation d'URL.
+         */
         abort_403(
-            !($editTaskPermission == 'all'
+            !(in_array('admin', user_roles())
+            || est_arbitre()
+            || ($editTaskPermission == 'all' && ($this->task->added_by == user()->id || in_array(user()->id, $taskUsers)))
             || ($editTaskPermission == 'owned' && in_array(user()->id, $taskUsers))
             || ($editTaskPermission == 'added' && $this->task->added_by == user()->id)
             || ($this->task->project && ($this->task->project->project_admin == user()->id))
@@ -1245,8 +1263,16 @@ class TaskController extends AccountBaseController
         $editTaskPermission = user()->permission('edit_tasks');
         $taskUsers = $task->users->pluck('id')->toArray();
 
+        /*
+         * AUTORISATION DE MISE A JOUR (backend)
+         *
+         * Même règle que pour l'édition : seul le créateur ou l'assigné
+         * (ou un admin/arbitre) peut modifier la tâche.
+         */
         abort_403(
-            !($editTaskPermission == 'all'
+            !(in_array('admin', user_roles())
+            || est_arbitre()
+            || ($editTaskPermission == 'all' && ($task->added_by == user()->id || in_array(user()->id, $taskUsers)))
             || ($editTaskPermission == 'owned' && in_array(user()->id, $taskUsers))
             || ($editTaskPermission == 'added' && $task->added_by == user()->id)
             || ($task->project && ($task->project->project_admin == user()->id))
@@ -1454,27 +1480,38 @@ class TaskController extends AccountBaseController
             $overrideViewPermission = true;
         }
 
+        /*
+         * AUTORISATION D'ACCES AU DETAIL D'UNE TACHE (backend)
+         *
+         * Un collaborateur (non-admin) ne peut consulter une tâche que s'il
+         * en est le créateur, l'assigné ou le mentionné. Cette vérification
+         * est faite côté serveur : manipuler l'URL ou l'ID de la tâche ne
+         * contourne pas cette règle.
+         *
+         * Les admins (roles_arbitres) voient toutes les tâches.
+         */
+        $isAdmin = in_array('admin', user_roles());
+        $isArbitre = est_arbitre();
+        $isTaskCreator = $this->task->added_by == user()->id;
+        $isTaskAssignee = in_array(user()->id, $taskUsers);
+        $isTaskMentioned = !is_null($this->task->mentionTask) && in_array(user()->id, $mentionUser);
+        $isProjectAdmin = $this->task->project_id && $this->task->project->project_admin == user()->id;
+        $isClientOfProject = in_array('client', user_roles())
+            && $this->task->project_id
+            && $this->task->project->client_id == user()->id;
+
         abort_403(
             !(
             $overrideViewPermission == true
-            || $viewTaskPermission == 'all'
-            || ($viewTaskPermission == 'added' && $this->task->added_by == user()->id)
-            || ($viewTaskPermission == 'owned' && in_array(user()->id, $taskUsers))
-            || ($viewTaskPermission == 'both' && (in_array(user()->id, $taskUsers) || $this->task->added_by == user()->id))
-            || ($viewTaskPermission == 'owned' && in_array('client', user_roles()) && $this->task->project_id && $this->task->project->client_id == user()->id)
-            || ($viewTaskPermission == 'both' && in_array('client', user_roles()) && $this->task->project_id && $this->task->project->client_id == user()->id)
-            || ($this->viewUnassignedTasksPermission == 'all' && in_array('employee', user_roles()))
-            || ($this->task->project_id && $this->task->project->project_admin == user()->id)
-            || ((!is_null($this->task->mentionTask)) && in_array(user()->id, $mentionUser))
+            || $isAdmin
+            || $isArbitre
+            || $isTaskCreator
+            || $isTaskAssignee
+            || $isTaskMentioned
+            || $isProjectAdmin
+            || $isClientOfProject
             )
-
         );
-
-        if (!$this->task->project_id || ($this->task->project_id && $this->task->project->project_admin != user()->id)) {
-
-            abort_403($this->viewUnassignedTasksPermission == 'none' && count($taskUsers) == 0 && ((is_null($this->task->mentionTask)) && in_array(user()->id, $mentionUser)));
-
-        }
 
         if ($this->task->task_short_code) {
             $this->pageTitle = __('app.task') . ' # ' . $this->task->task_short_code;
