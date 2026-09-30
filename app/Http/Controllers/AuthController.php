@@ -244,7 +244,7 @@ class AuthController extends Controller
             $user = $this->getApiUser();
             if (!$user) return response()->json(['error' => 'Unauthenticated'], 401);
 
-            $diligences = Project::select(
+            $projets = Project::select(
                     'projects.id',
                     'projects.project_name',
                     'projects.deadline',
@@ -281,7 +281,7 @@ class AuthController extends Controller
                     ];
                 });
 
-            return response()->json($diligences);
+            return response()->json($projets);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
@@ -454,7 +454,7 @@ class AuthController extends Controller
     
             $user = $this->getApiUser();
             
-            // Vérifier si la diligence existe
+            // Vérifier si le projet existe
             $service = Service::findOrFail($serviceId);
             
             // Créer la requête
@@ -569,7 +569,7 @@ class AuthController extends Controller
         }
     }
 
-    public function diligencesRequests(Request $request, $diligenceId)
+    public function diligencesRequests(Request $request, $projetId)
     {
         try {
             // Validation des données
@@ -582,8 +582,8 @@ class AuthController extends Controller
     
             $user = $this->getApiUser();
             
-            // Vérifier si la diligence existe
-            $diligence = Project::findOrFail($diligenceId);
+            // Vérifier si le projet existe
+            $projet = Project::findOrFail($projetId);
             
             // Créer la requête
             $customerRequest = CustomerRequest::create([
@@ -599,7 +599,7 @@ class AuthController extends Controller
             return response()->json($customerRequest, 201);
             
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['error' => 'Diligence non trouvée'], 404);
+            return response()->json(['error' => 'Projet introuvable'], 404);
         } catch (ValidationException $e) {
             return response()->json(['error' => $e->errors()], 422);
         } catch (\Exception $e) {
@@ -1178,7 +1178,7 @@ class AuthController extends Controller
             $user = $this->getApiUser();
             if (!$user) return response()->json(['error' => 'Unauthenticated'], 401);
 
-            // On récupère les projets (diligences) du client
+            // On récupère les projets du client
             $projects = Project::where('client_id', $user->id)
                 ->with(['expenses', 'payments'])
                 ->get();
@@ -1202,7 +1202,7 @@ class AuthController extends Controller
 
                 return [
                     'id' => (string)$project->id,
-                    'diligence' => $project->project_name,
+                    'projet' => $project->project_name,
                     'client' => auth()->user()->name,
                     'budget' => (float)$project->project_budget ?? 0,
                     'depenses' => (float)$totalExpenses,

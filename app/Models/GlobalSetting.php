@@ -401,38 +401,38 @@ class GlobalSetting extends BaseModel
         }
 
         if (is_null($this->light_logo)) {
-            return asset('img/worksuite-logo.png');
+            return asset('img/taskflow/logo-clair.svg');
         }
 
-        return asset_url_local_s3('app-logo/' . $this->light_logo);
+        return logo_ou_defaut('app-logo', $this->light_logo, 'img/taskflow/logo-clair.svg');
 
     }
 
     public function defaultLogo()
     {
         if (is_null($this->logo)) {
-            return asset('img/worksuite-logo.png');
+            return asset('img/taskflow/logo-sombre.svg');
         }
 
-        return asset_url_local_s3('app-logo/' . $this->logo);
+        return logo_ou_defaut('app-logo', $this->logo, 'img/taskflow/logo-sombre.svg');
     }
 
     public function getLightLogoUrlAttribute()
     {
         if (is_null($this->light_logo)) {
-            return asset('img/worksuite-logo.png');
+            return asset('img/taskflow/logo-clair.svg');
         }
 
-        return asset_url_local_s3('app-logo/' . $this->light_logo);
+        return logo_ou_defaut('app-logo', $this->light_logo, 'img/taskflow/logo-clair.svg');
     }
 
     public function getDarkLogoUrlAttribute()
     {
         if (is_null($this->logo)) {
-            return asset('img/worksuite-logo.png');
+            return asset('img/taskflow/logo-sombre.svg');
         }
 
-        return asset_url_local_s3('app-logo/' . $this->logo);
+        return logo_ou_defaut('app-logo', $this->logo, 'img/taskflow/logo-sombre.svg');
     }
 
     public function getLoginBackgroundUrlAttribute()
@@ -556,10 +556,10 @@ class GlobalSetting extends BaseModel
     public function getFaviconUrlAttribute()
     {
         if (is_null($this->favicon)) {
-            return asset('favicon.png');
+            return asset('img/taskflow/favicon.png');
         }
 
-        return asset_url_local_s3('favicon/' . $this->favicon);
+        return logo_ou_defaut('favicon', $this->favicon, 'img/taskflow/favicon.png');
     }
 
     public static function checkListCompleted()

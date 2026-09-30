@@ -2,7 +2,7 @@
     <form id="login-form" action="{{ route('login') }}" class="ajax-form" method="POST">
         {{ csrf_field() }}
         <div class="auth-head">
-            <h2>Bienvenue 👋</h2>
+            <h2>Bienvenue sur Taskflow</h2>
             <p>Connectez-vous pour commencer l'aventure.</p>
         </div>
 

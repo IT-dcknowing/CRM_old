@@ -33,10 +33,10 @@ return [
     'skills' => 'ex. communication, ReactJS',
     'twitterId' => 'ex. 182180xxxxxx1843842',
 
-    /* --- Diligences, taches, contrats -------------------------------- */
+    /* --- Projets, taches, contrats -------------------------------- */
 
-    'project' => 'Saisir le nom de la diligence',
-    'writeshortcode' => 'Code court unique de la diligence',
+    'project' => 'Saisir le nom de le projet',
+    'writeshortcode' => 'Code court unique de le projet',
     'taskshortcode' => 'Code court unique de la tâche',
     'task' => 'Saisir un titre de tâche',
     'label' => 'Saisir un titre d’étiquette',
@@ -46,7 +46,7 @@ return [
     'milestone' => 'Saisir le titre du jalon',
     'milestoneSummary' => 'Saisir le résumé du jalon',
     'hourEstimate' => 'ex. 500',
-    'searchForProjects' => 'Rechercher des diligences',
+    'searchForProjects' => 'Rechercher des projets',
     'searchForCompany' => 'Rechercher une entreprise',
 
     /* --- Champs generiques ------------------------------------------- */

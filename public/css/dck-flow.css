@@ -1446,6 +1446,35 @@ body.sidebar-toggled .dck-chrome.dck-chrome .dck-sect,
 .dck-chrome.dck-chrome .navbar-left,
 .dck-chrome.dck-chrome .navbar-right { display:flex; align-items:center; }
 
+/* Le theme de base coupe l'en-tete en deux moities flottantes de 50 % et
+   fait flotter les icones : quand la place manque, « Creer » et les
+   icones passaient a la ligne. En flex, le titre et la recherche cedent
+   de la place et les actions restent toujours sur une seule ligne. */
+.dck-chrome.dck-chrome.main-header { display:flex; align-items:center; flex-wrap:nowrap; }
+.dck-chrome.dck-chrome.main-header .navbar-left {
+  float:none;
+  flex:1 1 auto;
+  width:auto !important;
+  min-width:0;
+  overflow:hidden;
+}
+.dck-chrome.dck-chrome.main-header .navbar-left .app-title,
+.dck-chrome.dck-chrome.main-header .navbar-left .page-title { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.dck-chrome.dck-chrome.main-header .page-header-right {
+  float:none !important;
+  flex:0 1 auto;
+  width:auto !important;
+  min-width:0;
+}
+.dck-chrome.dck-chrome.main-header .page-header-right > ul {
+  display:flex;
+  align-items:center;
+  flex-wrap:nowrap;
+  flex:0 0 auto;
+  margin:0;
+}
+.dck-chrome.dck-chrome.main-header .page-header-right > ul > li { float:none; flex:0 0 auto; }
+
 .dck-chrome.dck-chrome .app-title,
 .dck-chrome.dck-chrome .page-title {
   font-size:15.5px !important;
@@ -1459,6 +1488,8 @@ body.sidebar-toggled .dck-chrome.dck-chrome .dck-sect,
   align-items:center;
   gap:8px;
   width:min(360px, 34vw);
+  flex:0 1 auto;
+  min-width:160px;
   height:36px;
   margin-right:14px;
   padding:0 11px;
@@ -4506,3 +4537,539 @@ body.sidebar-toggled .dck-chrome.dck-chrome .dck-user,
 .dck-front.dck-front .dck-emp-plus > summary:hover { color:var(--act); }
 
 .dck-front.dck-front .dck-emp-plus__corps { padding-top:12px; }
+
+
+/* ══════════════════════════════════════════════════════════════
+   Rapport hebdomadaire des taches
+   ────────────────────────────────────────────────────────────
+   Reprend les jetons de la charte : aucune couleur en dur, tout
+   passe par les variables de .dck-front.
+   ══════════════════════════════════════════════════════════════ */
+
+.dck-front.dck-front .dck-hebdo { padding:20px 22px 26px; }
+
+/* ── En-tete et navigation de semaine ───────────────────────── */
+.dck-front.dck-front .dck-hebdo__tete {
+  display:flex;
+  flex-wrap:wrap;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+  margin-bottom:18px;
+}
+.dck-front.dck-front .dck-hebdo__tete h1 {
+  margin:0 0 3px;
+  font-size:21px;
+  font-weight:600;
+  letter-spacing:-.01em;
+}
+.dck-front.dck-front .dck-hebdo__tete p { margin:0; font-size:13px; color:var(--tx-3); }
+
+.dck-front.dck-front .dck-hebdo__sem { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+.dck-front.dck-front .dck-hebdo__b {
+  display:inline-flex;
+  align-items:center;
+  height:36px;
+  padding:0 12px;
+  border:1px solid var(--line);
+  border-radius:var(--r-sm);
+  background:var(--surface);
+  color:var(--tx-2);
+  font-size:13px;
+  font-weight:500;
+  white-space:nowrap;
+  text-decoration:none;
+  cursor:pointer;
+}
+.dck-front.dck-front .dck-hebdo__b:hover {
+  background:var(--surface-3);
+  color:var(--tx);
+  text-decoration:none;
+}
+.dck-front.dck-front .dck-hebdo__b.is-actif {
+  background:var(--act);
+  border-color:var(--act);
+  color:var(--act-tx);
+}
+
+/* ── Indicateurs ────────────────────────────────────────────── */
+.dck-front.dck-front .dck-hebdo__grille {
+  display:grid;
+  grid-template-columns:repeat(4, minmax(0, 1fr));
+  gap:12px;
+  margin-bottom:18px;
+}
+.dck-front.dck-front .dck-hebdo__k {
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  min-width:0;
+  padding:13px 15px;
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  background:var(--surface);
+  text-align:left;
+  font:inherit;
+  color:inherit;
+}
+.dck-front.dck-front button.dck-hebdo__k {
+  cursor:pointer;
+  transition:border-color .14s ease, box-shadow .14s ease;
+}
+.dck-front.dck-front button.dck-hebdo__k:hover {
+  border-color:var(--line-strong);
+  box-shadow:0 1px 4px rgba(0,0,0,.06);
+}
+.dck-front.dck-front button.dck-hebdo__k.is-selectionne {
+  border-color:var(--act);
+  box-shadow:0 0 0 1px var(--act);
+}
+.dck-front.dck-front .dck-hebdo__kl { font-size:11.5px; color:var(--tx-4); }
+.dck-front.dck-front .dck-hebdo__kv {
+  font-family:var(--f-num);
+  font-size:26px;
+  font-weight:600;
+  line-height:1.1;
+}
+.dck-front.dck-front .dck-hebdo__ks { font-size:11.5px; color:var(--tx-4); }
+
+.dck-front.dck-front .dck-hebdo__k.is-ok { background:var(--ok-bg); border-color:var(--ok-line); }
+.dck-front.dck-front .dck-hebdo__k.is-ok .dck-hebdo__kv { color:var(--ok); }
+.dck-front.dck-front .dck-hebdo__k.is-err { background:var(--err-bg); border-color:var(--err-line); }
+.dck-front.dck-front .dck-hebdo__k.is-err .dck-hebdo__kv { color:var(--err); }
+
+/* ── Note d'avertissement ───────────────────────────────────── */
+.dck-front.dck-front .dck-hebdo__note {
+  display:flex;
+  gap:11px;
+  padding:13px 15px;
+  margin-bottom:18px;
+  background:var(--warn-bg);
+  border:1px solid var(--warn-line);
+  border-radius:var(--r);
+  font-size:13px;
+}
+.dck-front.dck-front .dck-hebdo__note b { display:block; margin-bottom:2px; }
+.dck-front.dck-front .dck-hebdo__note p { margin:0; color:var(--tx-2); }
+
+/* ── Blocs ──────────────────────────────────────────────────── */
+.dck-front.dck-front .dck-hebdo__bloc {
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  margin-bottom:18px;
+  overflow:hidden;
+}
+.dck-front.dck-front .dck-hebdo__bt {
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  align-items:center;
+  justify-content:space-between;
+  padding:14px 16px;
+  border-bottom:1px solid var(--line);
+}
+.dck-front.dck-front .dck-hebdo__bt h2 { margin:0; font-size:14.5px; font-weight:600; }
+.dck-front.dck-front .dck-hebdo__bt span { font-size:12px; color:var(--tx-4); }
+
+/* ── Filtres ────────────────────────────────────────────────── */
+.dck-front.dck-front .dck-hebdo__filtres {
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  padding:12px 16px;
+  border-bottom:1px solid var(--line);
+  background:var(--surface-2);
+}
+.dck-front.dck-front .dck-hebdo__filtres select,
+.dck-front.dck-front .dck-hebdo__filtres input {
+  height:34px;
+  padding:0 10px;
+  font-size:13px;
+  font-family:inherit;
+  border:1px solid var(--line);
+  border-radius:var(--r-sm);
+  background:var(--surface);
+  color:var(--tx);
+  min-width:0;
+}
+.dck-front.dck-front .dck-hebdo__filtres input[type=search] { flex:1; min-width:170px; }
+.dck-front.dck-front .dck-hebdo__exp { margin-left:auto; display:flex; gap:8px; }
+.dck-front.dck-front .dck-hebdo__exp button {
+  height:34px;
+  padding:0 12px;
+  font-size:12.5px;
+  font-weight:500;
+  font-family:inherit;
+  border:1px solid var(--line);
+  border-radius:var(--r-sm);
+  background:var(--surface);
+  color:var(--tx-2);
+  cursor:pointer;
+}
+.dck-front.dck-front .dck-hebdo__exp button:hover { background:var(--surface-3); }
+
+/* ── Bandeau du filtre actif ────────────────────────────────── */
+.dck-front.dck-front .dck-hebdo__actif {
+  display:none;
+  align-items:center;
+  gap:10px;
+  padding:10px 16px;
+  background:var(--info-bg);
+  border-bottom:1px solid var(--info-line);
+  font-size:13px;
+}
+.dck-front.dck-front .dck-hebdo__actif.is-visible { display:flex; }
+.dck-front.dck-front .dck-hebdo__actif b { color:var(--info); }
+.dck-front.dck-front .dck-hebdo__actif button {
+  margin-left:auto;
+  height:28px;
+  padding:0 10px;
+  font-size:12px;
+  font-family:inherit;
+  border:1px solid var(--info-line);
+  border-radius:var(--r-sm);
+  background:var(--surface);
+  color:var(--tx-2);
+  cursor:pointer;
+}
+
+/* ── Tableaux ───────────────────────────────────────────────── */
+.dck-front.dck-front .dck-hebdo__scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+.dck-front.dck-front .dck-hebdo__tbl { width:100%; border-collapse:collapse; font-size:13px; }
+.dck-front.dck-front .dck-hebdo__tbl th {
+  text-align:left;
+  padding:9px 12px;
+  font-size:11px;
+  font-weight:600;
+  text-transform:uppercase;
+  letter-spacing:.03em;
+  color:var(--tx-4);
+  background:var(--surface-2);
+  border-bottom:1px solid var(--line);
+  white-space:nowrap;
+}
+.dck-front.dck-front .dck-hebdo__tbl td {
+  padding:10px 12px;
+  border-bottom:1px solid var(--line);
+  vertical-align:top;
+}
+.dck-front.dck-front .dck-hebdo__tbl tbody tr:last-child td { border-bottom:0; }
+.dck-front.dck-front .dck-hebdo__tbl tbody tr:hover { background:var(--surface-2); }
+
+.dck-front.dck-front .dck-hebdo__n {
+  font-family:var(--f-num);
+  font-size:12px;
+  white-space:nowrap;
+  color:var(--tx-2);
+}
+.dck-front.dck-front .dck-hebdo__ref {
+  font-family:var(--f-num);
+  font-size:11px;
+  color:var(--tx-4);
+  white-space:nowrap;
+}
+.dck-front.dck-front .dck-hebdo__ttl {
+  display:block;
+  max-width:290px;
+  font-weight:600;
+  color:var(--tx);
+  text-decoration:none;
+  overflow-wrap:anywhere;
+}
+.dck-front.dck-front .dck-hebdo__ttl:hover { color:var(--act); text-decoration:underline; }
+.dck-front.dck-front .dck-hebdo__sous {
+  max-width:290px;
+  margin-top:2px;
+  font-size:11.5px;
+  color:var(--tx-4);
+  overflow-wrap:anywhere;
+}
+
+/* Compteurs cliquables du tableau par collaborateur */
+.dck-front.dck-front .dck-hebdo__cpt {
+  padding:2px 7px;
+  border:0;
+  border-radius:var(--r-sm);
+  background:none;
+  font-family:var(--f-num);
+  font-size:12.5px;
+  font-weight:600;
+  color:var(--tx);
+  cursor:pointer;
+  text-decoration:underline;
+  text-decoration-color:var(--line-strong);
+  text-underline-offset:3px;
+}
+.dck-front.dck-front .dck-hebdo__cpt:hover {
+  background:var(--surface-3);
+  text-decoration-color:var(--tx);
+}
+.dck-front.dck-front .dck-hebdo__cpt[disabled] {
+  color:var(--tx-4);
+  cursor:default;
+  text-decoration:none;
+  background:none;
+}
+.dck-front.dck-front .dck-hebdo__cpt.est-retard:not([disabled]) { color:var(--err); }
+
+/* Pastilles */
+.dck-front.dck-front .dck-hebdo__p {
+  display:inline-block;
+  padding:2px 8px;
+  border:1px solid;
+  border-radius:var(--r-full);
+  font-size:11px;
+  font-weight:600;
+  white-space:nowrap;
+}
+.dck-front.dck-front .dck-hebdo__p.is-ok { background:var(--ok-bg); border-color:var(--ok-line); color:var(--ok); }
+.dck-front.dck-front .dck-hebdo__p.is-info { background:var(--info-bg); border-color:var(--info-line); color:var(--info); }
+.dck-front.dck-front .dck-hebdo__p.is-warn { background:var(--warn-bg); border-color:var(--warn-line); color:var(--warn); }
+.dck-front.dck-front .dck-hebdo__p.is-err { background:var(--err-bg); border-color:var(--err-line); color:var(--err); }
+.dck-front.dck-front .dck-hebdo__p.is-neutre { background:var(--surface-3); border-color:var(--line); color:var(--tx-2); }
+
+/* Collaborateurs */
+.dck-front.dck-front .dck-hebdo__gens { display:flex; flex-wrap:wrap; gap:4px; max-width:210px; }
+.dck-front.dck-front .dck-hebdo__g {
+  display:inline-flex;
+  align-items:center;
+  height:22px;
+  padding:0 8px;
+  border:1px solid var(--line);
+  border-radius:var(--r-full);
+  background:var(--surface-3);
+  font-size:11.5px;
+  white-space:nowrap;
+}
+.dck-front.dck-front .dck-hebdo__vide { color:var(--tx-4); font-style:italic; font-size:12px; }
+
+.dck-front.dck-front .dck-hebdo__rien {
+  display:none;
+  padding:34px 16px;
+  text-align:center;
+  color:var(--tx-4);
+  font-size:13px;
+}
+.dck-front.dck-front .dck-hebdo__rien.is-visible { display:block; }
+
+/* ── Petits ecrans ──────────────────────────────────────────── */
+@media (max-width:1100px) {
+  .dck-front.dck-front .dck-hebdo__grille { grid-template-columns:repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width:640px) {
+  .dck-front.dck-front .dck-hebdo { padding:14px 12px 20px; }
+  .dck-front.dck-front .dck-hebdo__grille { gap:9px; }
+  .dck-front.dck-front .dck-hebdo__kv { font-size:21px; }
+  .dck-front.dck-front .dck-hebdo__exp { margin-left:0; width:100%; }
+}
+
+/* ── Impression ─────────────────────────────────────────────── */
+@media print {
+  .dck-hebdo__sem,
+  .dck-hebdo__filtres,
+  .dck-hebdo__actif,
+  .main-sidebar,
+  .filter-box { display:none !important; }
+
+  .dck-hebdo__bloc { break-inside:avoid; border-color:#999; }
+  .dck-hebdo__scroll { overflow:visible !important; }
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   Barre laterale repliee : bascule vers la marque carree
+   ────────────────────────────────────────────────────────────
+   Replier ramene la barre a 3.77rem. Le logo horizontal, qui
+   porte le nom, y serait ecrase et illisible : on lui substitue
+   la marque carree, puis on revient a l'horizontal des que la
+   barre se redeploie au survol.
+   ══════════════════════════════════════════════════════════════ */
+
+.dck-chrome.dck-chrome .dck-marque {
+  display:none;
+  max-width:34px;
+  line-height:0;
+}
+
+.dck-chrome.dck-chrome .dck-marque img {
+  width:34px;
+  height:34px;
+  object-fit:contain;
+}
+
+/* Theme sombre : le favicon est noir et disparaitrait sur la barre.
+   Le filtre le ramene a une silhouette blanche — la meme operation
+   fonctionnera avec n'importe quel logo futur, quelle que soit sa
+   couleur, sans reglage supplementaire a maintenir. */
+body.dark-theme .dck-chrome.dck-chrome .dck-marque img {
+  filter:brightness(0) invert(1);
+}
+
+/* Replie : la marque carree prend la place du logo horizontal. */
+.sidebar-toggled .dck-chrome.dck-chrome .sidebar-brand-name { display:none; }
+.sidebar-toggled .dck-chrome.dck-chrome .dck-marque { display:block; }
+
+/* Au survol, la barre se redeploie : on rend la main a l'horizontal. */
+.sidebar-toggled .dck-chrome.dck-chrome .main-sidebar:hover .sidebar-brand-name { display:block; }
+.sidebar-toggled .dck-chrome.dck-chrome .main-sidebar:hover .dck-marque { display:none; }
+
+/* ══════════════════════════════════════════════════════════════
+   Importation massive de taches
+   ══════════════════════════════════════════════════════════════ */
+
+/* L'ecran s'appuie sur .dck-card et sur les boutons de
+   l'application ; ne restent ici que les elements qui lui sont
+   propres — le bilan de l'analyse et le tableau d'apercu. */
+
+.dck-front.dck-front .dck-import { max-width:1060px; }
+
+/* ── Mise en page supérieure : deux colonnes côte à côte ────── */
+
+.dck-front.dck-front .dck-import__top {
+  display:grid;
+  grid-template-columns:1fr 380px;
+  gap:18px;
+  align-items:start;
+  margin-bottom:18px;
+}
+
+/* La colonne "modèle" (gauche) s'étire, celle du "fichier" (droite)
+   a une largeur fixe plus étroite pour équilibrer visuellement. */
+.dck-front.dck-front .dck-import__col { margin-bottom:0; }
+
+/* Numero d'etape, pose dans le titre de la carte. */
+.dck-front.dck-front .dck-import__num {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:22px; height:22px; margin-right:8px; vertical-align:1px;
+  border-radius:50%; background:var(--act); color:var(--act-tx);
+  font-family:var(--f-num); font-size:11.5px; font-weight:600;
+}
+
+.dck-front.dck-front .dck-import__intro {
+  margin:0 0 14px; font-size:13px; color:var(--tx-3); max-width:76ch;
+}
+
+.dck-front.dck-front .dck-import__note { margin:8px 0 0; font-size:12px; color:var(--tx-4); }
+
+/* Tableau des colonnes attendues : cale sur .table de l'application,
+   dont il ne change que la densite. */
+.dck-front.dck-front .dck-import__cols { font-size:12.5px; margin:0; }
+.dck-front.dck-front .dck-import__cols th {
+  padding:7px 9px; font-size:10.5px; text-transform:uppercase;
+  letter-spacing:.03em; color:var(--tx-4); background:var(--surface-2);
+  border-top:0; border-bottom:1px solid var(--line); white-space:nowrap;
+}
+.dck-front.dck-front .dck-import__cols td {
+  padding:7px 9px; border-top:0; border-bottom:1px solid var(--line); vertical-align:top;
+}
+.dck-front.dck-front .dck-import__cols tr:last-child td { border-bottom:0; }
+
+/* ── Zone de glisser-deposer ────────────────────────────────── */
+
+.dck-front.dck-front .dck-import__dropzone {
+  position:relative;
+  display:flex; align-items:center; justify-content:center;
+  min-height:140px;
+  border:2px dashed var(--line);
+  border-radius:var(--r);
+  background:var(--surface-2);
+  cursor:pointer;
+  transition:border-color .15s, background .15s;
+  text-align:center;
+  padding:20px 16px;
+}
+.dck-front.dck-front .dck-import__dropzone:hover,
+.dck-front.dck-front .dck-import__dropzone:focus-within {
+  border-color:var(--act);
+  background:var(--surface-3);
+}
+.dck-front.dck-front .dck-import__dropzone.has-file {
+  border-color:var(--ok-line);
+  background:var(--ok-bg);
+}
+/* L'input est invisible mais couvre toute la zone cliquable. */
+.dck-front.dck-front .dck-import__dropzone-input {
+  position:absolute; inset:0; width:100%; height:100%;
+  opacity:0; cursor:pointer; z-index:1;
+}
+.dck-front.dck-front .dck-import__dropzone-label {
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+  pointer-events:none;
+}
+.dck-front.dck-front .dck-import__dropzone-icon {
+  font-size:28px; color:var(--act); margin-bottom:4px;
+}
+.dck-front.dck-front .dck-import__dropzone.has-file .dck-import__dropzone-icon {
+  color:var(--ok);
+}
+.dck-front.dck-front .dck-import__dropzone-text {
+  font-size:13px; font-weight:500; color:var(--tx-2);
+  word-break:break-all;
+}
+
+/* ── Bilan de l'analyse ─────────────────────────────────────── */
+
+.dck-front.dck-front .dck-import__bilan {
+  display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:10px; margin-bottom:14px;
+}
+.dck-front.dck-front .dck-import__k {
+  display:flex; flex-direction:column; gap:3px; padding:11px 13px;
+  border:1px solid var(--line); border-radius:var(--r); background:var(--surface-2);
+}
+.dck-front.dck-front .dck-import__kl { font-size:11px; color:var(--tx-4); }
+.dck-front.dck-front .dck-import__kv { font-family:var(--f-num); font-size:22px; font-weight:600; }
+.dck-front.dck-front .dck-import__k.is-ok { background:var(--ok-bg); border-color:var(--ok-line); }
+.dck-front.dck-front .dck-import__k.is-ok .dck-import__kv { color:var(--ok); }
+.dck-front.dck-front .dck-import__k.is-err { background:var(--err-bg); border-color:var(--err-line); }
+.dck-front.dck-front .dck-import__k.is-err .dck-import__kv { color:var(--err); }
+
+.dck-front.dck-front .dck-import__msg {
+  padding:13px 15px; border-radius:var(--r); font-size:13px; margin-bottom:14px;
+  background:var(--surface-2); border:1px solid var(--line);
+}
+.dck-front.dck-front .dck-import__msg.is-err { background:var(--err-bg); border-color:var(--err-line); }
+/* Avis : ce qui va se produire et merite un regard, sans etre une faute. */
+.dck-front.dck-front .dck-import__msg.is-avis { background:var(--warn-bg); border-color:var(--warn-line); }
+.dck-front.dck-front .dck-import__msg p { margin:4px 0 0; color:var(--tx-2); }
+
+.dck-front.dck-front .dck-import__erreurs { margin:9px 0 0; padding-left:18px; }
+.dck-front.dck-front .dck-import__erreurs li { margin-bottom:3px; font-size:12.5px; }
+
+/* ── Tableau d'apercu ───────────────────────────────────────── */
+
+.dck-front.dck-front .dck-import__scroll { overflow-x:auto; border:1px solid var(--line); border-radius:var(--r); }
+.dck-front.dck-front .dck-import__tbl { width:100%; border-collapse:collapse; font-size:12.5px; }
+.dck-front.dck-front .dck-import__tbl th {
+  text-align:left; padding:8px 10px; font-size:10.5px; text-transform:uppercase;
+  letter-spacing:.03em; color:var(--tx-4); background:var(--surface-2);
+  border-bottom:1px solid var(--line); white-space:nowrap;
+}
+.dck-front.dck-front .dck-import__tbl td { padding:8px 10px; border-bottom:1px solid var(--line); }
+.dck-front.dck-front .dck-import__tbl tr:last-child td { border-bottom:0; }
+.dck-front.dck-front .dck-import__tbl tr.est-erreur { background:var(--err-bg); }
+.dck-front.dck-front .dck-import__n { font-family:var(--f-num); font-size:11.5px; white-space:nowrap; }
+
+.dck-front.dck-front .dck-import__p {
+  display:inline-block; padding:2px 8px; border-radius:var(--r-full);
+  font-size:11px; font-weight:600; border:1px solid var(--line); background:var(--surface-3);
+}
+.dck-front.dck-front .dck-import__p.is-ok { background:var(--ok-bg); border-color:var(--ok-line); color:var(--ok); }
+.dck-front.dck-front .dck-import__p.is-err { background:var(--err-bg); border-color:var(--err-line); color:var(--err); }
+.dck-front.dck-front .dck-import__p.is-req { background:var(--warn-bg); border-color:var(--warn-line); color:var(--warn); }
+.dck-front.dck-front .dck-import__p.is-avis { background:var(--warn-bg); border-color:var(--warn-line); color:var(--warn); margin-left:5px; }
+
+.dck-front.dck-front .dck-import__valider {
+  display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin-top:16px;
+}
+
+@media (max-width:900px) {
+  /* Sur tablette et mobile : les deux colonnes passent l'une sous l'autre. */
+  .dck-front.dck-front .dck-import__top {
+    grid-template-columns:1fr;
+  }
+}
+
+@media (max-width:640px) {
+  .dck-front.dck-front .dck-import__bilan { grid-template-columns:1fr; }
+}

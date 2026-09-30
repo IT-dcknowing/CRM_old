@@ -56,7 +56,7 @@ class SearchController extends AccountBaseController
 
     /**
      * Recherche transversale : une seule saisie interroge les taches,
-     * les diligences et les clients.
+     * les projets et les clients.
      *
      * Les droits sont appliques ici, requete par requete, et non apres
      * coup sur les resultats : un enregistrement qu'un utilisateur n'a
@@ -69,7 +69,7 @@ class SearchController extends AccountBaseController
         $this->pageTitle = __('app.search');
         $this->mot = $mot;
         $this->taches = collect();
-        $this->diligences = collect();
+        $this->projets = collect();
         $this->clients = collect();
         $this->contrats = collect();
 
@@ -92,12 +92,12 @@ class SearchController extends AccountBaseController
                 ->orWhere('task_short_code', 'like', "%$mot%"));
 
         if ($estClient) {
-            // Un client ne voit que les taches des diligences qui lui appartiennent.
+            // Un client ne voit que les taches des projets qui lui appartiennent.
             $taches->where('is_private', 0)
                 ->whereHas('project', fn ($q) => $q->where('client_id', $moi));
         }
         elseif (user()->permission('view_tasks') !== 'all') {
-            // Sinon : ses taches, celles qu'il a creees, ou celles de ses diligences.
+            // Sinon : ses taches, celles qu'il a creees, ou celles de ses projets.
             $taches->where(function ($q) use ($moi) {
                 $q->whereHas('users', fn ($u) => $u->where('users.id', $moi))
                     ->orWhere('added_by', $moi)
@@ -107,24 +107,24 @@ class SearchController extends AccountBaseController
 
         $this->taches = $taches->latest('id')->limit(6)->get();
 
-        /* ── Diligences ──────────────────────────────────────── */
-        $diligences = Project::select('id', 'project_name', 'project_short_code', 'client_id')
+        /* ── Projets ──────────────────────────────────────── */
+        $projets = Project::select('id', 'project_name', 'project_short_code', 'client_id')
             ->where('company_id', company()->id)
             ->where(fn ($q) => $q->where('project_name', 'like', "%$mot%")
                 ->orWhere('project_short_code', 'like', "%$mot%"));
 
         if ($estClient) {
-            $diligences->where('client_id', $moi);
+            $projets->where('client_id', $moi);
         }
         elseif (user()->permission('view_projects') !== 'all') {
-            $diligences->where(function ($q) use ($moi) {
+            $projets->where(function ($q) use ($moi) {
                 $q->whereHas('members', fn ($m) => $m->where('user_id', $moi))
                     ->orWhere('added_by', $moi)
                     ->orWhere('project_admin', $moi);
             });
         }
 
-        $this->diligences = $diligences->latest('id')->limit(6)->get();
+        $this->projets = $projets->latest('id')->limit(6)->get();
 
         /* ── Clients ─────────────────────────────────────────── */
         // Un client ne recherche pas dans le repertoire des clients.
@@ -177,7 +177,7 @@ class SearchController extends AccountBaseController
 
         $this->contrats = $contrats->latest('id')->limit(6)->get();
 
-        $this->total = $this->taches->count() + $this->diligences->count()
+        $this->total = $this->taches->count() + $this->projets->count()
             + $this->clients->count() + $this->contrats->count();
 
         return view('search.resultats', $this->data);

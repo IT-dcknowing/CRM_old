@@ -282,7 +282,7 @@ class Company extends BaseModel
             return global_setting()->light_logo_url;
         }
 
-        return asset_url_local_s3('app-logo/' . $this->light_logo);
+        return logo_ou_defaut('app-logo', $this->light_logo, 'img/taskflow/logo-clair.svg');
 
     }
 
@@ -292,7 +292,7 @@ class Company extends BaseModel
             return global_setting()->dark_logo_url;
         }
 
-        return asset_url_local_s3('app-logo/' . $this->logo);
+        return logo_ou_defaut('app-logo', $this->logo, 'img/taskflow/logo-sombre.svg');
     }
 
     public function getLightLogoUrlAttribute()
@@ -301,17 +301,17 @@ class Company extends BaseModel
             return global_setting()->light_logo_url;
         }
 
-        return asset_url_local_s3('app-logo/' . $this->light_logo);
+        return logo_ou_defaut('app-logo', $this->light_logo, 'img/taskflow/logo-clair.svg');
     }
 
     public function getDarkLogoUrlAttribute()
     {
 
         if (is_null($this->logo)) {
-            return asset('img/worksuite-logo.png');
+            return asset('img/taskflow/logo-sombre.svg');
         }
 
-        return asset_url_local_s3('app-logo/' . $this->logo);
+        return logo_ou_defaut('app-logo', $this->logo, 'img/taskflow/logo-sombre.svg');
     }
 
     public function getLoginBackgroundUrlAttribute()
@@ -434,7 +434,7 @@ class Company extends BaseModel
             return global_setting()->favicon_url;
         }
 
-        return asset_url_local_s3('favicon/' . $this->favicon);
+        return logo_ou_defaut('favicon', $this->favicon, 'img/taskflow/favicon.png');
     }
 
     public function paymentGatewayCredentials(): HasOne

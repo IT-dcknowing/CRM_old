@@ -5,9 +5,9 @@ namespace App\Http\Controllers;
 use Carbon\Carbon;
 use App\Models\Task;
 use App\Models\User;
+use Illuminate\Support\Facades\Log;
 use App\Helper\Files;
 use App\Helper\Reply;
-use App\Models\Leave;
 use App\Models\Pinned;
 use App\Models\Project;
 use App\Models\SubTask;
@@ -31,6 +31,9 @@ use App\Traits\ApprobationTache;
 use App\Models\ProjectMilestone;
 use App\Events\TaskReminderEvent;
 use App\DataTables\TasksDataTable;
+use App\Imports\TaskImport;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Traits\ImportationTaches;
 use App\DataTables\WaitingForApprovalDataTable;
 use Illuminate\Support\Facades\DB;
 use App\Models\ProjectTimeLogBreak;
@@ -42,6 +45,8 @@ use App\Events\TaskEvent;
 class TaskController extends AccountBaseController
 {
 
+
+    use ImportationTaches;
     use ProjectProgress;
     use ApprobationTache;
 
@@ -136,62 +141,134 @@ class TaskController extends AccountBaseController
     {
         switch ($request->action_type) {
             case 'delete':
-                $this->deleteRecords($request);
+                return $this->bilanActionGroupee(
+                    $this->deleteRecords($request), __('messages.deleteSuccess'));
 
-                return Reply::success(__('messages.deleteSuccess'));
             case 'change-status':
-                $this->changeBulkStatus($request);
+                return $this->bilanActionGroupee(
+                    $this->changeBulkStatus($request), __('messages.updateSuccess'));
 
-                return Reply::success(__('messages.updateSuccess'));
             case 'milestone':
-                $this->changeMilestones($request);
+                return $this->bilanActionGroupee(
+                    $this->changeMilestones($request), __('messages.updateSuccess'));
 
-                return Reply::success(__('messages.updateSuccess'));
             default:
                 return Reply::error(__('messages.selectAction'));
         }
     }
 
+    /**
+     * Reponse d'une action groupee, selon ce qui a pu etre traite.
+     *
+     * Le silence serait le pire des retours : une selection de dix
+     * taches dont trois echappent a l'utilisateur doit le lui dire,
+     * sinon il croit avoir tout supprime.
+     *
+     * @param array $bilan ['traitees' => int, 'ignorees' => int]
+     */
+    private function bilanActionGroupee(array $bilan, string $succes)
+    {
+        if ($bilan['traitees'] === 0) {
+            return Reply::error(__('Aucune des tâches sélectionnées ne relève de vos droits.'));
+        }
+
+        if ($bilan['ignorees'] > 0) {
+            return Reply::success(sprintf(
+                __('%d tâche(s) traitée(s). %d ignorée(s), faute de droits sur celles-ci.'),
+                $bilan['traitees'], $bilan['ignorees']
+            ));
+        }
+
+        return Reply::success($succes);
+    }
+
+    /**
+     * Parmi les taches designees, celles que l'utilisateur peut traiter.
+     *
+     * La regle est celle qui commande deja l'affichage des boutons et
+     * la suppression a l'unite. Les actions groupees, elles, exigeaient
+     * « all » : un employe ne pouvait pas supprimer d'un seul geste des
+     * taches qu'il avait pourtant creees lui-meme.
+     *
+     * @param string $droit 'delete_tasks' ou 'edit_tasks'
+     */
+    private function tachesAutorisees(string $droit, array $ids)
+    {
+        $niveau = user()->permission($droit);
+
+        if ($niveau === 'none') {
+            return collect();
+        }
+
+        return Task::with('users', 'project')->whereIn('id', $ids)->get()
+            ->filter(function ($tache) use ($niveau) {
+                $gens = $tache->users->pluck('id')->toArray();
+
+                return $niveau == 'all'
+                    || ($niveau == 'added' && $tache->added_by == user()->id)
+                    || ($niveau == 'owned' && in_array(user()->id, $gens))
+                    || ($niveau == 'both'
+                        && (in_array(user()->id, $gens) || $tache->added_by == user()->id))
+                    || ($tache->project && $tache->project->project_admin == user()->id);
+            });
+    }
+
     protected function deleteRecords($request)
     {
-        abort_403(user()->permission('delete_tasks') != 'all');
-
         $ids = explode(',', $request->row_ids);
+        $autorisees = $this->tachesAutorisees('delete_tasks', $ids);
 
-        Task::whereIn('id', $ids)->delete();
+        if ($autorisees->isNotEmpty()) {
+            Task::whereIn('id', $autorisees->pluck('id'))->delete();
+        }
+
+        return [
+            'traitees' => $autorisees->count(),
+            'ignorees' => count($ids) - $autorisees->count(),
+        ];
     }
 
     protected function changeBulkStatus($request)
     {
-        abort_403(user()->permission('edit_tasks') != 'all');
-
         $taskBoardColumn = TaskboardColumn::findOrFail(request()->status);
 
-        // Update tasks based on the requested status
-        $taskIds = explode(',', $request->row_ids);
+        $ids = explode(',', $request->row_ids);
+        $cibles = $this->tachesAutorisees('edit_tasks', $ids)->pluck('id');
 
-        if ($taskBoardColumn && $taskBoardColumn->slug == 'completed') {
-            Task::whereIn('id', $taskIds)->update([
-                'status' => 'completed',
-                'board_column_id' => $request->status,
-                'completed_on' => now()->format('Y-m-d')
-            ]);
-        }
-        else {
-            Task::whereIn('id', $taskIds)->update(['board_column_id' => $request->status]);
+        if ($cibles->isNotEmpty()) {
+            if ($taskBoardColumn && $taskBoardColumn->slug == 'completed') {
+                Task::whereIn('id', $cibles)->update([
+                    'status' => 'completed',
+                    'board_column_id' => $request->status,
+                    'completed_on' => now()->format('Y-m-d')
+                ]);
+            }
+            else {
+                Task::whereIn('id', $cibles)->update(['board_column_id' => $request->status]);
+            }
         }
 
+        return [
+            'traitees' => $cibles->count(),
+            'ignorees' => count($ids) - $cibles->count(),
+        ];
     }
 
     public function changeMilestones($request)
     {
-        abort_403(user()->permission('edit_tasks') != 'all');
+        $ids = explode(',', $request->row_ids);
+        $cibles = $this->tachesAutorisees('edit_tasks', $ids)->pluck('id');
 
-        $taskIds = explode(',', $request->row_ids);
+        if ($cibles->isNotEmpty()) {
+            Task::whereIn('id', $cibles)->update([
+                'milestone_id' => $request->milestone
+            ]);
+        }
 
-        Task::whereIn('id', $taskIds)->update([
-            'milestone_id' => $request->milestone
-        ]);
+        return [
+            'traitees' => $cibles->count(),
+            'ignorees' => count($ids) - $cibles->count(),
+        ];
     }
 
     public function changeStatus(Request $request)
@@ -436,6 +513,7 @@ class TaskController extends AccountBaseController
         $this->allEmployees = User::allEmployees(null, true, 'all');
         $this->allClients = User::allClients();
 
+        $this->backUrl = $this->determinerUrlRetour();
         $this->view = 'tasks.ajax.create';
 
         if (request()->ajax()) {
@@ -451,6 +529,321 @@ class TaskController extends AccountBaseController
     }
 
     // The function is called for duplicate code also
+    /**
+     * Ecran d'importation.
+     *
+     * Ouvert a qui peut deja creer une tache, au meme titre que le
+     * formulaire. Un compte limite a « added » ne contourne rien en
+     * important : les taches qu'il cree portent son nom, et restent
+     * donc soumises aux memes restrictions de lecture et de
+     * modification que celles qu'il saisit a la main.
+     */
+    public function importTask()
+    {
+        abort_403(!in_array(user()->permission('add_tasks'), ['all', 'added']));
+
+        $this->colonnes = TaskImport::colonnes();
+
+        /* Les projets du selecteur « projet par defaut ». Le plus
+           souvent, un lot de taches concerne un seul projet : le
+           choisir ici evite de repeter son nom a chaque ligne. */
+        $this->projets = Project::where('company_id', company()->id)
+            ->orderBy('project_name')->get(['id', 'project_name']);
+
+        $this->pageTitle = __('Importer des tâches');
+        $this->view = 'tasks.ajax.import';
+
+        return view('tasks.create', $this->data);
+    }
+
+    /**
+     * Modele Excel officiel, avec une ligne d'exemple.
+     *
+     * Genere a la volee plutot que stocke : les statuts et les colonnes
+     * suivent ainsi la configuration reelle, sans fichier a maintenir.
+     */
+    public function importTaskTemplate()
+    {
+        abort_403(!in_array(user()->permission('add_tasks'), ['all', 'added']));
+
+        return Excel::download(
+            new \App\Exports\ModeleImportTaches(),
+            'modele-import-taches.xlsx'
+        );
+    }
+
+    /**
+     * Analyse le fichier et renvoie l'apercu éditable, sans rien enregistrer.
+     */
+    public function importTaskAnalyse(Request $request)
+    {
+        abort_403(!in_array(user()->permission('add_tasks'), ['all', 'added']));
+
+        $request->validate(
+            ['import_file' => 'required|file|mimes:xlsx,xls,csv,ods'],
+            ['import_file.mimes' => __('Ce format de fichier ne peut pas être lu. Déposez un tableur : xlsx, xls, ods ou csv. Un PDF ou une image ne peuvent pas être importés.')],
+            ['import_file' => __('Fichier')]
+        );
+
+        try {
+            $jeton = 'import-taches-' . user()->id . '-' . time() . '.'
+                . $request->file('import_file')->getClientOriginalExtension();
+
+            $chemin = $request->file('import_file')
+                ->move(storage_path('app/imports-taches'), $jeton)
+                ->getPathname();
+
+            $resultat = $this->analyserFichierTaches($chemin, $this->projetDefautChoisi($request));
+
+            if ($resultat->total === 0) {
+                @unlink($chemin);
+                $jeton = null;
+            }
+
+            // Référentiels pour le DataTable éditable
+            $societe = company()->id;
+            $this->projets = Project::where('company_id', $societe)
+                ->orderBy('project_name')->get(['id', 'project_name']);
+            $this->categories = TaskCategory::where('company_id', $societe)
+                ->orderBy('category_name')->get(['id', 'category_name']);
+            $this->statuts = TaskboardColumn::orderBy('priority')->get(['id', 'column_name', 'slug', 'label_color']);
+            $this->nomFichier = $request->file('import_file')->getClientOriginalName();
+
+            $this->resultat = $resultat;
+            $this->jeton = $jeton;
+
+            return Reply::dataOnly([
+                'status' => 'success',
+                'html' => view('tasks.ajax.import_apercu', $this->data)->render(),
+                'peutImporter' => $resultat->total > 0,
+            ]);
+        }
+        catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Import de taches, analyse : ' . $e->getMessage(), [
+                'fichier' => $e->getFile() . ':' . $e->getLine(),
+            ]);
+
+            return Reply::error(__('Le fichier n’a pas pu être analysé.') . ' ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Cree les taches en base à partir des données éditées dans le DataTable.
+     */
+    public function importTaskProcess(Request $request)
+    {
+        abort_403(!in_array(user()->permission('add_tasks'), ['all', 'added']));
+
+        try {
+            $jeton = basename((string) $request->jeton);
+            $chemin = $jeton ? storage_path('app/imports-taches/' . $jeton) : null;
+
+            // Si des tâches modifiées sont transmises directement via le DataTable
+            $tachesModifiees = $request->input('tasks');
+
+            if (is_array($tachesModifiees)) {
+                if (empty($tachesModifiees)) {
+                    return response()->json(
+                        Reply::error(__('Aucune tâche à importer.')),
+                        422
+                    );
+                }
+
+                // Validation de base des tâches éditées et manuelles
+                $tachesValides = [];
+                $erreurs = [];
+
+                foreach ($tachesModifiees as $idx => $t) {
+                    $ligneNum = $t['numero'] ?? ($idx + 1);
+                    $titre = trim((string)($t['heading'] ?? ''));
+                    $dateDebut = trim((string)($t['start_date'] ?? ''));
+
+                    if ($titre === '') {
+                        $erreurs[] = sprintf(__('Ligne %d : le titre de la tâche est obligatoire.'), $ligneNum);
+                    }
+
+                    if ($dateDebut === '') {
+                        $erreurs[] = sprintf(__('Ligne %d : la date de début est obligatoire.'), $ligneNum);
+                    }
+
+                    if ($titre !== '' && $dateDebut !== '') {
+                        $tachesValides[] = $t;
+                    }
+                }
+
+                if (!empty($erreurs)) {
+                    return response()->json(
+                        Reply::error(implode('<br>', $erreurs)),
+                        422
+                    );
+                }
+
+                if (empty($tachesValides)) {
+                    return response()->json(
+                        Reply::error(__('Aucune tâche valide à importer. Veuillez renseigner au moins un titre et une date de début.')),
+                        422
+                    );
+                }
+
+                $resultatCreation = $this->creerTachesDepuisDonneesEditables($tachesValides);
+                $creees   = $resultatCreation->creees;
+                $ignorees = $resultatCreation->ignorees;
+
+                if ($chemin && is_file($chemin)) {
+                    @unlink($chemin);
+                }
+
+                if ($creees === 0 && $ignorees > 0) {
+                    return response()->json(
+                        Reply::error(
+                            $ignorees === 1
+                                ? __('La tâche n\'a pas été importée car elle existe déjà en base.')
+                                : sprintf(__('Aucune tâche importée : les %d tâches existent déjà en base.'), $ignorees)
+                        ),
+                        422
+                    );
+                }
+
+                $message = sprintf(__('%d tâches ont été importées avec succès.'), $creees);
+                if ($ignorees > 0) {
+                    $message .= ' ' . sprintf(
+                        $ignorees === 1
+                            ? __('(%d tâche ignorée car déjà existante.)')
+                            : __('(%d tâches ignorées car déjà existantes.)'),
+                        $ignorees
+                    );
+                }
+
+                return response()->json(
+                    Reply::successWithData(
+                        $message,
+                        ['creees' => $creees, 'redirectUrl' => route('taskboards.index')]
+                    )
+                );
+            }
+
+            // Fallback : import direct depuis le fichier conservé si aucune donnée JSON
+            if (!$jeton || !$chemin || !is_file($chemin)) {
+                return response()->json(
+                    Reply::error(__('Le fichier importé est introuvable. Recommencez.')), 422
+                );
+            }
+
+            $resultat = $this->analyserFichierTaches($chemin, $this->projetDefautChoisi($request));
+
+            if ($resultat->total === 0) {
+                @unlink($chemin);
+
+                return response()->json(
+                    Reply::error($resultat->message
+                        ?: __('Le fichier contient des erreurs. Corrigez-le avant de recommencer.')),
+                    422
+                );
+            }
+
+            $valides = array_values(array_filter(
+                $resultat->lignes, fn($l) => empty($l->erreurs)
+            ));
+
+            if (!$valides) {
+                @unlink($chemin);
+
+                return response()->json(
+                    Reply::error(__('Aucune ligne de ce fichier n\'est exploitable. Corrigez-le avant de recommencer.')),
+                    422
+                );
+            }
+
+            $creees = $this->creerTachesImportees($valides);
+
+            @unlink($chemin);
+
+            return response()->json(
+                Reply::successWithData(
+                    sprintf(__('%d tâches ont été importées avec succès.'), $creees),
+                    ['creees' => $creees, 'redirectUrl' => route('taskboards.index')]
+                )
+            );
+        } catch (\Throwable $e) {
+            Log::error('Import de taches, confirmation : ' . $e->getMessage(), [
+                'fichier' => $e->getFile() . ':' . $e->getLine(),
+            ]);
+
+            return response()->json(
+                Reply::error(__('Une erreur est survenue lors de l\'importation : ') . $e->getMessage()),
+                500
+            );
+        }
+    }
+
+    /**
+     * Projet applique aux lignes dont la colonne Projet est vide.
+     *
+     * Verifie ici plutot que dans le trait : l'identifiant vient du
+     * navigateur, et rien ne garantit qu'il designe un projet du
+     * cabinet. Un identifiant etranger est simplement ignore.
+     */
+    private function projetDefautChoisi(Request $request): ?int
+    {
+        $id = (int) $request->projet_defaut;
+
+        if (!$id) {
+            return null;
+        }
+
+        return Project::where('company_id', company()->id)
+            ->where('id', $id)->value('id');
+    }
+
+    /**
+     * Previent les collaborateurs a qui une tache vient d'etre confiee.
+     *
+     * L'auteur n'est jamais notifie : il vient d'ecrire la tache.
+     *
+     * @param array|null $ids identifiants des assignes
+     */
+    private function notifierNouveauxAssignes(Task $task, $ids): void
+    {
+        $ids = array_filter((array) $ids);
+
+        if (!$ids) {
+            return;
+        }
+
+        /* On ne se previent pas soi-meme. */
+        $ids = array_diff($ids, [user()?->id]);
+
+        if (!$ids) {
+            return;
+        }
+
+        $gens = User::whereIn('id', $ids)->get();
+
+        if ($gens->isEmpty()) {
+            return;
+        }
+
+        /* Un envoi qui echoue ne doit pas defaire l'enregistrement.
+
+           La tache est deja en base quand on arrive ici. Laisser
+           remonter l'exception afficherait une erreur pour une
+           creation pourtant reussie, et l'utilisateur recommencerait —
+           c'est ainsi qu'on fabrique des doublons.
+
+           Le serveur refuse par exemple les adresses desactivees
+           (« 525 Disabled recipient address »), ce qui est le cas de
+           plusieurs boites du domaine. On le consigne et l'on
+           poursuit ; la notification dans l'application, elle, est
+           ecrite quoi qu'il arrive. */
+        try {
+            event(new TaskEvent($task, $gens, 'NewTask'));
+        }
+        catch (\Throwable $e) {
+            Log::warning('Tache #' . $task->id . ' : notification d\'affectation non delivree — '
+                . $e->getMessage());
+        }
+    }
+
     public function store(StoreTask $request)
     {
         $project = request('project_id') ?Project::findOrFail(request('project_id')) : null;
@@ -540,6 +933,25 @@ class TaskController extends AccountBaseController
         // Save assignees
         if ($request->user_id) {
             $task->users()->sync($request->user_id);
+
+            /* Prevenir les collaborateurs a qui la tache est confiee.
+
+               Cet envoi avait ete coupe dans TaskObserver pour cause de
+               doublons : la notification partait a la fois de
+               l'observateur de la tache et de celui du pivot
+               task_users, que sync() declenche lui aussi. Creer une
+               tache ne prevenait donc plus personne, alors que la
+               modification, elle, prevenait toujours les nouveaux
+               assignes — d'ou l'incoherence constatee.
+
+               On la retablit ici, au meme endroit et de la meme facon
+               que dans update() : un seul point d'emission, sur le
+               chemin explicite du controleur. Les observateurs restent
+               muets, ce qui evite le doublon d'origine.
+
+               TaskListener ecarte de lui-meme les taches privees, et
+               NewTask respecte les preferences de chacun. */
+            $this->notifierNouveauxAssignes($task, $request->user_id);
         }
 
 
@@ -816,6 +1228,7 @@ class TaskController extends AccountBaseController
         $this->allEmployees = User::allEmployees(null, true, 'all');
         $this->allClients = User::allClients();
 
+        $this->backUrl = $this->determinerUrlRetour((int) $id);
         $this->view = 'tasks.ajax.edit';
 
         if (request()->ajax()) {
@@ -938,11 +1351,14 @@ class TaskController extends AccountBaseController
         $task->users()->sync($request->user_id);
 
         if (!empty($request->user_id)) {
-            $newlyAssignedUserIds = array_diff($request->user_id, $taskUsers);
-            if (!empty($newlyAssignedUserIds)) {
-                $newUsers = User::whereIn('id', $newlyAssignedUserIds)->get();
-                event(new TaskEvent($task, $newUsers, 'NewTask'));
-            }
+            /* Les seuls nouveaux venus : reassigner une tache ne doit
+               pas re-prevenir ceux qui la portaient deja.
+
+               Meme methode qu'a la creation, donc meme protection
+               contre un envoi qui echoue, et meme regle sur l'auteur,
+               qui ne se notifie pas lui-meme. */
+            $this->notifierNouveauxAssignes(
+                $task, array_diff($request->user_id, $taskUsers));
         }
 
         // Dispatch delegation notification if changed
@@ -1190,6 +1606,8 @@ class TaskController extends AccountBaseController
                 break;
         }
 
+        $this->backUrl = $this->determinerUrlRetour((int) $id);
+
         if (request()->ajax()) {
             $view = request('json') ? $this->tab : 'tasks.ajax.show';
 
@@ -1201,6 +1619,37 @@ class TaskController extends AccountBaseController
 
         return view('tasks.create', $this->data);
 
+    }
+
+    /**
+     * Determine l'URL de retour vers la vue d'origine (tableau des taches par defaut),
+     * en preservant les filtres de navigation.
+     */
+    private function determinerUrlRetour(?int $taskId = null): string
+    {
+        $referer = request('redirectUrl') ?: request()->header('referer');
+
+        if ($referer) {
+            if (str_starts_with($referer, 'http%3A') || str_starts_with($referer, 'https%3A')) {
+                $referer = urldecode($referer);
+            }
+
+            // On ne memorise pas l'URL si elle boucle sur le detail de cette tache
+            $isSelf = $taskId ? str_contains($referer, '/account/tasks/' . $taskId) : false;
+
+            if (!$isSelf && (str_contains($referer, '/account/taskboards') || str_contains($referer, '/account/tasks'))) {
+                session(['task_back_url' => $referer]);
+            }
+        }
+
+        $backUrl = session('task_back_url');
+
+        // Si aucune URL memorisee ou si elle boucle sur la tache courante, retour au tableau des taches
+        if (!$backUrl || ($taskId && str_contains($backUrl, '/account/tasks/' . $taskId))) {
+            $backUrl = route('taskboards.index');
+        }
+
+        return $backUrl;
     }
 
     public function storePin(Request $request)
@@ -1424,39 +1873,12 @@ class TaskController extends AccountBaseController
         }
     }
 
+    /* Module Conges retire du perimetre du cabinet (cf. audit nettoyage-modules) :
+       la superposition "en conges" du calendrier de taches n'interroge plus le
+       module Leave. La vue gere deja nativement l'absence de resultat. */
     public function leaves($userIds, $startDate, $dueDate)
     {
-        $leaveDates = [];
-
-        foreach ($userIds as $userId) {
-            $leaves = Leave::with('user')
-                ->where('user_id', $userId)
-                ->whereBetween('leave_date', [$startDate, $dueDate])
-                ->get();
-
-            foreach ($leaves as $leave) {
-                $userName[] = $leave->user->name;
-                $leaveDates[] = $leave->leave_date->format('d,M Y');
-            }
-        }
-
-        if (isset($userName)) {
-            $uniqueUser = array_unique($userName);
-            $data = [];
-
-            foreach ($uniqueUser as $name) {
-                $data[$name] = [];
-
-                foreach ($userName as $key => $value) {
-                    if ($value == $name) {
-                        $data[$name][] = $leaveDates[$key];
-                    /** @phpstan-ignore-line */
-                    }
-                }
-            }
-
-            return $data;
-        }
+        return null;
     }
 
     public function sendNotifications($id)

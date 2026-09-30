@@ -103,7 +103,7 @@
             </li>
 
         <!-- NOTIFICATIONS START -->
-            <li title="{{__('app.newNotifications')}}">
+            <li title="{{__('Nouvelles notifications ')}}">
                 <div class="notification_box dropdown">
                     <a class="d-block dropdown-toggle header-icon-box show-user-notifications" type="link"
                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -120,16 +120,20 @@
                         <div
                             class="d-flex px-3 justify-content-between align-items-center border-bottom-grey py-1 bg-white">
                             <div class="___class_+?50___">
-                                <p class="f-14 mb-0 text-dark f-w-500">@lang('app.newNotifications')</p>
+                                <p class="f-14 mb-0 text-dark f-w-500">@lang('Nouvelles notifications ')</p>
                             </div>
-                            @if ($unreadNotificationCount > 0)
-                                <div class="f-12 ">
+                            {{-- « Tout afficher » reste accessible meme sans
+                                 non-lue : c'est le seul chemin vers
+                                 l'historique, et le masquer rendait les
+                                 notifications deja lues introuvables. --}}
+                            <div class="f-12 ">
+                                @if ($unreadNotificationCount > 0)
                                     <a href="javascript:;"
                                        class="text-dark-grey mark-notification-read">@lang('app.markRead')</a> |
-                                    <a href="{{ route('all-notifications') }}"
-                                       class="text-dark-grey">@lang('app.showAll')</a>
-                                </div>
-                            @endif
+                                @endif
+                                <a href="{{ route('all-notifications') }}"
+                                   class="text-dark-grey">@lang('app.showAll')</a>
+                            </div>
                         </div>
                         <div id="notification-list">
 
@@ -173,7 +177,7 @@
 
                             @if (in_array('projects', user_modules()) && Route::has('projects.create') && (add_project_permission() == 'all' || add_project_permission() == 'added'))
                                 <a class="dck-creer__item openRightModal" href="{{ route('projects.create') }}">
-                                    <i class="bi bi-folder2-open"></i>@lang('Nouvelle diligence')
+                                    <i class="bi bi-folder2-open"></i>@lang('Nouveau projet')
                                 </a>
                             @endif
 

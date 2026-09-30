@@ -11,11 +11,11 @@ use Illuminate\Support\Facades\DB;
  * Donnees de l'ecran « Tableau de bord » du cabinet, tel que
  * PAGES.dashboard le decrit dans la maquette dck-flow-task :
  *
- *   quatre indicateurs — taches en cours, diligences actives,
+ *   quatre indicateurs — taches en cours, projets actifs,
  *   contrats en vigueur, collaborateurs ;
  *   la charge de travail sur six mois, creees contre terminees ;
  *   la repartition des taches par colonne du tableau ;
- *   les diligences dont l'echeance approche ;
+ *   les projets dont l'echeance approche ;
  *   le taux de cloture dans les delais.
  *
  * OverviewDashboard fournit deja $counts et $projectActivities : ils ne
@@ -39,7 +39,7 @@ trait PilotageCabinet
             ->where('is_private', 0)
             ->first();
 
-        $diligences = DB::table('projects')
+        $projets = DB::table('projects')
             ->selectRaw("SUM(status <> 'terminée') as actives")
             ->selectRaw("SUM(status = 'terminée' AND updated_at >= ?) as clotureesMois", [now()->startOfMonth()])
             ->where('company_id', $id)
@@ -63,7 +63,7 @@ trait PilotageCabinet
             ->count('users.id');
 
         /* Volume du mois et taux de cloture : calcules sur les seules
-           taches, les diligences etant exclues du calcul de productivite. */
+           taches, les projets etant exclues du calcul de productivite. */
         $mois = DB::table('tasks')
             ->selectRaw('COUNT(*) as total')
             ->selectRaw('SUM(board_column_id = ?) as terminees', [$termine->id])
@@ -78,7 +78,7 @@ trait PilotageCabinet
 
         /* Taux de cloture sur l'ensemble des taches, et non sur le seul
            mois courant : un taux calcule sur le mois est vide les premiers
-           jours et n'a aucune valeur de pilotage. Les diligences restent
+           jours et n'a aucune valeur de pilotage. Les projets restent
            exclues, comme le demande la specification. */
         $global = DB::table('tasks')
             ->selectRaw('COUNT(*) as total')
@@ -135,8 +135,8 @@ trait PilotageCabinet
         return (object) [
             'tachesOuvertes'  => (int) $taches->ouvertes,
             'tachesRecentes'  => (int) $taches->recentes,
-            'diligences'      => (int) $diligences->actives,
-            'diligencesMois'  => (int) $diligences->clotureesMois,
+            'projets'      => (int) $projets->actives,
+            'projetsMois'  => (int) $projets->clotureesMois,
             'contrats'        => (int) $contrats->total,
             'contratsBientot' => (int) $contrats->bientot,
             'collaborateurs'  => $collaborateurs,
@@ -217,7 +217,7 @@ trait PilotageCabinet
             ->get();
     }
 
-    /** Diligences ouvertes dont l'echeance tombe dans moins de 45 jours. */
+    /** Projets ouvertes dont l'echeance tombe dans moins de 45 jours. */
     /**
      * Collaborateurs ayant cloture le plus de taches sur le trimestre.
      *
@@ -246,9 +246,9 @@ trait PilotageCabinet
      * Taches critiques : celles dont l'echeance approche ou est passee,
      * et qui ne sont ni terminees ni classees incompletes.
      *
-     * Le bloc portait auparavant sur les diligences. Il suit desormais
+     * Le bloc portait auparavant sur les projets. Il suit desormais
      * les taches, seule maille sur laquelle une action est possible :
-     * une diligence ne se traite pas, ses taches si.
+     * un projet ne se traite pas, ses taches si.
      */
     protected function cabinetTachesASurveiller(int $limite = 6)
     {
@@ -269,7 +269,7 @@ trait PilotageCabinet
     }
 
     /**
-     * Part des diligences terminees livrees avant leur echeance.
+     * Part des projets terminees livrees avant leur echeance.
      *
      * Meme reserve que sur les autres indicateurs de delai : la table
      * ne conserve pas de date de cloture, updated_at en tient lieu.

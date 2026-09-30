@@ -3,10 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\DataTables\EmployeesDataTable;
-use App\DataTables\LeaveDataTable;
 use App\DataTables\ProjectsDataTable;
 use App\DataTables\TasksDataTable;
-use App\DataTables\TicketDataTable;
 use App\DataTables\TimeLogsDataTable;
 use App\Enums\Salutation;
 use App\Helper\Files;
@@ -21,15 +19,12 @@ use App\Imports\EmployeeImport;
 use App\Models\ModuleSetting;
 use App\Jobs\ImportEmployeeJob;
 use App\Models\Appreciation;
-use App\Models\Attendance;
 use App\Models\AutomateShift;
 use App\Models\Designation;
 use App\Models\EmployeeActivity;
 use App\Models\EmployeeDetails;
 use App\Models\EmployeeSkill;
 use App\Models\LanguageSetting;
-use App\Models\Leave;
-use App\Models\LeaveType;
 use App\Models\Module;
 use App\Models\Notification;
 use App\Models\Passport;
@@ -39,7 +34,6 @@ use App\Models\Skill;
 use App\Models\Task;
 use App\Models\TaskboardColumn;
 use App\Models\Team;
-use App\Models\Ticket;
 use App\Models\UniversalSearch;
 use App\Models\User;
 use App\Models\UserInvitation;
@@ -53,7 +47,6 @@ use Illuminate\Support\Facades\DB;
 use Symfony\Component\Mailer\Exception\TransportException;
 use App\Models\CompanyAddress;
 use App\Models\Promotion;
-use App\Models\ShiftRotation;
 use Modules\Payroll\Entities\EmployeeMonthlySalary;
 use Modules\Payroll\Entities\PayrollSetting;
 
@@ -421,7 +414,7 @@ class EmployeeController extends AccountBaseController
         if (!is_null($this->employee->employeeDetail)) {
             $this->employeeDetail = $this->employee->employeeDetail->withCustomFields();
 
-            $getCustomFieldGroupsWithFields = $this->employeeDetail->getCustomFieldGroupsWithFields();
+            $getCustomFieldGroupsWithFields = $this->employeeDetail->custom_fields;
 
             if ($getCustomFieldGroupsWithFields) {
                 $this->fields = $getCustomFieldGroupsWithFields->fields;
@@ -606,7 +599,7 @@ class EmployeeController extends AccountBaseController
     {
         $this->viewPermission = user()->permission('view_employees');
 
-        $this->employee = User::with('leaveTypes.leaveType')->withoutGlobalScope(ActiveScope::class)
+        $this->employee = User::with('reportingTeam.user')->withoutGlobalScope(ActiveScope::class)
             ->withOut('clientDetails')
             ->findOrFail($id);
 
@@ -638,7 +631,7 @@ class EmployeeController extends AccountBaseController
                 $this->toDate = now()->timezone($this->company->timezone)->endOfMonth()->toDateString();
 
                 /* Indicateurs de la fiche : charge, retards, respect des
-                   echeances et diligences. Ils remplacent les chiffres de
+                   echeances et projets. Ils remplacent les chiffres de
                    pointage et de conges, dont les modules ne sont pas
                    utilises par le cabinet. */
                 $this->k = $this->employeIndicateurs((int) $id);
@@ -648,7 +641,7 @@ class EmployeeController extends AccountBaseController
                 if (!is_null($this->employee->employeeDetail)) {
                     $this->employeeDetail = $this->employee->employeeDetail->withCustomFields();
 
-                    $customFields = $this->employeeDetail->getCustomFieldGroupsWithFields();
+                    $customFields = $this->employeeDetail->custom_fields;
 
                     if (!empty($customFields)) {
                         $this->fields = $customFields->fields;
@@ -664,15 +657,11 @@ class EmployeeController extends AccountBaseController
         $viewImmigrationPermission = user()->permission('view_immigration');
 
         switch ($tab) {
-        case 'tickets':
-            return $this->tickets();
         case 'projects':
             return $this->projects();
 
         case 'tasks':
             return $this->tasks();
-        case 'leaves':
-            return $this->leaves();
         case 'timelogs':
             return $this->timelogs();
         case 'documents':
@@ -696,105 +685,6 @@ class EmployeeController extends AccountBaseController
 
             $this->appreciations = $this->appreciation($this->employee->id);
             $this->view = 'employees.ajax.appreciations';
-            break;
-        case 'leaves-quota':
-
-            $settings = company();
-            $now = Carbon::now();
-            $yearStartMonth = $settings->year_starts_from;
-            $leaveStartDate = null;
-            $leaveEndDate = null;
-
-            if($settings && $settings->leaves_start_from == 'year_start'){
-
-                if ($yearStartMonth > $now->month) {
-                    // Not completed a year yet
-                    $leaveStartDate = Carbon::create($now->year, $yearStartMonth, 1)->subYear();
-                    $leaveEndDate = $leaveStartDate->copy()->addYear()->subDay();
-                } else {
-                    $leaveStartDate = Carbon::create($now->year, $yearStartMonth, 1);
-                    $leaveEndDate = $leaveStartDate->copy()->addYear()->subDay();
-                }
-
-            } elseif ($settings && $settings->leaves_start_from == 'joining_date'){
-
-                $joiningDate = Carbon::parse($this->employee->employeedetails->joining_date->format((now(company()->timezone)->year) . '-m-d'));
-                $joinMonth = $joiningDate->month;
-                $joinDay = $joiningDate->day;
-
-                if ($joinMonth > $now->month || ($joinMonth == $now->month && $now->day < $joinDay)) {
-                    // Not completed a year yet
-                    $leaveStartDate = $joiningDate->copy()->subYear();
-                    $leaveEndDate = $joiningDate->copy()->subDay();
-                } else {
-                    // Completed a year
-                    $leaveStartDate = $joiningDate;
-                    $leaveEndDate = $joiningDate->copy()->addYear()->subDay();
-                }
-
-            }
-
-            $this->employeeLeavesQuotas = $this->employee->leaveTypes;
-
-            $hasLeaveQuotas = false;
-            $totalLeaves = 0;
-            $overUtilizedLeaves = 0;
-            $leaveCounts = [];
-
-            foreach ($this->employeeLeavesQuotas as $key => $leavesQuota) {
-
-                    $count = $this->employee->leaves()
-                        ->where('leave_type_id', $leavesQuota->leave_type_id)->where('status', 'approved')
-                        ->where(function ($query) use ($leaveStartDate, $leaveEndDate) {
-                            $query->where('leave_date', '<=', $leaveEndDate)
-                                ->where('leave_date', '>=', $leaveStartDate);
-                        })->get()
-                        ->sum(function($leave) {
-                            return $leave->half_day_type ? 0.5 : 1;
-                        });
-
-                    $overUtilizedLeaves += $this->employee->leaves()
-                        ->where('leave_type_id', $leavesQuota->leave_type_id)->where('status', 'approved')
-                        ->where(function ($query) use ($leaveStartDate, $leaveEndDate) {
-                            $query->where('over_utilized', 1)
-                                ->where('leave_date', '<=', $leaveEndDate)
-                                ->where('leave_date', '>=', $leaveStartDate);
-                        })->get()
-                        ->sum(function($leave) {
-                            return $leave->half_day_type ? 0.5 : 1;
-                        });
-
-
-                    // Store the count in the array with leave_type_id as the key
-                    $leaveCounts[$leavesQuota->leave_type_id] = $count;
-
-                if (
-                    ($leavesQuota->leaveType->deleted_at == null || $leavesQuota->leaves_used > 0) &&
-                    $leavesQuota->leaveType && ($leavesQuota->leaveType->leaveTypeCondition($leavesQuota->leaveType, $this->employee))) {
-
-                    $hasLeaveQuotas = true;
-
-                    // $sum = ($leavesQuota->leaveType->deleted_at == null) ? $leavesQuota->leaves_remaining : 0;
-                    // $totalLeaves = $totalLeaves + ($leavesQuota?->no_of_leaves ?: 0) - ($leaveCounts[$leavesQuota->leave_type_id] ?: 0);
-                    $totalLeaves = $totalLeaves + ($leavesQuota?->no_of_leaves ?: 0) - ($leaveCounts[$leavesQuota->leave_type_id] ?: 0);
-                }
-            }
-
-            $this->leaveStartDate = $leaveStartDate->format(company()->date_format);
-            $this->leaveEndDate = $leaveEndDate->format(company()->date_format);
-            $this->leaveCounts = $leaveCounts;
-
-            $this->hasLeaveQuotas = $hasLeaveQuotas;
-            $this->allowedLeaves = $totalLeaves + $overUtilizedLeaves;
-            $this->view = 'employees.ajax.leaves_quota';
-            break;
-        case 'shifts':
-            abort_403(user()->permission('view_shift_roster') != 'all' || !in_array('attendance', user_modules()));
-
-            $automateShift = AutomateShift::where('user_id', $id)->first();
-            $this->shiftRotation = $automateShift ? ShiftRotation::findOrFail($automateShift->employee_shift_rotation_id) : [];
-
-            $this->view = 'employees.ajax.shifts';
             break;
         case 'permissions':
             abort_403(user()->permission('manage_role_permission_setting') != 'all');
@@ -832,7 +722,8 @@ class EmployeeController extends AccountBaseController
             $userId = auth()->id();
 
 
-            $this->histories = EmployeeActivity::where('emp_id', $id)
+            $this->histories = EmployeeActivity::with('user')
+                ->where('emp_id', $id)
                 ->orderBy('created_at', 'desc')
                 ->get();
 
@@ -919,9 +810,14 @@ class EmployeeController extends AccountBaseController
         $data['colors'] = $taskStatus->pluck('label_color');
         $data['values'] = [];
 
+        $countsByColumn = Task::join('task_users', 'task_users.task_id', '=', 'tasks.id')
+            ->where('task_users.user_id', $id)
+            ->selectRaw('tasks.board_column_id, count(*) as aggregate')
+            ->groupBy('tasks.board_column_id')
+            ->pluck('aggregate', 'board_column_id');
+
         foreach ($taskStatus as $label) {
-            $data['values'][] = Task::join('task_users', 'task_users.task_id', '=', 'tasks.id')
-                ->where('task_users.user_id', $id)->where('tasks.board_column_id', $label->id)->count();
+            $data['values'][] = $countsByColumn->get($label->id, 0);
         }
 
         return $data;
@@ -1008,20 +904,6 @@ class EmployeeController extends AccountBaseController
 
     }
 
-    public function tickets()
-    {
-        $viewPermission = user()->permission('view_tickets');
-        abort_403(!(in_array($viewPermission, ['all']) && in_array('tickets', user_modules())));
-        $tab = request('tab');
-        $this->activeTab = $tab ?: 'profile';
-        $this->tickets = Ticket::all();
-        $this->view = 'employees.ajax.tickets';
-        $dataTable = new TicketDataTable();
-
-        return $dataTable->render('employees.show', $this->data);
-
-    }
-
     public function tasks()
     {
         $viewPermission = user()->permission('view_employee_tasks');
@@ -1033,22 +915,6 @@ class EmployeeController extends AccountBaseController
         $this->view = 'employees.ajax.tasks';
 
         $dataTable = new TasksDataTable();
-
-        return $dataTable->render('employees.show', $this->data);
-    }
-
-    public function leaves()
-    {
-
-        $viewPermission = user()->permission('view_leaves_taken');
-        abort_403(!in_array($viewPermission, ['all']));
-
-        $tab = request('tab');
-        $this->activeTab = $tab ?: 'profile';
-        $this->leaveTypes = LeaveType::all();
-        $this->view = 'employees.ajax.leaves';
-
-        $dataTable = new LeaveDataTable();
 
         return $dataTable->render('employees.show', $this->data);
     }

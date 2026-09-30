@@ -140,7 +140,8 @@ Route::group(['middleware' => 'auth', 'prefix' => 'account'], function () {
     Route::get('dashboard-advanced', [DashboardController::class , 'advancedDashboard'])->name('dashboard.advanced');
     Route::post('dashboard/widget/{dashboardType}', [DashboardController::class , 'widget'])->name('dashboard.widget');
     Route::post('dashboard/week-timelog', [DashboardController::class , 'weekTimelog'])->name('dashboard.week_timelog');
-    Route::get('dashboard/lead-data/{id}', [DashboardController::class , 'getLeadStage'])->name('dashboard.deal-stage-data');
+    // [nettoyage-modules] Leads/Deals — methode retiree de DashboardController
+    // Route::get('dashboard/lead-data/{id}', [DashboardController::class , 'getLeadStage'])->name('dashboard.deal-stage-data');
 
     // Route::get('attendances/clock-in-modal', [DashboardController::class , 'clockInModal'])->name('attendances.clock_in_modal');
     // Route::post('attendances/store-clock-in', [DashboardController::class , 'storeClockIn'])->name('attendances.store_clock_in');
@@ -236,8 +237,9 @@ Route::group(['middleware' => 'auth', 'prefix' => 'account'], function () {
     Route::get('employee-docs/download/{id}', [EmployeeDocController::class , 'download'])->name('employee-docs.download');
     Route::resource('employee-docs', EmployeeDocController::class);
 
-    Route::get('employee-leaves/employeeLeaveTypes/{id}', [LeavesQuotaController::class , 'employeeLeaveTypes'])->name('employee-leaves.employee_leave_types');
-    Route::resource('employee-leaves', LeavesQuotaController::class);
+    // [nettoyage-modules] Leave/Attendance
+    // Route::get('employee-leaves/employeeLeaveTypes/{id}', [LeavesQuotaController::class , 'employeeLeaveTypes'])->name('employee-leaves.employee_leave_types');
+    // Route::resource('employee-leaves', LeavesQuotaController::class);
 
     Route::get('designations/designation-hierarchy', [DesignationController::class , 'hierarchyData'])->name('designation.hierarchy');
     Route::post('designations/changeParent', [DesignationController::class , 'changeParent'])->name('designation.changeParent');
@@ -487,6 +489,18 @@ Route::group(['middleware' => 'auth', 'prefix' => 'account'], function () {
             Route::resource('task-calendar', TaskCalendarController::class);
         }
         );
+
+        // Importation massive de taches. Declarees avant la ressource :
+
+        // « import » serait sinon pris pour l'identifiant d'une tache.
+
+        Route::get('tasks/import', [TaskController::class, 'importTask'])->name('tasks.import');
+
+        Route::get('tasks/import/modele', [TaskController::class, 'importTaskTemplate'])->name('tasks.import.modele');
+
+        Route::post('tasks/import/analyse', [TaskController::class, 'importTaskAnalyse'])->name('tasks.import.analyse');
+
+        Route::post('tasks/import/process', [TaskController::class, 'importTaskProcess'])->name('tasks.import.process');
 
         Route::resource('tasks', TaskController::class);
 
@@ -826,6 +840,12 @@ Route::group(['middleware' => 'auth', 'prefix' => 'account'], function () {
         // Route::post('ticket-replies/edit-note/{id}', [TicketReplyController::class , 'editNote'])->name('ticket-replies.edit_note');
 
         Route::post('task-report-chart', [TaskReportController::class , 'taskChartData'])->name('task-report.chart');
+        Route::get('task-report/hebdomadaire', [TaskReportController::class, 'hebdomadaire'])
+            ->name('task-report.hebdomadaire');
+        Route::get('task-report/hebdomadaire/export', [TaskReportController::class, 'exportHebdomadaire'])
+            ->name('task-report.hebdomadaire.export');
+        Route::get('task-report/hebdomadaire/pdf', [TaskReportController::class, 'pdfHebdomadaire'])
+            ->name('task-report.hebdomadaire.pdf');
         Route::resource('task-report', TaskReportController::class);
 
         // Route::post('time-log-report-chart', [TimelogReportController::class , 'timelogChartData'])->name('time-log-report.chart');
@@ -839,7 +859,8 @@ Route::group(['middleware' => 'auth', 'prefix' => 'account'], function () {
         // Route::resource('income-expense-report', IncomeVsExpenseReportController::class);
 
         // Route::get('leave-report/leave-quota', [LeaveReportController::class , 'leaveQuota'])->name('leave-report.leave_quota');
-        Route::get('leave-report/leave-quota/export-all-leave-quota/{id}/{year}/{month}', [LeavesQuotaController::class , 'exportAllLeaveQuota'])->name('leave_quota.export_all_leave_quota');
+        // [nettoyage-modules] Leave/Attendance
+        // Route::get('leave-report/leave-quota/export-all-leave-quota/{id}/{year}/{month}', [LeavesQuotaController::class , 'exportAllLeaveQuota'])->name('leave_quota.export_all_leave_quota');
         // Route::get('leave-report/leave-quota/{id}/{year}/{month}', [LeaveReportController::class , 'employeeLeaveQuota'])->name('leave-report.employee-leave-quota');
         // Route::resource('leave-report', LeaveReportController::class);
 
@@ -890,7 +911,7 @@ Route::group(['middleware' => 'auth', 'prefix' => 'account'], function () {
         Route::post('mark-read', [NotificationController::class , 'markRead'])->name('mark_single_notification_read');
         Route::post('mark_notification_read', [NotificationController::class , 'markAllRead'])->name('mark_notification_read');
 
-        // Recherche transversale de l'en-tete : taches, diligences et clients
+        // Recherche transversale de l'en-tete : taches, projets et clients
         // en une seule requete. Declaree avant la resource pour que
         // « search/resultats » ne soit pas pris pour « search/{id} ».
         Route::get('search/resultats', [SearchController::class, 'resultats'])->name('search.resultats');

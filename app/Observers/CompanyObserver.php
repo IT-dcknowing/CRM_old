@@ -138,36 +138,25 @@ class CompanyObserver
         $this->companyAddress($company);
         $this->roles($company);
         $this->employeeShift($company);
-        $this->attendanceSetting($company);
         $this->customFieldGroup($company);
         $this->dashboardWidgets($company);
         $this->discussionCategory($company);
         $this->emailNotificationSettings($company);
         $this->invoiceSetting($company);
-        $this->leadCustomForms($company);
-        $this->leadSources($company);
-        $this->leaveType($company);
         $this->logTimeFor($company);
         $this->messageSetting($company);
         $this->projectSetting($company);
         $this->slackSetting($company);
-        $this->ticketChannel($company);
-        $this->ticketType($company);
-        $this->ticketSettingForAgents($company);
-        $this->customForms($company);
         $this->taskBoard($company);
         $this->projectStatusSettings($company);
 
         $company->paymentGatewayCredentials()->create();
         $company->taskSetting()->create();
-        $company->leaveSetting()->create();
         $this->dateFormats($company);
         $this->moduleSettings($company);
         $this->themeSetting($company);
-        $this->ticketEmailSetting($company);
         $this->googleCalendar($company);
         $this->unitType($company);
-        $this->leadStages($company);
 
         // Will be used in various module
         event(new NewCompanyCreatedEvent($company));

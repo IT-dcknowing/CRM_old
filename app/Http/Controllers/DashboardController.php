@@ -7,21 +7,14 @@ use App\Models\DashboardWidget;
 use App\Models\EmployeeDetails;
 use App\Models\Event;
 use App\Models\Holiday;
-use App\Models\LeadPipeline;
-use App\Models\Leave;
 use App\Models\ProjectTimeLog;
 use App\Models\ProjectTimeLogBreak;
 use App\Models\Task;
 use App\Models\TaskboardColumn;
-use App\Models\Ticket;
-use App\Traits\ClientDashboard;
 use App\Traits\ClientPanelDashboard;
 use App\Traits\CurrencyExchange;
 use App\Traits\EmployeeDashboard;
-use App\Traits\FinanceDashboard;
-use App\Traits\HRDashboard;
 use App\Traits\OverviewDashboard;
-use App\Traits\ProjectDashboard;
 use App\Traits\TicketDashboard;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
@@ -32,7 +25,7 @@ use Illuminate\Support\Facades\DB;
 class DashboardController extends AccountBaseController
 {
 
-    use AppBoot, CurrencyExchange, OverviewDashboard, EmployeeDashboard, ProjectDashboard, ClientDashboard, HRDashboard, TicketDashboard, FinanceDashboard, ClientPanelDashboard;
+    use AppBoot, CurrencyExchange, OverviewDashboard, EmployeeDashboard, TicketDashboard, ClientPanelDashboard;
 
     public function __construct()
     {
@@ -41,11 +34,7 @@ class DashboardController extends AccountBaseController
 
         $this->middleware(function ($request, $next) {
             $this->viewOverviewDashboard = user()->permission('view_overview_dashboard');
-            $this->viewProjectDashboard = user()->permission('view_project_dashboard');
-            $this->viewClientDashboard = user()->permission('view_client_dashboard');
-            $this->viewHRDashboard = user()->permission('view_hr_dashboard');
             $this->viewTicketDashboard = user()->permission('view_ticket_dashboard');
-            $this->viewFinanceDashboard = user()->permission('view_finance_dashboard');
 
             return $next($request);
         });
@@ -111,29 +100,13 @@ class DashboardController extends AccountBaseController
     {
 
         if (in_array('admin', user_roles()) || $this->sidebarUserPermissions['view_overview_dashboard'] == 4
-            || $this->sidebarUserPermissions['view_project_dashboard'] == 4
-            || $this->sidebarUserPermissions['view_client_dashboard'] == 4
-            || $this->sidebarUserPermissions['view_hr_dashboard'] == 4
-            || $this->sidebarUserPermissions['view_ticket_dashboard'] == 4
-            || $this->sidebarUserPermissions['view_finance_dashboard'] == 4) {
+            || $this->sidebarUserPermissions['view_ticket_dashboard'] == 4) {
 
             $tab = request('tab');
 
             switch ($tab) {
-            case 'project':
-                $this->projectDashboard();
-                break;
-            case 'client':
-                $this->clientDashboard();
-                break;
-            case 'hr':
-                $this->hrDashboard();
-                break;
             case 'ticket':
                 $this->ticketDashboard();
-                break;
-            case 'finance':
-                $this->financeDashboard();
                 break;
             default:
                 if (in_array('admin', user_roles()) || $this->sidebarUserPermissions['view_overview_dashboard'] == 4) {
@@ -141,29 +114,9 @@ class DashboardController extends AccountBaseController
                     $this->overviewDashboard();
 
                 }
-                elseif ($this->sidebarUserPermissions['view_project_dashboard'] == 4) {
-                    $this->activeTab = $tab ?: 'project';
-                    $this->projectDashboard();
-
-                }
-                elseif ($this->sidebarUserPermissions['view_client_dashboard'] == 4) {
-                    $this->activeTab = $tab ?: 'client';
-                    $this->clientDashboard();
-
-                }
-                elseif ($this->sidebarUserPermissions['view_hr_dashboard'] == 4) {
-                    $this->activeTab = $tab ?: 'hr';
-                    $this->hrDashboard();
-
-                }
-                elseif ($this->sidebarUserPermissions['view_finance_dashboard'] == 4) {
-                    $this->activeTab = $tab ?: 'finance';
+                elseif ($this->sidebarUserPermissions['view_ticket_dashboard'] == 4) {
+                    $this->activeTab = $tab ?: 'ticket';
                     $this->ticketDashboard();
-
-                }
-                else if ($this->sidebarUserPermissions['view_ticket_dashboard'] == 4) {
-                    $this->activeTab = $tab ?: 'finance';
-                    $this->financeDashboard();
                 }
 
                 break;
@@ -338,70 +291,7 @@ class DashboardController extends AccountBaseController
             }
         }
 
-        if (!is_null(user()->permission('view_tickets')) && user()->permission('view_tickets') != 'none') {
-
-            if (in_array('tickets', $calendar_filter_array)) {
-                // tickets
-                $tickets = Ticket::where('user_id', user()->id)
-                    ->whereBetween(DB::raw('DATE(tickets.`updated_at`)'), [$startDate->toDateTimeString(), $endDate->endOfDay()->toDateTimeString()])->get();
-
-                foreach ($tickets as $ticket) {
-                    $eventData[] = [
-                        'id' => $ticket->ticket_number,
-                        'title' => $ticket->subject,
-                        'start' => $ticket->updated_at,
-                        'end' => $ticket->updated_at,
-                        'event_type' => 'ticket',
-                        'extendedProps' => ['bg_color' => '#1d82f5', 'color' => '#fff', 'icon' => 'fa-ticket-alt']
-                    ];
-                }
-            }
-
-        }
-
-        if (!is_null(user()->permission('view_leave')) && user()->permission('view_leave') != 'none') {
-
-            if (in_array('leaves', $calendar_filter_array)) {
-                // approved leaves of all emoloyees with employee name
-                $leaves = Leave::join('leave_types', 'leave_types.id', 'leaves.leave_type_id')
-                    ->where('leaves.status', 'approved')
-                    ->select('leaves.id', 'leaves.leave_date', 'leaves.status', 'leave_types.type_name', 'leave_types.color', 'leaves.leave_date', 'leaves.duration', 'leaves.status', 'leaves.user_id')
-                    ->with('user')
-                    ->whereBetween(DB::raw('DATE(leaves.`leave_date`)'), [$startDate->toDateString(), $endDate->toDateString()])
-                    ->get();
-
-                foreach ($leaves as $leave) {
-                    $duration = ($leave->duration == 'half day') ? '( ' . __('app.halfday') . ' )' : '';
-
-                    $eventData[] = [
-                        'id' => $leave->id,
-                        'title' => $duration . ' ' . $leave->user->name,
-                        'start' => $leave->leave_date->toDateString(),
-                        'end' => $leave->leave_date->toDateString(),
-                        'event_type' => 'leave',
-                        /** @phpstan-ignore-next-line */
-                        'extendedProps' => ['name' => 'Leave : ' . $leave->user->name, 'bg_color' => $leave->color, 'color' => '#fff', 'icon' => 'fa-plane-departure']
-                    ];
-                }
-            }
-        }
-
         return $eventData;
-    }
-
-    public function getLeadStage($pipelineId)
-    {
-        $this->startDate = (request('startDate') != '') ? Carbon::createFromFormat($this->company->date_format, request('startDate')) : now($this->company->timezone)->startOfMonth();
-        $this->endDate = (request('endDate') != '') ? Carbon::createFromFormat($this->company->date_format, request('endDate')) : now($this->company->timezone);
-        $startDate = $this->startDate->toDateString();
-        $endDate = $this->endDate->toDateString();
-
-        $this->leadPipelines = LeadPipeline::all();
-
-        $this->leadStatusChart = $this->leadStatusChart($startDate, $endDate, $pipelineId);
-
-        return $this->returnAjax('dashboard.ajax.lead-by-pipeline');
-
     }
 
 }

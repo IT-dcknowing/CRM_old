@@ -18,11 +18,11 @@ use Illuminate\Support\Facades\DB;
 trait EspaceCollaborateur
 {
     /**
-     * Diligences dont le collaborateur est membre, avec leur
+     * Projets dont le collaborateur est membre, avec leur
      * avancement et le detail des taches terminees. Une seule requete :
      * les deux comptages passent par des sous-selections.
      */
-    protected function espaceDiligences(int $userId, int $limite = 4)
+    protected function espaceProjets(int $userId, int $limite = 4)
     {
         $termine = TaskboardColumn::completeColumn();
 
@@ -112,7 +112,7 @@ trait EspaceCollaborateur
      */
     protected function chargerEspaceCollaborateur(int $userId): void
     {
-        $this->espaceDiligences     = $this->espaceDiligences($userId);
+        $this->espaceProjets     = $this->espaceProjets($userId);
         $this->espaceTermineesMois  = $this->espaceTermineesCeMois($userId);
         $this->espaceSemaine        = $this->espaceSemaine($userId);
     }

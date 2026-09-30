@@ -47,7 +47,7 @@
     <!-- MENU CLIENT -->
     @if (in_array('client', user_roles()))
     
-        <x-menu-item dck="folder" class="message-menu" icon="chat-left-text" :link="route('projects.index')" :text="__('Diligences administratives')">
+        <x-menu-item dck="folder" class="message-menu" icon="chat-left-text" :link="route('projects.index')" :text="__('Projets administratives')">
             <x-slot name="iconPath">
                 <path d="M6.5 1A1.5 1.5 0 0 0 5 2.5V3H1.5A1.5 1.5 0 0 0 0 4.5v8A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-8A1.5 1.5 0 0 0 14.5 3H11v-.5A1.5 1.5 0 0 0 9.5 1h-3zm0 1h3a.5.5 0 0 1 .5.5V3H6v-.5a.5.5 0 0 1 .5-.5zm1.886 6.914L15 7.151V12.5a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5V7.15l6.614 1.764a1.5 1.5 0 0 0 .772 0zM1.5 4h13a.5.5 0 0 1 .5.5v1.616L8.129 7.948a.5.5 0 0 1-.258 0L1 6.116V4.5a.5.5 0 0 1 .5-.5z"/>
             </x-slot>
@@ -175,8 +175,8 @@
         --}}
 
         @if (in_array('reports', user_modules()) && isset($sidebarUserPermissions['view_task_report']) && $sidebarUserPermissions['view_task_report'] == 4 && in_array('tasks', user_modules()))
-            {{-- Le module Rapports ne compte plus qu'un ecran actif :
-                 l'accordeon a donc laisse place a un lien direct. --}}
+            {{-- 4 = « all » : le module Rapports porte sur tout le
+                 cabinet et reste reserve aux droits complets. --}}
             <x-menu-item dck="chart" icon="graph-up" :text="__('app.menu.reports')"
                          :link="route('task-report.index')" />
         @endif

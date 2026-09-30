@@ -55,7 +55,7 @@ class EmployeesDataTable extends BaseDataTable
             $userRole = $row->roles->pluck('name')->toArray();
 
             if (in_array('admin', $userRole)) {
-                return $row->roles()->withoutGlobalScopes()->latest()->first()->display_name;
+                return $row->roles->sortByDesc('created_at')->first()->display_name;
             }
 
             return !empty($row->current_role_name) ? $row->current_role_name : $row->roles->pluck('display_name')->last();
@@ -64,7 +64,7 @@ class EmployeesDataTable extends BaseDataTable
             $userRole = $row->roles->pluck('name')->toArray();
 
             if (in_array('admin', $userRole)) {
-                $uRole = $row->roles()->withoutGlobalScopes()->latest()->first()->display_name;
+                $uRole = $row->roles->sortByDesc('created_at')->first()->display_name;
             }
             else {
                 $uRole = $row->current_role_name;
@@ -216,7 +216,7 @@ class EmployeesDataTable extends BaseDataTable
             return '--';
         });
 
-        $datatables->addColumn('designation_name', fn($row) => $row->employeeDetail->designation->name ?? '--');
+        $datatables->addColumn('designation_name', fn($row) => $row->designation_name ?? '--');
 
         $datatables->addColumn('department_name', fn($row) => $row->department_name ?? '--');
 
@@ -250,7 +250,7 @@ class EmployeesDataTable extends BaseDataTable
 
         $users = $model->with([
             'role',
-            'roles:name,display_name',
+            'roles:id,name,display_name,created_at',
             'roles.roleuser',
             'employeeDetail' => function ($query) {
                 $query->select('notice_period_end_date','internship_end_date','employment_type','probation_end_date','user_id', 'added_by', 'designation_id', 'employee_id', 'joining_date', 'reporting_to')

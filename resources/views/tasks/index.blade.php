@@ -234,6 +234,17 @@ $viewUnassignedTasksPermission = user()->permission('view_unassigned_tasks');
                         @lang('modules.tasks.myTask')
                     </x-forms.button-secondary>
                 @endif
+
+                {{-- Importation massive, ouverte a qui peut deja creer
+                     une tache. Importer, ce n'est pas obtenir un droit
+                     de plus : c'est exercer le meme plus vite. Chaque
+                     tache importee porte son auteur, comme au
+                     formulaire. --}}
+                @if ($addTaskPermission == 'all' || $addTaskPermission == 'added')
+                    <x-forms.link-secondary :link="route('tasks.import')" icon="upload">
+                        @lang('Importer')
+                    </x-forms.link-secondary>
+                @endif
             </x-slot>
         </x-dck.page-head>
 

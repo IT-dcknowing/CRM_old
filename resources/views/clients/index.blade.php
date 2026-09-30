@@ -221,13 +221,13 @@
                 <a class="dck-kpi2" href="{{ route('projects.index') }}">
                     <div class="dck-kpi2__top">
                         <span class="dck-kpi2__ico"><i class="bi bi-folder2-open"></i></span>
-                        <span class="dck-kpi2__lab">@lang('Suivis en diligence')</span>
+                        <span class="dck-kpi2__lab">@lang('Suivis en projet')</span>
                     </div>
                     <div class="dck-kpi2__val">
                         {{ $cliKpis->suivis }}
                         <span class="dck-kpi2__tot">/ {{ $cliKpis->total }}</span>
                     </div>
-                    <div class="dck-kpi2__sub">avec une diligence en cours</div>
+                    <div class="dck-kpi2__sub">avec un projet en cours</div>
                 </a>
             </div>
         @endisset

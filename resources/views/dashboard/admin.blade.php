@@ -41,7 +41,7 @@
                        class="overview" ajax="false"/>
             @endif
 
-            @if (false) {{-- [ONGLET RETIRE] Diligence : son suivi passe par le module lui-meme --}}
+            @if (false) {{-- [ONGLET RETIRE] Projet : son suivi passe par le module lui-meme --}}
                 <x-tab :href="route('dashboard.advanced').'?tab=project'" :text="__('app.project')" class="project"
                        ajax="false"/>
             @endif

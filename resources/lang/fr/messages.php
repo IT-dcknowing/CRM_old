@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 /*
  * Traductions francaises du cabinet.
@@ -64,15 +64,15 @@ return [
 
     /* --- Archivage et restauration ------------------------------------ */
 
-    'archiveMessage' => 'Voulez-vous archiver cette diligence ?',
-    'unArchiveMessage' => 'Voulez-vous restaurer cette diligence ?',
+    'archiveMessage' => 'Voulez-vous archiver ce projet ?',
+    'unArchiveMessage' => 'Voulez-vous restaurer ce projet ?',
     'archiveMessageLeave' => 'Voulez-vous archiver ce type de congé ?',
     'unArchiveMessageLeave' => 'Voulez-vous restaurer ce type de congé ?',
     'archiveSuccess' => 'Type de congé archivé.',
     'restoreSuccess' => 'Type de congé restauré.',
-    'projectArchiveSuccessfully' => 'Diligence archivée.',
-    'projectRevertSuccessfully' => 'Diligence restaurée.',
-    'archivedTaskNotWork' => 'Vous ne pouvez pas agir sur les tâches d’une diligence archivée.',
+    'projectArchiveSuccessfully' => 'Projet archivé.',
+    'projectRevertSuccessfully' => 'Projet restaurée.',
+    'archivedTaskNotWork' => 'Vous ne pouvez pas agir sur les tâches d’un projet archivé.',
 
     /* --- Succes ------------------------------------------------------- */
 
@@ -84,12 +84,12 @@ return [
     'fileUploaded' => 'Fichier téléversé. Cliquez sur « Voir le fichier » pour le consulter.',
     'updatedProfile' => 'Profil mis à jour.',
     'roleAssigned' => 'Rôles attribués.',
-    'newTaskAddedToTheProject' => 'Nouvelle tâche ajoutée à la diligence.',
-    'newFileUploadedToTheProject' => 'Nouveau fichier ajouté à la diligence.',
-    'isAddedAsProjectMember' => 'a été ajouté comme membre de la diligence.',
-    'memberRemovedFromProject' => 'Membre retiré de la diligence.',
-    'addedAsNewProject' => 'ajouté comme nouvelle diligence.',
-    'projectCopiedSuccessfully' => 'Diligence copiée.',
+    'newTaskAddedToTheProject' => 'Nouvelle tâche ajoutée à le projet.',
+    'newFileUploadedToTheProject' => 'Nouveau fichier ajouté à le projet.',
+    'isAddedAsProjectMember' => 'a été ajouté comme membre de le projet.',
+    'memberRemovedFromProject' => 'Membre retiré de le projet.',
+    'addedAsNewProject' => 'ajouté comme nouveau projet.',
+    'projectCopiedSuccessfully' => 'Projet copiée.',
     'milestoneSuccess' => 'Jalon enregistré.',
     'newMilestoneCreated' => 'Nouveau jalon créé',
     'milestoneUpdated' => 'Jalon mis à jour',
@@ -166,6 +166,9 @@ return [
     'paymentFailed' => 'Paiement échoué.',
     'paymentSuccessful' => 'Paiement réussi.',
     'invalid2FaCode' => 'Code d’authentification invalide.',
+    
+    'enable2FAUsingEmail' => 'L\'activation de cette fonctionnalité enverra un code de connexion à votre adresse e-mail <b>:email</b>.',
+    'enable2FAUsingAuthenticator' => 'Utilisez l\'application Authenticator pour obtenir des codes de vérification gratuits, même lorsque votre téléphone est hors ligne. Disponible sur Android et iPhone.',
     'codeNotMatch' => 'Le code d’authentification saisi ne correspond pas.',
     'codeSent' => 'Code de vérification envoyé par e-mail.',
     'smtpError' => 'Vos paramètres SMTP sont incorrects. Veuillez les corriger.',
@@ -188,12 +191,12 @@ return [
     'atleastOneRole' => 'Sélectionnez au moins un rôle.',
     'atleastOneCategory' => 'Sélectionnez au moins une catégorie.',
     'checkDayHoliday' => 'Choisissez-en au moins un.',
-    'chooseProject' => 'Choisissez une diligence.',
+    'chooseProject' => 'Choisissez un projet.',
     'selectProduct' => 'Sélectionnez au moins un produit.',
     'pleaseSelectCategory' => 'Veuillez sélectionner une catégorie',
     'pleaseSelectAColumn' => 'Veuillez sélectionner une colonne ou cliquer sur « Ignorer »',
     'pleaseEnterSomeData' => 'Veuillez saisir des données pour enregistrer les paiements groupés.',
-    'projectCodeRequired' => 'Le code court de la diligence est obligatoire.',
+    'projectCodeRequired' => 'Le code court de le projet est obligatoire.',
     'repeatCyclesValidation' => 'Le champ « Répéter tous les » est obligatoire.',
     'cyclesValidation' => 'Le champ « Cycles » est obligatoire.',
     'descriptionFieldRequired' => 'Le champ Description est obligatoire.',
@@ -251,13 +254,13 @@ return [
     'noPaymentAdded' => 'Aucun paiement ajouté.',
     'noInvoice' => 'Aucune facture créée.',
     'noClientAdded' => 'Aucun client ajouté.',
-    'noClientAddedToProject' => 'Aucun client affecté à la diligence.',
-    'noMemberAddedToProject' => 'Aucun membre affecté à cette diligence.',
+    'noClientAddedToProject' => 'Aucun client affecté à le projet.',
+    'noMemberAddedToProject' => 'Aucun membre affecté à ce projet.',
     'noActivityByThisUser' => 'Aucune activité pour cet utilisateur.',
     'noProductSubCategoryAdded' => 'Aucune sous-catégorie de produit ajoutée.',
     'noAttendanceDetailToday' => 'Aucune donnée de présence pour aujourd’hui.',
-    'noProjectAssigned' => 'Aucune diligence ne vous est affectée.',
-    'projectDetailsNotAdded' => 'Détails de la diligence non renseignés.',
+    'noProjectAssigned' => 'Aucun projet ne vous est affectée.',
+    'projectDetailsNotAdded' => 'Détails de le projet non renseignés.',
     'noTaskFound' => 'Aucune tâche n’existe. Créez d’abord une tâche.',
     'noTaskFilesFound' => 'Aucun fichier n’a été joint à cette tâche.',
     'noSubTaskFound' => 'Aucune sous-tâche n’existe. Créez d’abord une sous-tâche.',
@@ -273,7 +276,7 @@ return [
     'noLeavesFound' => 'Aucun congé n’existe.',
     'noUnpaidInvoiceFound' => 'Aucune facture impayée.',
 
-    /* --- Taches, diligences, contrats ---------------------------------- */
+    /* --- Taches, projets, contrats ---------------------------------- */
 
     'taskUpdated' => 'Tâche marquée comme ',
     'timerStartedTask' => 'Minuteur démarré pour la tâche ',
@@ -285,15 +288,15 @@ return [
     'markCompleteTask' => 'Cette tâche contient une sous-tâche inachevée. Voulez-vous la marquer comme terminée ?',
     'sendApprovalTask' => 'Voulez-vous envoyer cette tâche à l’administrateur pour validation ?',
     'approvalmsg' => 'Vous ne pourrez plus modifier la tâche tant qu’elle n’aura pas été examinée.',
-    'approvalmsgsent' => 'Cette tâche doit être validée par le responsable de la diligence avant d’être marquée comme terminée. Envoyez-la pour validation.',
+    'approvalmsgsent' => 'Cette tâche doit être validée par le responsable de le projet avant d’être marquée comme terminée. Envoyez-la pour validation.',
     'youCannotMoveTask' => 'Vous ne pouvez pas déplacer cette tâche vers le statut sélectionné.',
-    'selectAnotherStatus' => 'La tâche ne peut pas être enregistrée avec ce statut si aucune diligence n’est sélectionnée. Choisissez un autre statut.',
-    'selectStatus' => 'La diligence sélectionnée ne nécessite pas de validation, vous ne pouvez donc pas choisir ce statut. Choisissez-en un autre.',
+    'selectAnotherStatus' => 'La tâche ne peut pas être enregistrée avec ce statut si aucun projet n’est sélectionnée. Choisissez un autre statut.',
+    'selectStatus' => 'Le projet sélectionnée ne nécessite pas de validation, vous ne pouvez donc pas choisir ce statut. Choisissez-en un autre.',
     'sendReminder' => 'Voulez-vous envoyer un rappel à l’employé assigné ?',
-    'unassignedTask' => 'La diligence :has :unassigned :task non assignée. Pour les afficher',
-    'assignClientFirst' => 'Vous devez affecter un client à la diligence.',
+    'unassignedTask' => 'Le projet :has :unassigned :task non assignée. Pour les afficher',
+    'assignClientFirst' => 'Vous devez affecter un client à le projet.',
     'calculateTaskProgress' => 'La progression est calculée à partir des tâches terminées.',
-    'projectPin' => 'Vous voulez épingler cette diligence !',
+    'projectPin' => 'Vous voulez épingler ce projet !',
     'dragDropScreenInfo' => 'Le glisser-déposer ne fonctionne que sur ordinateur.',
     'employeeDocsAllowedFormat' => 'Formats autorisés : jpg, png, gif, doc, docx, xls, xlsx, pdf, txt.',
 

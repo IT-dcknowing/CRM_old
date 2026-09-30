@@ -3,45 +3,33 @@
 namespace App\Traits;
 
 use Carbon\Carbon;
-use App\Models\Deal;
 use App\Models\Task;
 use App\Models\User;
 use App\Helper\Reply;
 use App\Models\Event;
-use App\Models\Leave;
-use App\Models\Notice;
-use App\Models\Ticket;
 use App\Models\Holiday;
 use App\Models\Project;
 use Carbon\CarbonPeriod;
 use Carbon\CarbonInterval;
-use App\Models\LeadAgent;
-use App\Models\Attendance;
 use App\Models\Appreciation;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
-use App\Models\CompanyAddress;
 use App\Models\ProjectTimeLog;
 use App\Models\DashboardWidget;
 use App\Models\EmployeeDetails;
 use App\Models\TaskboardColumn;
-use App\Models\AttendanceSetting;
-use App\Models\TicketAgentGroups;
 use Illuminate\Support\Facades\DB;
 use App\Models\ProjectTimeLogBreak;
 use App\Models\EmployeeShiftSchedule;
-use App\Http\Requests\ClockIn\ClockInRequest;
 use App\Models\Company;
-use App\Models\EmployeeShift;
 
 /**
  *
  */
 trait EmployeeDashboard
 {
-    use PilotageDiligences;
+    use PilotageProjets;
     use EspaceCollaborateur;
-
 
     /**
      */
@@ -50,73 +38,16 @@ trait EmployeeDashboard
         $user = user();
 
         // Bloc « Mon tableau de bord » conforme a dck-flow-task :
-        // ses taches, sa semaine, ses diligences, les annonces. Les
+        // ses taches, sa semaine, ses projets, les annonces. Les
         // indicateurs de portefeuille restent sur l'ecran administrateur.
         $this->chargerEspaceCollaborateur($user->id);
 
         $completedTaskColumn = TaskboardColumn::completeColumn();
+        // Le pointage (Attendance) n'a plus de bouton actif dans la vue :
+        // routes attendances.* toutes retirees de routes/web.php.
+        // attendance_setting() reste necessaire pour week_start_from,
+        // utilise plus bas par le calendrier hebdomadaire des shifts.
         $showClockIn = attendance_setting();
-        $this->attendanceSettings = $this->attendanceShift($showClockIn);
-        
-        $startTimestamp = now($this->company->timezone)->format('Y-m-d') . ' ' . $this->attendanceSettings->office_start_time;
-
-        $endTimestamp = now($this->company->timezone)->format('Y-m-d') . ' ' . $this->attendanceSettings->office_end_time;
-
-        $officeStartTime = Carbon::createFromFormat('Y-m-d H:i:s', $startTimestamp, $this->company->timezone);
-        $officeEndTime = Carbon::createFromFormat('Y-m-d H:i:s', $endTimestamp, $this->company->timezone);
-        
-        if (!is_null($this->attendanceSettings->early_clock_in)) {
-            $officeStartTime->subMinutes($this->attendanceSettings->early_clock_in);
-        }
-
-        // shift crosse
-        if ($officeStartTime->gt($officeEndTime)) { // check if shift end time is less then current time then shift not ended yet
-            if(
-                now(company()->timezone)->lessThan($officeEndTime)
-                || (now(company()->timezone)->greaterThan($officeEndTime) && now(company()->timezone)->lessThan($officeStartTime))
-            ){
-                $officeStartTime->subDay();
-
-            }else{
-                $officeEndTime->addDay();
-            }
-        }
-
-        $this->cannotLogin = false;
-        $date = now()->format('Y-m-d');
-
-        $Utc = now(company()->timezone)->format('p');
-        $attendance = Attendance::where('user_id', $this->user->id)
-            ->whereDate(DB::raw("CONVERT_TZ(clock_in_time, '+00:00', '{$Utc}')"), now($Utc)->format('Y-m-d'))
-            ->get();
-
-        foreach ($attendance as $item) {
-            if ($item->clock_out_time !== null && now()->between($item->clock_in_time, $item->clock_out_time)) { // if ($item->clock_out_time !== null && added this condition
-                $this->cannotLogin = true;
-                break;
-            }
-        }
-
-        if ($showClockIn->employee_clock_in_out == 'no' || $this->attendanceSettings->shift_name == 'Day Off') {
-
-            $this->cannotLogin = true;
-        }
-        elseif (is_null($this->attendanceSettings->early_clock_in) && !now($this->company->timezone)->between($officeStartTime, $officeEndTime) && $showClockIn->show_clock_in_button == 'no' && $this->attendanceSettings->shift_type == 'strict') {
-            $this->cannotLogin = true;
-
-        }
-        elseif($this->attendanceSettings->shift_type == 'strict') {
-            $earlyClockIn = now($this->company->timezone)->addMinutes($this->attendanceSettings->early_clock_in)->setTimezone('UTC');
-
-            if (!$earlyClockIn->gte($officeStartTime) && $showClockIn->show_clock_in_button == 'no') {
-
-                $this->cannotLogin = true;
-            }
-            elseif ($this->cannotLogin && now()->betweenIncluded($officeStartTime->copy()->subDay(), $officeEndTime->copy()->subDay())) {
-                $this->cannotLogin = false;
-
-            }
-        }
 
         $currentDate = now();
 
@@ -189,57 +120,6 @@ trait EmployeeDashboard
         ])
             ->findOrFail($this->user->id);
 
-        if (!is_null($this->viewNoticePermission) && $this->viewNoticePermission != 'none') {
-            if ($this->viewNoticePermission == 'added') {
-                $this->notices = Notice::latest()->where('added_by', $this->user->id)
-                    ->select('id', 'heading', 'created_at')
-                    ->limit(10)
-                    ->get();
-            }
-            elseif ($this->viewNoticePermission == 'owned') {
-                $this->notices = Notice::latest()
-                    ->select('id', 'heading', 'created_at')
-                    ->where(['to' => 'employee', 'department_id' => null])
-                    ->orWhere(['department_id' => $this->user->employeeDetail->department_id])
-                    ->limit(10)
-                    ->get();
-            }
-            elseif ($this->viewNoticePermission == 'both') {
-                $this->notices = Notice::latest()
-                    ->select('id', 'heading', 'created_at')
-                    ->where('added_by', $this->user->id)
-                    ->orWhere(function ($q) {
-                        $q->where(['to' => 'employee', 'department_id' => null])
-                            ->orWhere(['department_id' => $this->user->employeeDetail->department_id]);
-                    })
-                    ->limit(10)
-                    ->get();
-            }
-            elseif ($this->viewNoticePermission == 'all') {
-                $this->notices = Notice::latest()
-                    ->select('id', 'heading', 'created_at')
-                    ->limit(10)
-                    ->get();
-            }
-        }
-
-        $this->tickets = Ticket::whereIn('status', ['open', 'pending'])
-            ->where(function ($query) {
-                $query->where('user_id', user()->id)
-                    ->orWhere('agent_id', user()->id);
-            })
-            ->orderByDesc('updated_at')
-            ->limit(10)
-            ->get();
-
-        $checkTicketAgent = TicketAgentGroups::select('id')->where('agent_id', user()->id)->first();
-
-        if (!is_null($checkTicketAgent)) {
-            $this->totalOpenTickets = Ticket::with('agent')->whereHas('agent', function ($q) {
-                $q->where('id', user()->id);
-            })->where('status', 'open')->count();
-        }
-
         $tasks = $this->pendingTasks = Task::with(['activeProject', 'boardColumn', 'labels'])
             ->join('task_users', 'task_users.task_id', '=', 'tasks.id')
             ->where('task_users.user_id', $this->user->id)
@@ -270,59 +150,7 @@ trait EmployeeDashboard
             return now(company()->timezone)->gt($value->due_date);
         })->count();
 
-        // Getting Current Clock-in if exist
-
-        $defaultShift = EmployeeShift::where('id', $this->company->attendanceSetting->default_employee_shift)
-            ->select('id', 'office_start_time', 'office_end_time')
-            ->first();
-
-        $Utc = now(company()->timezone)->format('p');
-        $this->shiftStartDateTime = $officeStartTime;
-        $this->shiftEndDateTime = $officeEndTime;
-
-        // Fetch current clock-in record'd
-        if ($showClockIn && $showClockIn->show_clock_in_button == 'no' || $showClockIn->show_clock_in_button == null){
-            $this->currentClockIn = Attendance::whereNull('clock_out_time')
-                ->select('id', 'clock_in_time', 'clock_out_time', 'employee_shift_id')
-                ->where('user_id', $this->user->id)
-                ->where(function ($query) use ($officeStartTime, $officeEndTime,$Utc) {
-                    if ($this->attendanceSettings->shift_type == 'strict') {
-                        $query->whereBetween(DB::raw("CONVERT_TZ(clock_in_time, '+00:00', '{$Utc}')"), [$officeStartTime, $officeEndTime]);
-
-                    } else {
-                        $query->whereBetween(DB::raw("CONVERT_TZ(clock_in_time, '+00:00', '{$Utc}')"), [now()->startOfDay(), now()->endOfDay()]);
-                    }
-                })
-                ->first();
-     
-        }else{
-            $this->currentClockIn = Attendance::whereNull('clock_out_time')
-                ->select('id', 'clock_in_time', 'clock_out_time', 'employee_shift_id')
-                ->where('user_id', $this->user->id)
-                ->whereDate(DB::raw("CONVERT_TZ(clock_in_time, '+00:00', '{$Utc}')"), now($Utc)->format('Y-m-d'))
-                ->first();
-
-            if(!$this->currentClockIn){
-                $this->currentClockIn = Attendance::whereNull('clock_out_time')
-                    ->select('id', 'clock_in_time', 'clock_out_time', 'employee_shift_id')
-                    ->where('user_id', $this->user->id)
-                    ->where(function ($query) use ($officeStartTime, $officeEndTime,$Utc) {
-                        $query->whereBetween(DB::raw("CONVERT_TZ(clock_in_time, '+00:00', '{$Utc}')"), [$officeStartTime, $officeEndTime]);
-                    })
-                    ->first();
-            }
-        }
-
-
-
         $currentDate = now(company()->timezone)->format('Y-m-d');
-
-        $this->checkTodayLeave = Leave::where('status', 'approved')
-            ->select('id')
-            ->where('leave_date', now(company()->timezone)->toDateString())
-            ->where('user_id', user()->id)
-            ->where('duration', '<>', 'half day')
-            ->first();
 
         // Check Holiday by date
         $this->checkTodayHoliday = Holiday::where('date', $currentDate)
@@ -363,34 +191,6 @@ trait EmployeeDashboard
             ->orderBy('day')
             ->get()->values()->all();
 
-        $this->leave = Leave::with('user', 'type')->where('status', 'approved')
-            ->where('leave_date', today(company()->timezone)->toDateString())
-            ->get();
-
-
-        $this->workFromHome = Attendance::with('user')
-            ->select('id', 'user_id')
-            ->where('work_from_type', 'home')
-            ->where(DB::raw('DATE(attendances.clock_in_time)'), now()->toDateString())
-            ->groupBy('user_id')
-            ->get();
-
-        $this->leadAgent = LeadAgent::where('user_id', $this->user->id)->first();
-
-        // Deal Data
-        if (!is_null($this->leadAgent)) {
-
-            $this->deals = Deal::select('deals.*', 'pipeline_stages.slug')->with('leadAgent', 'leadStage')->whereHas('leadAgent', function ($q) {
-                $q->where('user_id', $this->user->id);
-            })->join('pipeline_stages', 'pipeline_stages.id', 'deals.pipeline_stage_id')
-                ->get();
-
-            $this->convertedDeals = $this->deals->filter(function ($value) {
-                return $value->slug == 'win';
-            })->count();
-
-        }
-
         $now = now(company()->timezone);
         $this->weekStartDate = $now->copy()->startOfWeek($showClockIn->week_start_from);
         $this->weekEndDate = $this->weekStartDate->copy()->addDays(14);
@@ -428,16 +228,6 @@ trait EmployeeDashboard
             ->get();
 
         $holidayDates = $weekHolidays->pluck('hdate')->toArray();
-
-        $weekLeaves = Leave::with('type')
-            ->select(DB::raw('DATE_FORMAT(`leave_date`, "%Y-%m-%d") as ldate'), 'leaves.*')
-            ->where('user_id', user()->id)
-            ->whereBetween(DB::raw('DATE(`leave_date`)'), [$this->weekStartDate->format('Y-m-d'), $this->weekEndDate->format('Y-m-d')])
-            ->where('status', 'approved')
-            ->where('duration', '<>', 'half day')
-            ->get();
-
-        $leaveDates = $weekLeaves->pluck('ldate')->toArray();
         $generalShift = Company::with(['attendanceSetting', 'attendanceSetting.shift'])->first();
 
         // phpcs:ignore
@@ -452,19 +242,6 @@ trait EmployeeDashboard
                 foreach ($weekHolidays as $holiday) {
                     if ($holiday->hdate == $date->toDateString()) {
                         $leave = '<i class="fa fa-star text-warning"></i> ' . $holiday->occassion;
-                    }
-                }
-
-                array_push($weekShifts, $leave);
-
-            }
-            elseif (in_array($date->toDateString(), $leaveDates)) {
-
-                $leave = [];
-
-                foreach ($weekLeaves as $leav) {
-                    if ($leav->ldate == $date->toDateString()) {
-                        $leave = __('app.onLeave') . ': <span class="badge badge-success" style="background-color:' . $leav->type->color . '">' . $leav->type->type_name . '</span>';
                     }
                 }
 
@@ -505,7 +282,6 @@ trait EmployeeDashboard
 
         $this->currentWeekDates = $currentWeekDates;
         $this->weekShifts = $weekShifts;
-        $this->showClockIn = $showClockIn->show_clock_in_button;
         $this->event_filter = explode(',', user()->employeeDetail->calendar_view);
         $this->widgets = DashboardWidget::where('dashboard_type', 'private-dashboard')->get();
         $this->activeWidgets = $this->widgets->filter(function ($value, $key) {
@@ -624,531 +400,6 @@ trait EmployeeDashboard
         return $hours > 0
             ? $hours . 'h' . ($minutes > 0 ? ' ' . sprintf('%02dm', $minutes) : '')
             : ($minutes > 0 ? sprintf('%dm', $minutes) : '0s');
-    }
-
-    public function clockInModal()
-    {
-        $showClockIn = AttendanceSetting::first();
-
-        $this->attendanceSettings = $this->attendanceShift($showClockIn);
-
-        $startTimestamp = now($this->company->timezone)->format('Y-m-d') . ' ' . $this->attendanceSettings->office_start_time;
-        $endTimestamp = now($this->company->timezone)->format('Y-m-d') . ' ' . $this->attendanceSettings->office_end_time;
-        $officeStartTime = Carbon::createFromFormat('Y-m-d H:i:s', $startTimestamp, $this->company->timezone);
-        $officeEndTime = Carbon::createFromFormat('Y-m-d H:i:s', $endTimestamp, $this->company->timezone);
-
-        if ($officeStartTime->gt($officeEndTime)) {
-            $officeEndTime->addDay();
-        }
-
-        $this->cannotLogin = false;
-
-        if ($showClockIn->employee_clock_in_out == 'yes') {
-
-            if (is_null($this->attendanceSettings->early_clock_in) && !now($this->company->timezone)->between($officeStartTime, $officeEndTime) && $showClockIn->show_clock_in_button == 'no' && $this->attendanceSettings->shift_type == 'strict') {
-                $this->cannotLogin = true;
-            }
-            elseif($this->attendanceSettings->shift_type == 'strict') {
-                $earlyClockIn = now($this->company->timezone)->addMinutes($this->attendanceSettings->early_clock_in);
-
-                if (!$earlyClockIn->gte($officeStartTime) && $showClockIn->show_clock_in_button == 'no') {
-                    $this->cannotLogin = true;
-                }
-            }
-
-            if (now($this->company->timezone)->betweenIncluded($officeStartTime->copy()->subDay(), $officeEndTime->copy()->subDay())) {
-                $this->cannotLogin = false;
-            }
-        }
-        else {
-            $this->cannotLogin = true;
-        }
-
-
-        $this->shiftAssigned = $this->attendanceSettings;
-
-        $this->attendanceSettings = attendance_setting();
-        $this->location = CompanyAddress::all();
-
-        return view('dashboard.employee.clock_in_modal', $this->data);
-    }
-
-    public function storeClockIn(ClockInRequest $request)
-    {
-        $now = now($this->company->timezone);
-
-        $showClockIn = AttendanceSetting::first();
-
-        $this->attendanceSettings = $this->attendanceShift($showClockIn);
-
-        $startTimestamp = now($this->company->timezone)->format('Y-m-d') . ' ' . $this->attendanceSettings->office_start_time;
-        $endTimestamp = now($this->company->timezone)->format('Y-m-d') . ' ' . $this->attendanceSettings->office_end_time;
-        $officeStartTime = Carbon::createFromFormat('Y-m-d H:i:s', $startTimestamp, $this->company->timezone);
-        $officeEndTime = Carbon::createFromFormat('Y-m-d H:i:s', $endTimestamp, $this->company->timezone);
-
-        if ($showClockIn->show_clock_in_button == 'yes') {
-            $officeEndTime = now($this->company->timezone);
-        }
-
-        // check if user has clocked in on time or not
-        $lateCheckData = Attendance::whereBetween('clock_in_time', [
-            $officeStartTime->copy()->timezone(config('app.timezone')),
-            $officeEndTime->copy()->timezone(config('app.timezone'))
-        ])
-            ->where('user_id', $this->user->id)
-            ->orderBy('clock_in_time', 'asc')
-            ->first();
-
-        $isLate = 'yes';
-
-        if ($lateCheckData && $lateCheckData->late === 'no' || $this->attendanceSettings->shift_type == 'flexible') {
-            // user has reached office on time ,so late check will be disabled now
-            $isLate = 'no';
-        }
-
-        if ($officeStartTime->gt($officeEndTime)) {
-            $officeEndTime->addDay();
-        }
-
-        $this->cannotLogin = false;
-
-        if ($this->attendanceSettings->shift_type == 'strict') {
-            $clockInCount = Attendance::getTotalUserClockInWithTime($officeStartTime, $officeEndTime, $this->user->id);
-
-        } else {
-            $Utc = now(company()->timezone)->format('p');
-            $clockInCount = Attendance::where('user_id', $this->user->id)
-                ->whereDate(DB::raw("CONVERT_TZ(clock_in_time, '+00:00', '{$Utc}')"), now($Utc)->format('Y-m-d'))
-                ->count();
-        
-        }
-
-        if ($showClockIn->employee_clock_in_out == 'yes') {
-            if (is_null($this->attendanceSettings->early_clock_in) && !now($this->company->timezone)->between($officeStartTime, $officeEndTime) && $showClockIn->show_clock_in_button == 'no' && $this->attendanceSettings->shift_type == 'strict') {
-                $this->cannotLogin = true;
-            }
-            elseif($this->attendanceSettings->shift_type == 'strict') {
-                $earlyClockIn = now($this->company->timezone)->addMinutes($this->attendanceSettings->early_clock_in);
-
-                if ($earlyClockIn->gte($officeStartTime) || $showClockIn->show_clock_in_button == 'yes') {
-                    $this->cannotLogin = false;
-                }
-                else {
-                    $this->cannotLogin = true;
-                }
-            }
-
-            if ($this->cannotLogin && now($this->company->timezone)->betweenIncluded($officeStartTime->copy()->subDay(), $officeEndTime->copy()->subDay())) {
-                $this->cannotLogin = false;
-                $clockInCount = Attendance::getTotalUserClockInWithTime($officeStartTime->copy()->subDay(), $officeEndTime->copy()->subDay(), $this->user->id);
-            }
-        }
-        else {
-            $this->cannotLogin = true;
-        }
-
-        abort_403($this->cannotLogin);
-
-        // Check user by ip
-        if (attendance_setting()->ip_check == 'yes') {
-            $ips = (array)json_decode(attendance_setting()->ip_address);
-
-            if (!in_array($request->ip(), $ips)) {
-                return Reply::error(__('messages.notAnAuthorisedDevice'));
-            }
-        }
-
-        // Check user by location
-        if (attendance_setting()->radius_check == 'yes') {
-            $checkRadius = $this->isWithinRadius($request);
-
-            if (!$checkRadius) {
-                return Reply::error(__('messages.notAnValidLocation'));
-            }
-        }
-
-        // Check maximum attendance in a day
-        if ($clockInCount < $this->attendanceSettings->clockin_in_day) {
-
-            if ($this->attendanceSettings->halfday_mark_time) {
-                $halfDayTimes = Carbon::createFromFormat('Y-m-d H:i:s', $now->format('Y-m-d') . ' ' . $this->attendanceSettings->halfday_mark_time, $this->company->timezone);
-            }
-
-            $officeStartTime = Carbon::createFromFormat('Y-m-d H:i:s', $now->format('Y-m-d') . ' ' . $this->attendanceSettings->office_start_time, $this->company->timezone);
-
-            $lateTime = $officeStartTime->addMinutes($this->attendanceSettings->late_mark_duration);
-
-            $checkTodayAttendance = Attendance::where('user_id', $this->user->id)
-                ->where(DB::raw('DATE(attendances.clock_in_time)'), '=', $now->format('Y-m-d'))->first();
-
-            $attendance = new Attendance();
-            $attendance->user_id = $this->user->id;
-            $attendance->clock_in_time = $now->copy()->timezone(config('app.timezone'));
-            $attendance->clock_in_ip = request()->ip();
-
-            $attendance->working_from = $request->working_from;
-            $attendance->location_id = $request->location;
-            $attendance->work_from_type = $request->work_from_type;
-
-            if ($now->gt($lateTime) && $isLate === 'yes') {
-                $attendance->late = 'yes';
-            }
-
-            $leave = Leave::where('leave_date', $attendance->clock_in_time->format('Y-m-d'))
-                ->where('status', 'approved')
-                ->where('user_id', $this->user->id)->first();
-
-            if (isset($leave) && !is_null($leave->half_day_type) && $this->attendanceSettings->shift_type == 'strict') {
-                $attendance->half_day = 'yes';
-            }
-            else {
-                $attendance->half_day = 'no';
-            }
-
-
-            $this->attendanceSettings = $this->attendanceShift($showClockIn);
-
-            $startTimestamp = now($this->company->timezone)->format('Y-m-d') . ' ' . $this->attendanceSettings->office_start_time;
-            $endTimestamp = now($this->company->timezone)->format('Y-m-d') . ' ' . $this->attendanceSettings->office_end_time;
-
-            $officeStartTime = Carbon::createFromFormat('Y-m-d H:i:s', $startTimestamp, $this->company->timezone);
-            $officeEndTime = Carbon::createFromFormat('Y-m-d H:i:s', $endTimestamp, $this->company->timezone);
-
-            // shift crosse
-            if ($officeStartTime->gt($officeEndTime)) { // check if shift end time is less then current time then shift not ended yet
-                if(now(company()->timezone)->lessThan($officeEndTime)){
-                    $officeStartTime->subDay();
-
-                }else{
-                    $officeEndTime->addDay();
-                }
-            }
-
-            $startTimePeriod = $officeStartTime->format('A'); // AM or 'PM'
-            $halfdayPeriod = $halfDayTimes->format('A'); // Assume $halfday is a Carbon instance or similarly formatted
-            $timeFlag = false;
-            $Utc = now(company()->timezone)->format('p');
-
-            // Fetch current clock-in record'd
-            if($this->attendanceSettings && $this->attendanceSettings->show_clock_in_button == 'no' || $this->attendanceSettings->show_clock_in_button == null){
-                $this->currentClockIn = Attendance::select('id', 'half_day', 'clock_in_time', 'clock_out_time', 'employee_shift_id')
-                    ->where('user_id', $this->user->id)
-                    ->where(function ($query) use ($officeStartTime, $officeEndTime,$Utc) {
-                        $query->whereBetween(DB::raw("CONVERT_TZ(clock_in_time, '+00:00', '{$Utc}')"), [$officeStartTime, $officeEndTime]);
-                    })
-                    ->first();
-
-            }else{
-
-                $this->currentClockIn = Attendance::select('id','half_day', 'clock_in_time', 'clock_out_time', 'employee_shift_id')
-                    ->where('user_id', $this->user->id)
-                    ->whereDate(DB::raw("CONVERT_TZ(clock_in_time, '+00:00', '{$Utc}')"), now($Utc)->format('Y-m-d'))
-                    ->first();
-            }
-
-
-
-            // First clock in happened and on time
-            if ($this->currentClockIn && $this->currentClockIn->half_day == 'no') {
-                $timeFlag = false;
-            
-            } else {
-                $isSameDay = $officeStartTime->isSameDay(now($this->company->timezone));
-                $isNowAfterHalfDayTimes = now($this->company->timezone)->gt($halfDayTimes);
-
-                if ($startTimePeriod === 'PM' && $halfdayPeriod === 'AM') {
-                    // Half day exists in the first half of the next day
-                    $timeFlag = ($officeEndTime->isSameDay(now($this->company->timezone)) && $isNowAfterHalfDayTimes);
-              
-                } else if ($startTimePeriod === 'AM' && $halfdayPeriod === 'PM') {
-                    // Half day exists in the second half of the same day
-                    $timeFlag = ($isSameDay && $isNowAfterHalfDayTimes);
-              
-                } else if (($startTimePeriod === 'PM' && $halfdayPeriod === 'PM') || ($startTimePeriod === 'AM' && $halfdayPeriod === 'AM')) {
-                    // Same day or next day depending on the start time
-                    if ($officeStartTime->gt($halfDayTimes)) {
-                        // Next day scenario
-                        $timeFlag = ($officeEndTime->isSameDay(now($this->company->timezone)) && $isNowAfterHalfDayTimes);
-            
-                    } else {
-                        // Same day scenario
-                        $timeFlag = ($isSameDay && $isNowAfterHalfDayTimes);
-                    }
-                }
-            }
-
-
-            // Check day's first record and half day time
-            if (
-                now($this->company->timezone)->gt($halfDayTimes) &&
-                !is_null($this->attendanceSettings->halfday_mark_time)
-                && is_null($checkTodayAttendance)
-                && isset($halfDayTimes)
-                && $timeFlag
-                // && ($now->gt($halfDayTimes))
-                && ($showClockIn->show_clock_in_button == 'no') // DO NOT allow half day when allowed outside hours clock-in
-                && $this->attendanceSettings->shift_type == 'strict'
-            ) {
-                $attendance->half_day = 'yes';
-            }
-
-            $currentLatitude = $request->currentLatitude;
-            $currentLongitude = $request->currentLongitude;
-
-            if ($currentLatitude != '' && $currentLongitude != '') {
-                $attendance->latitude = $currentLatitude;
-                $attendance->longitude = $currentLongitude;
-            }
-
-            $attendance->employee_shift_id = $this->attendanceSettings->id;
-
-            $attendance->shift_start_time = $attendance->clock_in_time->format('Y-m-d') . ' ' . $this->attendanceSettings->office_start_time;
-
-            if (Carbon::parse($this->attendanceSettings->office_start_time, $this->company->timezone)->gt(Carbon::parse($this->attendanceSettings->office_end_time, $this->company->timezone))) {
-                $attendance->shift_end_time = $attendance->clock_in_time->addDay()->format('Y-m-d') . ' ' . $this->attendanceSettings->office_end_time;
-
-            }
-            else {
-                $attendance->shift_end_time = $attendance->clock_in_time->format('Y-m-d') . ' ' . $this->attendanceSettings->office_end_time;
-            }
-
-            $attendance->save();
-
-            return Reply::successWithData(__('messages.attendanceSaveSuccess'), ['time' => $now->format('h:i A'), 'ip' => $attendance->clock_in_ip, 'working_from' => $attendance->working_from]);
-        }
-
-        return Reply::error(__('messages.maxClockin'));
-    }
-
-    public function updateClockIn(Request $request)
-    {
-        $now = now($this->company->timezone);
-        $attendance = Attendance::findOrFail($request->id);
-
-        $this->attendanceSettings = attendance_setting();
-
-        if ($this->attendanceSettings->ip_check == 'yes') {
-            $ips = (array)json_decode($this->attendanceSettings->ip_address);
-
-            if (!in_array($request->ip(), $ips)) {
-                return Reply::error(__('messages.notAnAuthorisedDevice'));
-            }
-        }
-
-        $attendance->clock_out_time = $now->copy()->timezone(config('app.timezone'));
-        $attendance->clock_out_ip = request()->ip();
-        $attendance->save();
-
-        
-        if ($attendance->shift->shift_type == 'flexible') {
-            $this->attendanceActivity = Attendance::userAttendanceByDate($attendance->clock_in_time, $attendance->clock_in_time, $attendance->user_id);
-
-            $this->attendanceActivity->load('shift');
-    
-            $attendanceActivity = clone $this->attendanceActivity;
-            $attendanceActivity = $attendanceActivity->reverse()->values();
-    
-            $this->totalTime = 0;
-    
-            foreach ($attendanceActivity as $key => $activity) {
-                if ($key == 0) {
-                    $this->firstClockIn = $activity;
-
-                    $this->attendanceDate = ($activity->clock_in_time) ? Carbon::parse($activity->clock_in_time)->timezone($this->company->timezone) : Carbon::parse($this->firstClockIn->clock_in_time)->timezone($this->company->timezone);
-                    $this->startTime = Carbon::parse($this->firstClockIn->clock_in_time)->timezone($this->company->timezone);
-                }
-    
-                $this->lastClockOut = $activity;
-    
-                if (!is_null($this->lastClockOut->clock_out_time)) {
-                    $this->endTime = Carbon::parse($this->lastClockOut->clock_out_time)->timezone($this->company->timezone);
-    
-                }
-    
-                $this->totalTime = $this->totalTime + $this->endTime->timezone($this->company->timezone)->diffInSeconds($activity->clock_in_time->timezone($this->company->timezone));
-            }
-    
-            $minimumHalfDayMinutes = ($attendance->shift->flexible_half_day_hours * 60);
-            $totalMinimumMinutes = ($attendance->shift->flexible_total_hours * 60);
-            $clockedTotalMinutes = floor($this->totalTime / 60);
-            
-            if ($clockedTotalMinutes >= $minimumHalfDayMinutes && $clockedTotalMinutes < $totalMinimumMinutes) {
-                $attendance->half_day = 'yes';
-                $attendance->save();
-            
-            } elseif ($clockedTotalMinutes < $minimumHalfDayMinutes) {
-                $attendance->delete();
-            }
-
-        }
-
-
-        return Reply::success(__('messages.attendanceSaveSuccess'));
-    }
-
-    /**
-     * Calculate distance between two geo coordinates using Haversine formula and then compare
-     * it with $radius.
-     *
-     * If distance is less than the radius means two points are close enough hence return true.
-     * Else return false.
-     *
-     * @param Request $request
-     *
-     * @return boolean
-     */
-    private function isWithinRadius($request)
-    {
-        $radius = attendance_setting()->radius;
-        $currentLatitude = $request->currentLatitude;
-        $currentLongitude = $request->currentLongitude;
-        $location = CompanyAddress::find($request->location);
-
-        $latFrom = deg2rad($location->latitude);
-        $latTo = deg2rad($currentLatitude);
-
-        $lonFrom = deg2rad($location->longitude);
-        $lonTo = deg2rad($currentLongitude);
-
-        $theta = $lonFrom - $lonTo;
-
-        $dist = sin($latFrom) * sin($latTo) + cos($latFrom) * cos($latTo) * cos($theta);
-        $dist = acos($dist);
-        $dist = rad2deg($dist);
-        $distance = $dist * 60 * 1.1515 * 1609.344;
-
-        return $distance <= $radius;
-    }
-
-    public function attendanceShift($defaultAttendanceSettings)
-    {
-        $checkPreviousDayShift = EmployeeShiftSchedule::with('shift')->where('user_id', user()->id)
-            ->where('date', now($this->company->timezone)->subDay()->toDateString())
-            ->first();
-
-        $checkTodayShift = EmployeeShiftSchedule::with('shift')->where('user_id', user()->id)
-            ->where('date', now(company()->timezone)->toDateString())
-            ->first();
-
-        $backDayFromDefault = Carbon::parse(now($this->company->timezone)->subDay()->format('Y-m-d') . ' ' . $defaultAttendanceSettings->office_start_time, $this->company->timezone);
-
-        $backDayToDefault = Carbon::parse(now($this->company->timezone)->subDay()->format('Y-m-d') . ' ' . $defaultAttendanceSettings->office_end_time, $this->company->timezone);
-
-        if ($backDayFromDefault->gt($backDayToDefault)) {
-            $backDayToDefault->addDay();
-        }
-
-        $nowTime = Carbon::createFromFormat('Y-m-d H:i:s', now($this->company->timezone)->toDateTimeString(), 'UTC');
-
-        if ($checkPreviousDayShift && $nowTime->betweenIncluded($checkPreviousDayShift->shift_start_time, $checkPreviousDayShift->shift_end_time)) {
-            $attendanceSettings = $checkPreviousDayShift;
-
-        }
-        else if ($nowTime->betweenIncluded($backDayFromDefault, $backDayToDefault)) {
-            $attendanceSettings = $defaultAttendanceSettings;
-
-        }
-        else if ($checkTodayShift &&
-            ($nowTime->betweenIncluded($checkTodayShift->shift_start_time, $checkTodayShift->shift_end_time)
-                || $nowTime->gt($checkTodayShift->shift_end_time)
-                || (!$nowTime->betweenIncluded($checkTodayShift->shift_start_time, $checkTodayShift->shift_end_time) && $defaultAttendanceSettings->show_clock_in_button == 'no'))
-        ) {
-            $attendanceSettings = $checkTodayShift;
-        }
-        else if ($checkTodayShift && !is_null($checkTodayShift->shift->early_clock_in)) {
-            $attendanceSettings = $checkTodayShift;
-        }
-        else {
-            $attendanceSettings = $defaultAttendanceSettings;
-        }
-
-
-        if (isset($attendanceSettings->shift)) {
-            return $attendanceSettings->shift;
-        }
-
-        return $attendanceSettings;
-
-    }
-
-    public function showClockedHours()
-    {
-        $attendance = Attendance::find(request()->aid);
-        $attendanceSettings = EmployeeShiftSchedule::with('shift')->where('user_id', $attendance->user_id)
-            ->whereDate('date', Carbon::parse($attendance->clock_in_time)->toDateString())
-            ->first();
-
-        if ($attendanceSettings) {
-            $this->attendanceSettings = $attendanceSettings->shift;
-
-        } else {
-            $this->attendanceSettings = AttendanceSetting::first()->shift; // Do not get this from session here
-        }
-        
-        $this->attendanceActivity = Attendance::userAttendanceByDate($attendance->clock_in_time, $attendance->clock_in_time, $attendance->user_id);
-
-        $this->attendanceActivity->load('shift');
-
-        $attendanceActivity = clone $this->attendanceActivity;
-        $attendanceActivity = $attendanceActivity->reverse()->values();
-
-        $settingStartTime = Carbon::createFromFormat('H:i:s', $this->attendanceSettings->office_start_time, $this->company->timezone);
-        $defaultEndTime = $settingEndTime = Carbon::createFromFormat('H:i:s', $this->attendanceSettings->office_end_time, $this->company->timezone);
-
-        if ($settingStartTime->gt($settingEndTime)) {
-            $settingEndTime->addDay();
-        }
-
-        if ($settingEndTime->greaterThan(now()->timezone($this->company->timezone))) {
-            $defaultEndTime = now()->timezone($this->company->timezone);
-        }
-
-        $this->totalTime = 0;
-
-        foreach ($attendanceActivity as $key => $activity) {
-            if ($key == 0) {
-                $this->firstClockIn = $activity;
-                // $this->attendanceDate = ($activity->shift_start_time) ? Carbon::parse($activity->shift_start_time) : Carbon::parse($this->firstClockIn->clock_in_time)->timezone($this->company->timezone);
-                $this->attendanceDate = ($activity->clock_in_time) ? Carbon::parse($activity->clock_in_time)->timezone($this->company->timezone) : Carbon::parse($this->firstClockIn->clock_in_time)->timezone($this->company->timezone);
-                $this->startTime = Carbon::parse($this->firstClockIn->clock_in_time)->timezone($this->company->timezone);
-            }
-
-            $this->lastClockOut = $activity;
-
-            if (!is_null($this->lastClockOut->clock_out_time)) {
-                $this->endTime = Carbon::parse($this->lastClockOut->clock_out_time)->timezone($this->company->timezone);
-
-            }
-            elseif (($this->lastClockOut->clock_in_time->timezone($this->company->timezone)->format('Y-m-d') != now()->timezone($this->company->timezone)->format('Y-m-d')) && is_null($this->lastClockOut->clock_out_time)) { // When date changed like night shift
-                $this->endTime = Carbon::parse($this->startTime->format('Y-m-d') . ' ' . $this->attendanceSettings->office_end_time, $this->company->timezone);
-             
-                if ($this->startTime->gt($this->endTime)) {
-                    $this->endTime->addDay();
-                }
-
-                $this->notClockedOut = true;
-
-            }
-            else {
-                $this->endTime = $defaultEndTime;
-
-                if ($this->startTime->gt($this->endTime)) {
-                    $this->endTime = now()->timezone($this->company->timezone);
-                }
-
-                $this->notClockedOut = true;
-            }
-
-            $this->totalTime = $this->totalTime + $this->endTime->timezone($this->company->timezone)->diffInSeconds($activity->clock_in_time->timezone($this->company->timezone));
-        }
-
-        $this->maxClockIn = $attendanceActivity->count() < $this->attendanceSettings->clockin_in_day;
-        /** @phpstan-ignore-next-line */
-        $this->totalTimeFormatted = CarbonInterval::formatHuman($this->totalTime, true);
-
-        $this->attendance = $attendance;
-
-        return view('dashboard.employee.show_clocked_hours', $this->data);
     }
 
 }

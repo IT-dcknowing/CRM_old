@@ -519,6 +519,13 @@ class Task extends BaseModel
 
     public function breakMinutes()
     {
+        if ($this->relationLoaded('timeLogged') && $this->timeLogged->every(fn ($log) => $log->relationLoaded('breaks'))) {
+            return $this->timeLogged
+                ->whereNotNull('end_time')
+                ->flatMap->breaks
+                ->sum('total_minutes');
+        }
+
         return ProjectTimeLogBreak::taskBreakMinutes($this->id);
     }
 
