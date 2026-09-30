@@ -18,13 +18,20 @@
 <div class="content-wrapper">
     <div class="row">
         <div class="col-sm-12">
-            <x-cards.data padding="false" :title="__('app.newNotifications')">
+            <x-cards.data padding="false" :title="__('Nouvelles notifications ')">
 
                 @if ($notifications->total() > 0)
-                    <div class="px-3 py-2 border-bottom-grey f-12 text-dark-grey bg-additional-grey">
-                        {{ $notifications->total() }} {{ __('app.notifications') }}
+                    <div class="px-3 py-2 border-bottom-grey f-12 text-dark-grey bg-additional-grey d-flex justify-content-between align-items-center">
+                        <div>
+                            {{ $notifications->total() }} {{ __('app.notifications') }}
+                            @if ($nonLues > 0)
+                                — <span class="text-danger f-w-500">{{ $nonLues }} {{ __('app.unread') }}</span>
+                            @endif
+                        </div>
                         @if ($nonLues > 0)
-                            — <span class="text-danger f-w-500">{{ $nonLues }} {{ __('app.unread') }}</span>
+                            <a href="javascript:;" class="mark-notification-read text-dark-grey f-12 text-decoration-none">
+                                <i class="fa fa-check-double mr-1"></i>{{ __('Marquer tout comme lu') }}
+                            </a>
                         @endif
                     </div>
                 @endif
@@ -63,8 +70,8 @@
                 @endforelse
 
                 @if ($notifications->hasPages())
-                    <div class="px-3 py-3">
-                        {{ $notifications->links() }}
+                    <div class="p-3 border-top-grey d-flex justify-content-center align-items-center">
+                        {{ $notifications->links('pagination::bootstrap-4') }}
                     </div>
                 @endif
 

@@ -44,7 +44,7 @@
     </div>
 
     
-    <a href="<?php echo e(route('tasks.show', [$task->id])); ?>" class="dck-tk__titre openRightModal">
+    <a href="<?php echo e(route('tasks.show', [$task->id])); ?>" class="dck-tk__titre openRightModal" data-redirect-url="<?php echo e(url()->full()); ?>">
         <?php echo e($task->heading); ?>
 
     </a>

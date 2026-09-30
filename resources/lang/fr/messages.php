@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 /*
  * Traductions francaises du cabinet.
@@ -166,6 +166,9 @@ return [
     'paymentFailed' => 'Paiement échoué.',
     'paymentSuccessful' => 'Paiement réussi.',
     'invalid2FaCode' => 'Code d’authentification invalide.',
+    
+    'enable2FAUsingEmail' => 'L\'activation de cette fonctionnalité enverra un code de connexion à votre adresse e-mail <b>:email</b>.',
+    'enable2FAUsingAuthenticator' => 'Utilisez l\'application Authenticator pour obtenir des codes de vérification gratuits, même lorsque votre téléphone est hors ligne. Disponible sur Android et iPhone.',
     'codeNotMatch' => 'Le code d’authentification saisi ne correspond pas.',
     'codeSent' => 'Code de vérification envoyé par e-mail.',
     'smtpError' => 'Vos paramètres SMTP sont incorrects. Veuillez les corriger.',

@@ -103,7 +103,7 @@
             </li>
 
         <!-- NOTIFICATIONS START -->
-            <li title="{{__('app.newNotifications')}}">
+            <li title="{{__('Nouvelles notifications ')}}">
                 <div class="notification_box dropdown">
                     <a class="d-block dropdown-toggle header-icon-box show-user-notifications" type="link"
                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -120,7 +120,7 @@
                         <div
                             class="d-flex px-3 justify-content-between align-items-center border-bottom-grey py-1 bg-white">
                             <div class="___class_+?50___">
-                                <p class="f-14 mb-0 text-dark f-w-500">@lang('app.newNotifications')</p>
+                                <p class="f-14 mb-0 text-dark f-w-500">@lang('Nouvelles notifications ')</p>
                             </div>
                             {{-- « Tout afficher » reste accessible meme sans
                                  non-lue : c'est le seul chemin vers

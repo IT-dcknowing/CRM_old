@@ -7,14 +7,14 @@
 <div class="content-wrapper dck-front">
     <?php if (isset($component)) { $__componentOriginal4a3dfc3fa275b773c17cfd00b0236231 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginal4a3dfc3fa275b773c17cfd00b0236231 = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.dck.back','data' => ['href' => route('tasks.index'),'libelle' => __('app.dckBack.tasks'),'barre' => false]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? (array) $attributes->getIterator() : [])); ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.dck.back','data' => ['href' => $backUrl ?? route('taskboards.index'),'libelle' => __('app.dckBack.tasks'),'barre' => false]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? (array) $attributes->getIterator() : [])); ?>
 <?php $component->withName('dck.back'); ?>
 <?php if ($component->shouldRender()): ?>
 <?php $__env->startComponent($component->resolveView(), $component->data()); ?>
 <?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag && $constructor = (new ReflectionClass(Illuminate\View\AnonymousComponent::class))->getConstructor()): ?>
 <?php $attributes = $attributes->except(collect($constructor->getParameters())->map->getName()->all()); ?>
 <?php endif; ?>
-<?php $component->withAttributes(['href' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(route('tasks.index')),'libelle' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(__('app.dckBack.tasks')),'barre' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(false)]); ?>
+<?php $component->withAttributes(['href' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute($backUrl ?? route('taskboards.index')),'libelle' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(__('app.dckBack.tasks')),'barre' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(false)]); ?>
 <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginal4a3dfc3fa275b773c17cfd00b0236231)): ?>
