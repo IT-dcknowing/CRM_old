@@ -44,15 +44,71 @@ class TaskImport implements ToArray, WithCustomCsvSettings
     public static function colonnes(): array
     {
         return [
-            ['cle' => 'heading',     'nom' => 'Tâche',         'requis' => true],
-            ['cle' => 'project',     'nom' => 'Projet',        'requis' => false],
-            ['cle' => 'start_date',  'nom' => 'Date de début', 'requis' => true],
-            ['cle' => 'due_date',    'nom' => 'Date de fin',   'requis' => false],
-            ['cle' => 'status',      'nom' => 'Statut',        'requis' => false],
-            // ['cle' => 'assigned',    'nom' => 'Assigné à',     'requis' => false],
-            ['cle' => 'category',    'nom' => 'Domaine',       'requis' => false,
-             'anciens' => ['Catégorie', 'Catégorie de tâche']],
-            ['cle' => 'description', 'nom' => 'Description',   'requis' => false],
+            [
+                'cle'     => 'heading',
+                'nom'     => 'Tâche',
+                'requis'  => true,
+                'anciens' => [
+                    'Titre', 'Titre de la tâche', 'Titre de la tache', 'Nom de la tâche',
+                    'Nom de la tache', 'Nom', 'Libellé', 'Libelle', 'Heading', 'Task',
+                    'Task name', 'Title', 'Taches', 'Tâches', 'Intitulé', 'Intitule',
+                    'Objet', 'Sujet', 'Nom tâche', 'Nom tache'
+                ],
+            ],
+            [
+                'cle'     => 'project',
+                'nom'     => 'Projet',
+                'requis'  => false,
+                'anciens' => [
+                    'Project', 'Nom du projet', 'Nom projet', 'Projets', 'Projects', 'Code projet'
+                ],
+            ],
+            [
+                'cle'     => 'start_date',
+                'nom'     => 'Date de début',
+                'requis'  => true,
+                'anciens' => [
+                    'Date de debut', 'Date début', 'Date debut', 'Début', 'Debut',
+                    'Start date', 'Start_date', 'Start Date', 'StartDate', 'Date',
+                    'Date de début de la tâche', 'Date debut tache', 'Date de départ'
+                ],
+            ],
+            [
+                'cle'     => 'due_date',
+                'nom'     => 'Date de fin',
+                'requis'  => false,
+                'anciens' => [
+                    'Date de fin', 'Date fin', 'Date Fin', 'Fin', 'Due date', 'Due_date',
+                    'Due Date', 'DueDate', 'Date d\'échéance', 'Date d\'echeance', 'Échéance',
+                    'Echeance', 'Date limite', 'Date de fin prévue', 'Date fin prévue'
+                ],
+            ],
+            [
+                'cle'     => 'status',
+                'nom'     => 'Statut',
+                'requis'  => false,
+                'anciens' => [
+                    'Status', 'État', 'Etat', 'Colonne', 'Statut de la tâche', 'Statut tâche'
+                ],
+            ],
+            [
+                'cle'     => 'category',
+                'nom'     => 'Domaine',
+                'requis'  => false,
+                'anciens' => [
+                    'Catégorie', 'Categorie', 'Catégorie de tâche', 'Categorie de tache',
+                    'Category', 'Task Category', 'Domaines', 'Catégories', 'Categories'
+                ],
+            ],
+            [
+                'cle'     => 'description',
+                'nom'     => 'Description',
+                'requis'  => false,
+                'anciens' => [
+                    'Détails', 'Details', 'Desc', 'Commentaire', 'Commentaires',
+                    'Notes', 'Remarques', 'Contenu', 'Corps'
+                ],
+            ],
         ];
     }
 
