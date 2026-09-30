@@ -516,16 +516,14 @@ class TasksDataTable extends BaseDataTable
                 && !in_array('client', user_roles())
                 && !($request->has('project_admin') && $request->project_admin == 1)
             ) {
-                $model->where(function ($q) use ($request) {
+                // REGLE STRICTE : un employé ne voit QUE les tâches qu'il a créées
+                // ou qui lui sont assignées / où il est mentionné.
+                // On n'ajoute PAS orWhereDoesntHave('users') ici car cela ferait
+                // apparaître les tâches non-assignées d'AUTRES employés.
+                $model->where(function ($q) {
                     $q->where('task_users.user_id', user()->id)
                       ->orWhere('tasks.added_by', user()->id)
                       ->orWhere('mention_users.user_id', user()->id);
-
-                    if ($this->viewUnassignedTasksPermission == 'all'
-                        && ($request->assignedTo == 'unassigned' || $request->assignedTo == 'all')
-                    ) {
-                        $q->orWhereDoesntHave('users');
-                    }
                 });
             }
 
