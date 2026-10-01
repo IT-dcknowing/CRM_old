@@ -77,8 +77,45 @@ trait ApprobationTache
     }
 
     /**
-     * Le flux de demande d'approbation : ouvert aux personnes reellement
-     * concernees par la tache, refuse a tout autre compte authentifie.
+     * Le changement de statut d'une tache est-il permis ?
+     *
+     * Regle generale : seul un collaborateur a qui la tache est assignee
+     * peut en changer le statut, quels que soient ses autres droits. Le
+     * createur, un administrateur ou un chef de projet non assigne ne le
+     * peuvent pas.
+     *
+     * Exception : entrer dans « En attente d'approbation » ou en sortir
+     * reste l'arbitrage, reserve a l'arbitre (verifierTransitionApprobation).
+     *
+     * @param Task                 $task   tache concernee
+     * @param TaskboardColumn|null $cible  colonne visee ; null = pas de changement
+     */
+    protected function peutChangerStatut(Task $task, ?TaskboardColumn $cible): bool
+    {
+        if (is_null($cible) || $task->board_column_id == $cible->id) {
+            return true;
+        }
+
+        $slug = $this->slugApprobation();
+
+        if (optional($task->boardColumn)->slug === $slug || $cible->slug === $slug) {
+            return $this->estArbitre($task);
+        }
+
+        return est_assigne_tache($task);
+    }
+
+    /**
+     * Refuse en 403 un changement de statut non permis (voir peutChangerStatut).
+     */
+    protected function verifierChangementStatut(Task $task, ?TaskboardColumn $cible): void
+    {
+        abort_403(!$this->peutChangerStatut($task, $cible));
+    }
+
+    /**
+     * Le flux de demande d'approbation : c'est un changement de statut,
+     * donc reserve a l'assigne (ou a l'arbitre).
      */
     protected function verifierDemandeApprobation(Task $task): void
     {
@@ -86,11 +123,7 @@ trait ApprobationTache
             return;
         }
 
-        $assignes = $task->users->pluck('id')->toArray();
-
-        abort_403(
-            !(in_array(user()->id, $assignes) || $task->added_by == user()->id)
-        );
+        abort_403(!est_assigne_tache($task));
     }
 
 }

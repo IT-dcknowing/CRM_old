@@ -296,14 +296,9 @@ class TasksDataTable extends BaseDataTable
 
         });
         $datatables->editColumn('board_column', function ($row) use ($taskBoardColumns) {
-            $taskUsers = $row->users->pluck('id')->toArray();
-
-            if ($this->changeStatusPermission == 'all'
-            || ($this->changeStatusPermission == 'added' && $row->added_by == user()->id)
-            || ($this->changeStatusPermission == 'owned' && in_array(user()->id, $taskUsers))
-            || ($this->changeStatusPermission == 'both' && (in_array(user()->id, $taskUsers) || $row->added_by == user()->id))
-            || ($row->project_admin == user()->id)
-            ) {
+            // Seul l'employe assigne peut changer le statut de la tache
+            // (l'arbitre garde la main sur les taches en attente d'approbation).
+            if (peut_changer_statut_tache($row)) {
                 $taskBoardColumn = $taskBoardColumns->firstWhere('slug', 'waiting_approval');
                 // Check if approval_send is 1, then disable the select dropdown
                 if ($row->approval_send == 1 && $row->need_approval_by_admin == 1 && (in_array('employee', user_roles()) && $row->project_admin != user()->id) && !in_array('admin', user_roles())) {

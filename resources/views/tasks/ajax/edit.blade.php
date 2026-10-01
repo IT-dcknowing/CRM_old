@@ -254,11 +254,8 @@ $editMilestonePermission = user()->permission('edit_project_milestones');
                             </div>
 
 
-                            @if ($changeStatusPermission == 'all'
-                            || ($changeStatusPermission == 'added' && $task->added_by == user()->id)
-                            || ($changeStatusPermission == 'owned' && in_array(user()->id, $taskUsers))
-                            || ($changeStatusPermission == 'both' && (in_array(user()->id, $taskUsers) || $task->added_by == user()->id || $task->project->project_admin == user()->id))
-                            )
+                            {{-- Seul l'employe assigne peut changer le statut de la tache. --}}
+                            @if (est_assigne_tache($task))
                                 <div class="col-lg-3 col-md-6">
                                     @if ($task->board_column_id === $waitingApprovalTaskBoardColumn->id)
                                         @foreach ($taskboardColumns as $item)
@@ -303,6 +300,15 @@ $editMilestonePermission = user()->permission('edit_project_milestones');
                                         @endforeach
                                     </x-forms.select>
                                     @endif
+                                </div>
+                            @else
+                                {{-- Statut affiche en lecture seule : il n'est pas envoye. --}}
+                                <div class="col-lg-3 col-md-6">
+                                    <label class="f-14 text-dark-grey mb-12 mt-3">@lang('app.status')</label>
+                                    <x-forms.input-group>
+                                        <input type="text" class="form-control height-35 f-15 readonly-background" disabled
+                                            value="{{ in_array(optional($task->boardColumn)->slug, ['completed', 'incomplete']) ? __('app.' . $task->boardColumn->slug) : optional($task->boardColumn)->column_name }}">
+                                    </x-forms.input-group>
                                 </div>
                             @endif
 
@@ -678,7 +684,12 @@ $editMilestonePermission = user()->permission('edit_project_milestones');
                 $.easyBlockUI();
             });
             taskDropzone.on('queuecomplete', function() {
-                var msgs = "@lang('messages.recordSaved')";
+                if ($('#taskboard-columns').length) {
+                    // Depuis le tableau des taches, on y revient.
+                    window.location.reload();
+                    return;
+                }
+
                 window.location.href = "{{ route('tasks.index') }}"
             });
             taskDropzone.on('removedfile', function () {
@@ -866,6 +877,9 @@ $editMilestonePermission = user()->permission('edit_project_milestones');
                             }
                             else if ($('#allTasks-table').length) {
                                 window.LaravelDataTables["allTasks-table"].draw(false);
+                            } else if ($('#taskboard-columns').length && typeof loadData === 'function') {
+                                // Modification lancee depuis le tableau des taches : on y reste.
+                                loadData();
                             } else {
                                 window.location.href = response.redirectUrl;
                             }

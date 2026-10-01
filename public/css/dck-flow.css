@@ -819,6 +819,32 @@
   font-size:10px;
   color:var(--tx-4);
 }
+/* Le cadenas et le crayon se partagent la droite de la ligne */
+.dck-front.dck-front .dck-tk__prive + .dck-tk__edit { margin-left:0; }
+
+/* Bouton « Modifier » : discret, revele au survol de la carte */
+.dck-front.dck-front .dck-tk__edit {
+  margin-left:auto;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:22px;
+  height:22px;
+  border-radius:6px;
+  font-size:11px;
+  color:var(--tx-4);
+  text-decoration:none;
+  opacity:.55;
+  cursor:pointer;
+  transition:opacity .14s ease, background .14s ease, color .14s ease;
+}
+.dck-front.dck-front .dck-tk:hover .dck-tk__edit,
+.dck-front.dck-front .dck-tk__edit:focus { opacity:1; }
+.dck-front.dck-front .dck-tk__edit:hover {
+  background:var(--line);
+  color:var(--act);
+  text-decoration:none;
+}
 
 /* Intitule */
 .dck-front.dck-front .dck-tk__titre {

@@ -1,7 +1,6 @@
 @php
 $addTaskPermission = user()->permission('add_tasks');
 $addStatusPermission = user()->permission('add_status');
-$changeStatusPermission = user()->permission('change_status');
 @endphp
 
 @foreach ($result['boardColumns'] as $key => $column)
@@ -134,15 +133,8 @@ $changeStatusPermission = user()->permission('change_status');
                     </div><!-- div end -->
 
                     @foreach ($column['tasks'] as $task)
-                        @php
-                            $taskUsers = $task->users ? $task->users->pluck('id')->toArray() : [];
-                        @endphp
-
-                        <x-cards.task-card :draggable="(($changeStatusPermission == 'all'
-                        || ($changeStatusPermission == 'added' && $task->added_by == user()->id)
-                        || ($changeStatusPermission == 'owned' && in_array(user()->id, $taskUsers))
-                        || ($changeStatusPermission == 'both' && (in_array(user()->id, $taskUsers) || $task->added_by == user()->id))
-                        || ($task->project && $task->project->project_admin == user()->id)) ? 'true' : 'false')"
+                        {{-- Seul l'employe assigne peut deplacer la carte (changer son statut). --}}
+                        <x-cards.task-card :draggable="(est_assigne_tache($task) ? 'true' : 'false')"
                             :task="$task" :company="$company"/>
                     @endforeach
                 </div>
@@ -287,6 +279,25 @@ $changeStatusPermission = user()->permission('change_status');
                     taskIds: taskIds,
                     prioritys: prioritys,
                     '_token': '{{ csrf_token() }}'
+                },
+                error: function(xhr) {
+                    // Deplacement refuse (tache non assignee, approbation...) :
+                    // le message est affiche et le tableau recharge pour remettre
+                    // la carte dans sa colonne d'origine.
+                    var message = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : "@lang('messages.permissionDenied')";
+                    Swal.fire({
+                        icon: 'warning',
+                        title: message,
+                        confirmButtonText: "@lang('app.ok')",
+                        customClass: {confirmButton: 'btn btn-primary'},
+                        buttonsStyling: false
+                    });
+
+                    if (typeof loadData === 'function') {
+                        loadData();
+                    } else {
+                        window.location.reload();
+                    }
                 },
                 success: function(response) {
                     if(response.status == 'failed'){
