@@ -138,6 +138,8 @@ return [
         'estimateTime' => 'Durée estimée',
 
         'deleteRecurringTasks' => 'Supprimer aussi les tâches récurrentes',
+        'deleteTask'           => 'Supprimer la tâche',
+        'processDetails'       => 'Détails du processus',
         'repeatInfo' => 'La tâche sera recréée automatiquement tous les X jours.',
         'cyclesToolTip' => 'Nombre de répétitions',
         'preDeadlineReminder' => 'Envoyer un rappel <strong>avant</strong> X jours de l’échéance',
@@ -534,25 +536,43 @@ return [
     ],
 
     'client' => [
-        'profileInfo'    => 'Informations du dossier',
-        'companyName'    => 'Raison sociale',
-
+        'profileInfo'              => 'Informations du dossier',
+        'companyName'              => 'Raison sociale',
         'salutation'               => 'Civilité',
         'cell'                     => 'Téléphone portable',
         'officePhoneNumber'        => 'Téléphone du bureau',
         'clientCanLogin'           => 'Connexion autorisée ?',
         'clientOtherDetails'       => 'Autres informations',
         'generateRandomPassword'   => 'Générer un mot de passe aléatoire',
+        'createNote'               => 'Ajouter une note',
+        'noteTitle'                => 'Titre de la note',
+        'noteType'                 => 'Type de note',
+        'noteDetail'               => 'Détail de la note',
+        'visibleToClient'          => 'Visible par le client',
     ],
 
     'employees' => [
-        'profile'        => 'Profil',
-        'fullName'       => 'Nom complet',
-
+        'profile'                  => 'Profil',
+        'fullName'                 => 'Nom complet',
         'addNewEmployee'           => 'Ajouter un employé',
+        'createTitle'              => 'Ajouter les informations de l\'employé',
         'accountDetails'           => 'Informations du compte',
         'employeeName'             => 'Nom de l\'employé',
         'employeeEmail'            => 'E-mail de l\'employé',
+        'emailNote'                => 'L\'employé se connectera avec cet e-mail.',
+        'employeePassword'         => 'Mot de passe',
+        'passwordNote'             => 'L\'employé se connectera avec ce mot de passe.',
+        'jobTitle'                 => 'Poste / Fonction',
+        'tasksDone'                => 'Tâches effectuées',
+        'hoursLogged'              => 'Heures enregistrées',
+        'totalHours'               => 'Total des heures',
+        'totalMinutes'             => 'Total des minutes',
+        'memo'                     => 'Mémo',
+        'pendingTasks'             => 'Tâches en attente',
+        'leavesTaken'              => 'Congés pris',
+        'department'               => 'Département',
+        'designation'              => 'Fonction',
+        'status'                   => 'Statut',
         'employeeId'               => 'Matricule',
         'employeeIdInfo'           => 'Le matricule est l\'identifiant unique attribué à chaque employé',
         'employeeIdHelp'           => '<p>Identifiant unique qui vous sert à repérer vos employés au sein du cabinet.</p><p>Pour les employés créés par <b>Invitation</b>, un matricule est généré automatiquement ; vous pourrez le modifier ensuite.</p>',
@@ -577,8 +597,7 @@ return [
     ],
 
     'profile' => [
-        'companyLogo'    => 'Logo de la société',
-
+        'companyLogo'              => 'Logo de la société',
         'profilePicture'           => 'Photo de profil',
         'yourName'                 => 'Nom complet',
         'yourEmail'                => 'Adresse e-mail',
@@ -588,14 +607,61 @@ return [
 
     'invoices' => [
         'currency'                 => 'Devise',
+        'due'                      => 'Échéance',
     ],
 
     'timeLogs' => [
+        'whoLogged'                => 'Enregistré par',
+        'startTime'                => 'Heure de début',
+        'endTime'                  => 'Heure de fin',
+        'totalHours'               => 'Total des heures',
+        'totalWorkingHours'        => 'Total des heures de travail',
+        'totalLoggedHours'         => 'Total des heures enregistrées',
+        'totalNotLoggedHours'      => 'Heures non enregistrées',
+        'leavesTaken'              => 'Congés pris',
+        'holiday'                  => 'Total des jours fériés',
+        'totalMinutes'             => 'Total des minutes',
+        'memo'                     => 'Mémo / Note',
+        'lastUpdatedBy'            => 'Dernière mise à jour par',
+        'employeeName'             => 'Nom de l\'employé',
+        'startDate'                => 'Date de début',
         'endDate'                  => 'Date de fin',
+        'logTime'                  => 'Enregistrer le temps',
+        'startTimer'               => 'Démarrer le minuteur',
+        'stopTimer'                => 'Arrêter le minuteur',
+        'pauseTimer'               => 'Mettre en pause',
+        'resumeTimer'              => 'Reprendre le minuteur',
+        'paused'                   => 'En pause',
+        'break'                    => 'Pause',
+        'thisWeek'                 => 'Cette semaine',
+        'editBreak'                => 'Modifier la pause',
+        'totalTime'                => 'Durée totale',
+        'breakDuration'            => 'Durée de la pause',
+        'date'                     => 'Date',
+        'logged'                   => 'Enregistré',
+        'hoursLogged'              => 'Heures enregistrées',
+        'selectProject'            => 'Sélectionner un projet',
+        'selectTask'               => 'Sélectionner une tâche',
+        'task'                     => 'Tâche',
+        'myActiveTimer'            => 'Mon minuteur actif',
     ],
 
     'taskCategory' => [
         'addTaskCategory'          => 'Ajouter un domaine',
+        'taskCategory'             => 'Domaine de tâche',
+        'categoryName'             => 'Nom du domaine',
+    ],
+
+    'projectCategory' => [
+        'categoryName'             => 'Nom de la catégorie',
+    ],
+
+    'sticky' => [
+        'colors'                   => 'Couleurs',
+    ],
+
+    'tickets' => [
+        'type'                     => 'Type',
     ],
 
     'taskLabel' => [
@@ -631,5 +697,11 @@ return [
         'editEmergencyContact'     => 'Modifier le contact d\'urgence',
         'addNewEmergencyContact'   => 'Ajouter un contact d\'urgence',
     ],
+
+    'invoiceExport'                => 'Facture',
+    'taskShortCode'                => 'Code',
+    'taskCode'                     => 'Code',
+    'ticketStatus'                 => 'Statut du ticket',
+    'flag'                         => 'Drapeau',
 
 ];

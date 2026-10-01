@@ -870,8 +870,8 @@ class TaskController extends AccountBaseController
         $task = new Task();
         $task->heading = $request->heading;
         $task->description = trim_editor($request->description);
-        $dueDate = ($request->has('without_duedate')) ? null : Carbon::createFromFormat(company()->date_format, $request->due_date);
-        $task->start_date = Carbon::createFromFormat(company()->date_format, $request->start_date);
+        $dueDate = ($request->has('without_duedate') || empty($request->due_date)) ? null : companyToCarbon($request->due_date);
+        $task->start_date = companyToCarbon($request->start_date) ?? now();
         $task->due_date = $dueDate;
         $task->project_id = $request->project_id;
         $task->task_category_id = $request->category_id;
@@ -891,8 +891,8 @@ class TaskController extends AccountBaseController
 
         $task->is_private = $request->has('is_private') ? 1 : 0;
         $task->billable = $request->has('billable') && $request->billable ? 1 : 0;
-        $task->estimate_hours = $request->estimate_hours;
-        $task->estimate_minutes = $request->estimate_minutes;
+        $task->estimate_hours = (int) $request->estimate_hours;
+        $task->estimate_minutes = (int) $request->estimate_minutes;
 
         if ($request->board_column_id) {
             $task->board_column_id = $request->board_column_id;
@@ -930,6 +930,11 @@ class TaskController extends AccountBaseController
             else {
                 $task->task_short_code = $projectLastTaskCount + 1;
             }
+        }
+
+        if (user()) {
+            $task->added_by = user()->id;
+            $task->last_updated_by = user()->id;
         }
 
         $task->save();
@@ -1111,7 +1116,7 @@ class TaskController extends AccountBaseController
         $redirectUrl = urldecode($request->redirect_url);
 
         if ($redirectUrl == '') {
-            $redirectUrl = route('tasks.index');
+            $redirectUrl = route('taskboards.index');
         }
 
         return Reply::successWithData(__('messages.recordSaved'), ['redirectUrl' => $redirectUrl, 'taskID' => $task->id]);
@@ -1282,10 +1287,10 @@ class TaskController extends AccountBaseController
             )
         );
 
-        $dueDate = ($request->has('without_duedate')) ? null : Carbon::createFromFormat(company()->date_format, $request->due_date);
+        $dueDate = ($request->has('without_duedate') || empty($request->due_date)) ? null : companyToCarbon($request->due_date);
         $task->heading = $request->heading;
         $task->description = trim_editor($request->description);
-        $task->start_date = Carbon::createFromFormat(company()->date_format, $request->start_date);
+        $task->start_date = companyToCarbon($request->start_date) ?? now();
         $task->due_date = $dueDate;
         $task->task_category_id = $request->category_id;
         $task->priority = $request->priority;
@@ -1320,8 +1325,8 @@ class TaskController extends AccountBaseController
         $task->dependent_task_id = $request->has('dependent') && $request->has('dependent_task_id') && $request->dependent_task_id != '' ? $request->dependent_task_id : null;
         $task->is_private = $request->has('is_private') ? 1 : 0;
         $task->billable = $request->has('billable') && $request->billable ? 1 : 0;
-        $task->estimate_hours = $request->estimate_hours;
-        $task->estimate_minutes = $request->estimate_minutes;
+        $task->estimate_hours = (int) $request->estimate_hours;
+        $task->estimate_minutes = (int) $request->estimate_minutes;
 
         if ($request->project_id != '') {
             $task->project_id = $request->project_id;
@@ -1386,10 +1391,6 @@ class TaskController extends AccountBaseController
             $this->notifierNouveauxAssignes(
                 $task, array_diff($request->user_id, $taskUsers));
         }
-
-        // Dispatch delegation notification if changed
-        $dispatcher = new \App\Services\NotificationDispatcher();
-        $channels = $request->chosen_channels ?? ['email', 'whatsapp'];
 
         // Dispatch pro notifications automatically
         $dispatcher = new \App\Services\NotificationDispatcher();
@@ -1493,7 +1494,6 @@ class TaskController extends AccountBaseController
          */
         $isAdmin = in_array('admin', user_roles());
         $isArbitre = est_arbitre();
-        $canViewAllPublicTasks = $viewTaskPermission == 'all' && !$this->task->is_private;
         $isTaskCreator = $this->task->added_by == user()->id;
         $isTaskAssignee = in_array(user()->id, $taskUsers);
         $isTaskMentioned = !is_null($this->task->mentionTask) && in_array(user()->id, $mentionUser);
@@ -1507,7 +1507,6 @@ class TaskController extends AccountBaseController
             $overrideViewPermission == true
             || $isAdmin
             || $isArbitre
-            || $canViewAllPublicTasks
             || $isTaskCreator
             || $isTaskAssignee
             || $isTaskMentioned

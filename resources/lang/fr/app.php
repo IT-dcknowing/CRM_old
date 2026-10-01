@@ -1031,6 +1031,15 @@ return [
     'subTask'                  => 'Sous-tâche',
     'subTasks'                 => 'Sous-tâches',
 
+    'selectAction'             => 'Sélectionner une action',
+    'informClient'             => 'Informer le client',
+    'responsible'              => 'Responsable',
+    'dateCompleted'            => 'Date d\'achèvement',
+    'communication'            => 'Communication',
+    'clientCommunication'      => 'Communication client',
+    'transmitToClient'         => 'Transmettre au client',
+    'dealWatcher'              => 'Observateur de l\'affaire',
+
     'dckBack' => [
         'tasks'        => 'Retour aux tâches',
         'projects'     => 'Retour aux projets',
