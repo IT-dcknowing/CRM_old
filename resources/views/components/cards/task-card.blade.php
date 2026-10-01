@@ -41,6 +41,15 @@
                 <i class="fa fa-lock"></i>
             </span>
         @endif
+
+        {{-- Modifier la tache sans quitter le tableau (panneau lateral) --}}
+        @if (peut_modifier_tache($task))
+            <a href="{{ route('tasks.edit', [$task->id]) }}" class="dck-tk__edit openRightModal"
+               data-redirect-url="{{ url()->full() }}"
+               title="@lang('app.edit')" aria-label="@lang('app.edit')">
+                <i class="fa fa-edit"></i>
+            </a>
+        @endif
     </div>
 
     {{-- Intitule --}}

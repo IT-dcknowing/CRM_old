@@ -1,7 +1,4 @@
-@php
-$changeStatusPermission = user()->permission('change_status');
-@endphp
-
 @foreach ($tasks as $task)
-    <x-cards.task-card :task="$task" :draggable="($changeStatusPermission == 'all' ? 'true' : 'false')" :company="$company"/>
+    {{-- Seul l'employe assigne peut deplacer la carte (changer son statut). --}}
+    <x-cards.task-card :task="$task" :draggable="(est_assigne_tache($task) ? 'true' : 'false')" :company="$company"/>
 @endforeach
