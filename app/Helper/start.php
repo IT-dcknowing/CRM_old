@@ -1244,11 +1244,41 @@ if (!function_exists('pdfStripTags')) {
 
 }
 
+if (!function_exists('companyToCarbon')) {
+
+    function companyToCarbon($date)
+    {
+        if (empty($date)) {
+            return null;
+        }
+
+        if ($date instanceof Carbon) {
+            return $date;
+        }
+
+        try {
+            return Carbon::createFromFormat(company()->date_format, $date);
+        } catch (\Throwable $e) {
+            try {
+                return Carbon::parse($date);
+            } catch (\Throwable $e2) {
+                return null;
+            }
+        }
+    }
+
+}
+
 if (!function_exists('companyToYmd')) {
 
     function companyToYmd($date)
     {
-        return Carbon::createFromFormat(company()->date_format, $date)->format('Y-m-d');
+        if (empty($date)) {
+            return null;
+        }
+
+        $carbon = companyToCarbon($date);
+        return $carbon ? $carbon->format('Y-m-d') : null;
     }
 
 }
@@ -1257,7 +1287,12 @@ if (!function_exists('companyToDateString')) {
 
     function companyToDateString($date)
     {
-        return Carbon::createFromFormat(company()->date_format, $date)->toDateString();
+        if (empty($date)) {
+            return null;
+        }
+
+        $carbon = companyToCarbon($date);
+        return $carbon ? $carbon->toDateString() : null;
     }
 
 }

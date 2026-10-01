@@ -105,7 +105,7 @@ class ContractsDataTable extends BaseDataTable
                 return $action;
             })
             ->editColumn('project_name', function ($row) {
-                if ($row->project_id != null) {
+                if ($row->project_id != null && !is_null($row->project)) {
                     return '<a href="' . route('projects.show', $row->project_id) . '" class="text-darkest-grey">' . str($row->project->project_name)->limit(30) . '</a>';
                 }
 

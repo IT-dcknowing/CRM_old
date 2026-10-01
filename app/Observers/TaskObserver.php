@@ -58,11 +58,12 @@ class TaskObserver
     {
         $task->hash = md5(microtime());
 
+        if (user()) {
+            $task->created_by = $task->created_by ?: user()->id;
+            $task->added_by = $task->added_by ?: user()->id;
+        }
+
         if (!isRunningInConsoleOrSeeding()) {
-            if (user()) {
-                $task->created_by = user()->id;
-                $task->added_by = user()->id;
-            }
 
             if (request()->has('board_column_id')) {
                 $task->board_column_id = request()->board_column_id;

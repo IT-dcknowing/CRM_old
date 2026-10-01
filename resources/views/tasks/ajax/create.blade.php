@@ -101,7 +101,7 @@
                     <div class="col-md-5 col-lg-3">
                         <x-forms.datepicker fieldId="task_start_date" fieldRequired="true"
                                             :fieldLabel="__('modules.projects.startDate')" fieldName="start_date"
-                                            :fieldValue="(($task) ? $task->start_date->format(company()->date_format) : now(company()->timezone)->translatedFormat(company()->date_format))"
+                                            :fieldValue="(($task) ? $task->start_date->format(company()->date_format) : now(company()->timezone)->format(company()->date_format))"
                                             :fieldPlaceholder="__('placeholders.date')"/>
                     </div>
 
@@ -109,7 +109,7 @@
                          @if($task && is_null($task->due_date)) style="display: none" @endif>
                         <x-forms.datepicker fieldId="due_date" fieldRequired="true" :fieldLabel="__('app.dueDate')"
                                 fieldName="due_date" :fieldPlaceholder="__('placeholders.date')"
-                                :fieldValue="(($task && $task->due_date) ? $task->due_date->format(company()->date_format) : now(company()->timezone)->translatedFormat(company()->date_format))"/>
+                                :fieldValue="(($task && $task->due_date) ? $task->due_date->format(company()->date_format) : now(company()->timezone)->format(company()->date_format))"/>
                     </div>
                     <div class="col-md-2 col-lg-2 pt-5">
                         <x-forms.checkbox class="mr-0 mr-lg-2 mr-md-2" :checked="$task ? is_null($task->due_date) : ''"
@@ -476,7 +476,7 @@
                     <x-forms.button-secondary class="mr-3 d-none d-md-block" id="save-more-task-form"
                                               icon="check-double">@lang('app.saveAddMore')
                     </x-forms.button-secondary>
-                    <x-forms.button-cancel :link="route('tasks.index')" class="border-0">@lang('app.cancel')
+                    <x-forms.button-cancel :link="$backUrl ?? route('taskboards.index')" class="border-0">@lang('app.cancel')
                     </x-forms.button-cancel>
                 </x-form-actions>
 
@@ -939,7 +939,7 @@
         }
 
         $('#assign-self').click(function () {
-            $('#selectAssignee').val('{{ $user->id }}');
+            $('#selectAssignee').val('{{ user()->id }}');
             $('#selectAssignee').selectpicker('refresh');
         });
 

@@ -491,7 +491,7 @@ $editMilestonePermission = user()->permission('edit_project_milestones');
                 <x-form-actions>
                     <x-forms.button-primary id="save-task-form" class="mr-3" icon="check">@lang('app.save')
                     </x-forms.button-primary>
-                    <x-forms.button-cancel :link="route('tasks.index')" class="border-0">@lang('app.cancel')
+                    <x-forms.button-cancel :link="$backUrl ?? route('taskboards.index')" class="border-0">@lang('app.cancel')
                     </x-forms.button-cancel>
                 </x-form-actions>
 

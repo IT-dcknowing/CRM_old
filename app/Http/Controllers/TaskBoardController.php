@@ -566,9 +566,12 @@ class TaskBoardController extends AccountBaseController
 
             foreach ($taskIds as $key => $taskId) {
                 if (!is_null($taskId)) {
-                    $task = Task::with('labels')->findOrFail($taskId);
+                    $task = Task::with('labels', 'users')->findOrFail($taskId);
 
                     if ($board->slug == 'completed') {
+                        $taskUsers = $task->users->pluck('id')->toArray();
+                        abort_403(!in_array(user()->id, $taskUsers));
+
                         $task->update(
                             [
                                 'board_column_id' => $boardColumnId,

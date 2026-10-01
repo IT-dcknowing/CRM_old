@@ -1,16 +1,6 @@
 <?php
 
-/*
- * Traductions francaises du cabinet.
- *
- * Ces fichiers SONT suivis par git (.gitignore : « !resources/lang/fr/ ») et
- * partent donc en production, ou ils prennent le pas sur les fichiers livres
- * avec l'application. Toute cle absente ici retombe automatiquement sur
- * l'anglais (config/app.php : fallback_locale = 'eng').
- */
-
 return [
-
     'required' => 'Le champ :attribute est obligatoire.',
     'email' => 'Le champ :attribute doit être une adresse e-mail valide.',
     'confirmed' => 'La confirmation du champ :attribute ne correspond pas.',
@@ -24,65 +14,54 @@ return [
     'accepted' => 'Le champ :attribute doit être accepté.',
     'in' => 'La valeur du champ :attribute est invalide.',
     'exists' => 'La valeur du champ :attribute est invalide.',
-
     'min' => [
         'numeric' => 'Le champ :attribute doit être au minimum de :min.',
         'string' => 'Le champ :attribute doit contenir au moins :min caractères.',
         'file' => 'Le fichier :attribute doit peser au moins :min kilo-octets.',
         'array' => 'Le champ :attribute doit contenir au moins :min éléments.',
     ],
-
     'max' => [
         'numeric' => 'Le champ :attribute ne peut pas dépasser :max.',
         'string' => 'Le champ :attribute ne peut pas dépasser :max caractères.',
         'file' => 'Le fichier :attribute ne peut pas dépasser :max kilo-octets.',
         'array' => 'Le champ :attribute ne peut pas contenir plus de :max éléments.',
     ],
-
     'between' => [
         'numeric' => 'Le champ :attribute doit être compris entre :min et :max.',
         'string' => 'Le champ :attribute doit contenir entre :min et :max caractères.',
         'file' => 'Le fichier :attribute doit peser entre :min et :max kilo-octets.',
         'array' => 'Le champ :attribute doit contenir entre :min et :max éléments.',
     ],
-
     'size' => [
         'numeric' => 'Le champ :attribute doit être égal à :size.',
         'string' => 'Le champ :attribute doit contenir :size caractères.',
         'file' => 'Le fichier :attribute doit peser :size kilo-octets.',
         'array' => 'Le champ :attribute doit contenir :size éléments.',
     ],
-
     'gt' => [
         'numeric' => 'Le champ :attribute doit être supérieur à :value.',
         'string' => 'Le champ :attribute doit contenir plus de :value caractères.',
         'file' => 'Le fichier :attribute doit peser plus de :value kilo-octets.',
         'array' => 'Le champ :attribute doit contenir plus de :value éléments.',
     ],
-
     'gte' => [
         'numeric' => 'Le champ :attribute doit être supérieur ou égal à :value.',
         'string' => 'Le champ :attribute doit contenir au moins :value caractères.',
         'file' => 'Le fichier :attribute doit peser au moins :value kilo-octets.',
         'array' => 'Le champ :attribute doit contenir au moins :value éléments.',
     ],
-
     'lt' => [
         'numeric' => 'Le champ :attribute doit être inférieur à :value.',
         'string' => 'Le champ :attribute doit contenir moins de :value caractères.',
         'file' => 'Le fichier :attribute doit peser moins de :value kilo-octets.',
         'array' => 'Le champ :attribute doit contenir moins de :value éléments.',
     ],
-
     'lte' => [
         'numeric' => 'Le champ :attribute doit être inférieur ou égal à :value.',
         'string' => 'Le champ :attribute ne doit pas dépasser :value caractères.',
         'file' => 'Le fichier :attribute ne doit pas dépasser :value kilo-octets.',
         'array' => 'Le champ :attribute ne doit pas contenir plus de :value éléments.',
     ],
-
-    /* --- Dates -------------------------------------------------------- */
-
     'after' => 'Le champ :attribute doit être une date postérieure au :date.',
     'after_or_equal' => 'Le champ :attribute doit être une date postérieure ou égale au :date.',
     'before' => 'Le champ :attribute doit être une date antérieure au :date.',
@@ -90,9 +69,6 @@ return [
     'date_equals' => 'Le champ :attribute doit être une date égale au :date.',
     'date_format' => 'Le champ :attribute ne correspond pas au format :format.',
     'timezone' => 'Le champ :attribute doit être un fuseau horaire valide.',
-
-    /* --- Format ------------------------------------------------------- */
-
     'alpha' => 'Le champ :attribute ne peut contenir que des lettres.',
     'alpha_dash' => 'Le champ :attribute ne peut contenir que des lettres, chiffres et tirets.',
     'alpha_num' => 'Le champ :attribute ne peut contenir que des lettres et des chiffres.',
@@ -122,15 +98,9 @@ return [
     'mac_address' => 'Le champ :attribute doit être une adresse MAC valide.',
     'uuid' => 'Le champ :attribute doit être un UUID valide.',
     'ulid' => 'Le champ :attribute doit être un ULID valide.',
-
-    /* --- Fichiers ----------------------------------------------------- */
-
     'file' => 'Le champ :attribute doit être un fichier.',
     'uploaded' => 'Le téléversement du fichier :attribute a échoué.',
     'dimensions' => 'Les dimensions de l’image :attribute sont invalides.',
-
-    /* --- Presence et dependances -------------------------------------- */
-
     'filled' => 'Le champ :attribute doit avoir une valeur.',
     'present' => 'Le champ :attribute doit être présent.',
     'distinct' => 'Le champ :attribute contient une valeur en double.',
@@ -157,11 +127,7 @@ return [
     'accepted_if' => 'Le champ :attribute doit être accepté lorsque :other vaut :value.',
     'declined' => 'Le champ :attribute doit être refusé.',
     'declined_if' => 'Le champ :attribute doit être refusé lorsque :other vaut :value.',
-
-    /* --- Mot de passe ------------------------------------------------- */
-
     'current_password' => 'Le mot de passe est incorrect.',
-
     'password' => [
         'letters' => 'Le champ :attribute doit contenir au moins une lettre.',
         'mixed' => 'Le champ :attribute doit contenir au moins une majuscule et une minuscule.',
@@ -169,9 +135,6 @@ return [
         'symbols' => 'Le champ :attribute doit contenir au moins un symbole.',
         'uncompromised' => 'Ce :attribute est apparu dans une fuite de données. Veuillez en choisir un autre.',
     ],
-
-    /* --- Messages propres a l'application ----------------------------- */
-
     'invalidEmail' => 'Veuillez saisir une adresse e-mail valide.',
     'invalidEmailPassword' => 'La combinaison adresse e-mail / mot de passe est incorrecte.',
     'givenDataInvalid' => 'Les données fournies sont invalides.',
@@ -179,15 +142,9 @@ return [
     'email_domain' => 'Le champ :attribute doit être un domaine valide, par exemple gmail.com',
     'slack_webhook' => 'Le format du webhook est invalide. Pour plus d’informations, consultez ce',
     'not_custom_fields' => 'Vous ne pouvez pas créer ce champ personnalisé : ce libellé est déjà utilisé pour le même module.',
-
     'mimes' => 'Le champ :attribute doit être un fichier de type : :values.',
     'mimetypes' => 'Le champ :attribute doit être un fichier de type : :values.',
     'image' => 'Le champ :attribute doit être une image.',
-
-    /*
-     * Noms des champs, pour que le message dise « Le champ adresse e-mail
-     * est obligatoire » plutot que « Le champ email est obligatoire ».
-     */
     'attributes' => [
         'email' => 'adresse e-mail',
         'password' => 'mot de passe',
@@ -211,8 +168,6 @@ return [
         'downloadable_file' => 'fichier téléchargeable',
         'allowed_file_types' => 'types de fichiers autorisés',
         'allowed_file_size' => 'taille de fichier autorisée',
-
-        // Identite et coordonnees
         'first_name' => 'prénom',
         'last_name' => 'nom de famille',
         'full_name' => 'nom complet',
@@ -234,8 +189,6 @@ return [
         'allow_email' => 'autoriser l’e-mail',
         'external_link' => 'lien externe',
         'relationship' => 'lien de parenté',
-
-        // Employes
         'employee_id' => 'matricule employé',
         'department' => 'département',
         'designation' => 'fonction',
@@ -256,8 +209,6 @@ return [
         'award' => 'récompense',
         'given_to' => 'attribuée à',
         'award_date' => 'date de la récompense',
-
-        // Presence et horaires
         'office_start_time' => 'heure d’ouverture',
         'office_end_time' => 'heure de fermeture',
         'office_open_days' => 'jours d’ouverture',
@@ -274,8 +225,6 @@ return [
         'effective_after' => 'effectif après',
         'radius' => 'rayon',
         'alert_after' => 'alerter après',
-
-        // Conges et jours feries
         'leave_date' => 'date du congé',
         'leave_type_id' => 'type de congé',
         'leave_number' => 'nombre de congés',
@@ -283,8 +232,6 @@ return [
         'type_name' => 'nom du type',
         'occassion' => 'occasion',
         'multi_date' => 'dates multiples',
-
-        // Projets, taches, contrats
         'project_name' => 'nom de le projet',
         'project_budget' => 'budget de le projet',
         'hours_allocated' => 'heures allouées',
@@ -298,8 +245,6 @@ return [
         'priority' => 'priorité',
         'contract_type' => 'type de contrat',
         'discussion_category' => 'catégorie de discussion',
-
-        // Finance
         'amount' => 'montant',
         'price' => 'prix',
         'sub_total' => 'sous-total',
@@ -329,13 +274,9 @@ return [
         'currency_code' => 'code de la devise',
         'exchange_rate' => 'taux de change',
         'usd_price' => 'prix en dollars',
-
-        // Produits et commandes
         'item_name' => 'nom de l’article',
         'purchase_date' => 'date d’achat',
         'order_date' => 'date de commande',
-
-        // Tickets et evenements
         'ticket_subject' => 'objet du ticket',
         'ticket_description' => 'description du ticket',
         'channel_name' => 'nom du canal',
@@ -344,16 +285,12 @@ return [
         'reply_text' => 'texte de la réponse',
         'event_name' => 'nom de l’événement',
         'event_link' => 'lien de l’événement',
-
-        // Prospects
         'lead_id' => 'prospect',
         'next_follow_up_date' => 'date de prochaine relance',
         'remind_time' => 'heure du rappel',
         'remind_to' => 'destinataire du rappel',
         'remind_type' => 'type de rappel',
         'send_reminder' => 'envoi du rappel',
-
-        // Champs generiques
         'title' => 'titre',
         'subject' => 'objet',
         'summary' => 'résumé',
@@ -391,8 +328,6 @@ return [
         'end_time' => 'heure de fin',
         'year' => 'année',
         'month' => 'mois',
-
-        // Parametres
         'language_name' => 'nom de la langue',
         'language_code' => 'code de la langue',
         'flag' => 'drapeau',
@@ -401,6 +336,11 @@ return [
         'monthly_report_roles' => 'rôles du rapport mensuel',
         'backup_after_days' => 'sauvegarde tous les (jours)',
         'delete_backup_after_days' => 'suppression des sauvegardes après (jours)',
+        'notAllowed' => 'The :attribute is not allowed',
     ],
-
+    'custom' => [
+        'attribute-name' => [
+            'rule-name' => 'custom-message',
+        ],
+    ],
 ];
