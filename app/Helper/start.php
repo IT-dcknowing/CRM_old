@@ -167,7 +167,7 @@ if (!function_exists('peut_modifier_tache')) {
         $permission = user()->permission('edit_tasks');
         $userId = user()->id;
         $assigne = est_assigne_tache($task);
-        $createur = $task->added_by == $userId;
+        $createur = $task->added_by == $userId || $task->created_by == $userId;
         $project = $task->project;
         $client = in_array('client', user_roles()) && $project && $project->client_id == $userId;
 

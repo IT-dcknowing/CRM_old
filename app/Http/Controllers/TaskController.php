@@ -1270,11 +1270,6 @@ class TaskController extends AccountBaseController
 
             $taskBoardColumn = TaskboardColumn::findOrFail($request->board_column_id);
 
-            // Règle métier : seul l'utilisateur assigné peut marquer la tâche comme terminée
-            if ($taskBoardColumn->slug == 'completed' && $task->boardColumn->slug != 'completed') {
-                abort_403(!in_array(user()->id, $taskUsers));
-            }
-
             // Meme regle que sur le tableau : le formulaire d'edition ne
             // doit offrir ni un contournement de l'etape d'approbation, ni
             // un changement de statut a qui n'est pas assigne.
@@ -1455,12 +1450,6 @@ class TaskController extends AccountBaseController
         $viewTaskPermission = user()->permission('view_tasks');
         $mentionUser = $this->task->mentionTask->pluck('user_id')->toArray();
 
-        $overrideViewPermission = false;
-
-        if (request()->has('tab') && request('tab') === 'project') {
-            $overrideViewPermission = true;
-        }
-
         /*
          * AUTORISATION D'ACCES AU DETAIL D'UNE TACHE (backend)
          *
@@ -1471,6 +1460,7 @@ class TaskController extends AccountBaseController
          * la tâche ne contourne pas cette règle.
          *
          * Les admins (roles_arbitres) voient toutes les tâches.
+         * NOTE : le paramètre ?tab=project ne contourne PAS cette vérification.
          */
         $isAdmin = in_array('admin', user_roles());
         $isArbitre = est_arbitre();
@@ -1488,8 +1478,7 @@ class TaskController extends AccountBaseController
 
         abort_403(
             !(
-            $overrideViewPermission == true
-            || $isAdmin
+            $isAdmin
             || $isArbitre
             || $isTaskCreator
             || $isTaskAssignee
@@ -1820,7 +1809,19 @@ class TaskController extends AccountBaseController
 
     public function updateTaskDuration(Request $request, $id)
     {
-        $task = Task::findOrFail($id);
+        $task = Task::with('users', 'project')->findOrFail($id);
+
+        $editTaskPermission = user()->permission('edit_tasks');
+        $taskUsers = $task->users->pluck('id')->toArray();
+
+        abort_403(
+            !(in_array('admin', user_roles())
+            || est_arbitre()
+            || ($task->project && $task->project->project_admin == user()->id)
+            || ($editTaskPermission != 'none' && ($task->added_by == user()->id || in_array(user()->id, $taskUsers)))
+            )
+        );
+
         $task->start_date = Carbon::createFromFormat('d/m/Y', $request->start_date)->format('Y-m-d');
         $task->due_date = (!is_null($task->due_date)) ?Carbon::createFromFormat('d/m/Y', $request->end_date)->addDay()->format('Y-m-d') : null;
         $task->save();
@@ -1862,7 +1863,17 @@ class TaskController extends AccountBaseController
         $options = '<option value="">--</option>';
 
         if ($id != 0) {
-            $members = Task::with('users')->findOrFail($id);
+            $members = Task::with('users', 'project')->findOrFail($id);
+
+            // Seuls les utilisateurs ayant accès à la tâche peuvent voir ses membres
+            $taskUsers = $members->users->pluck('id')->toArray();
+            $canView = in_array('admin', user_roles())
+                || est_arbitre()
+                || $members->added_by == user()->id
+                || in_array(user()->id, $taskUsers)
+                || ($members->project && $members->project->project_admin == user()->id);
+
+            abort_403(!$canView);
 
             foreach ($members->users as $item) {
                 if ($item->status == 'active') {
@@ -1878,9 +1889,20 @@ class TaskController extends AccountBaseController
     public function reminder()
     {
         $taskID = request()->id;
-        $task = Task::with('users')->findOrFail($taskID);
+        $task = Task::with('users', 'project')->findOrFail($taskID);
 
-        // Send  reminder notification to user
+        // Vérification : seuls les utilisateurs liés à la tâche peuvent envoyer un rappel
+        $taskUsers = $task->users->pluck('id')->toArray();
+        abort_403(
+            !(in_array('admin', user_roles())
+            || est_arbitre()
+            || $task->added_by == user()->id
+            || in_array(user()->id, $taskUsers)
+            || ($task->project && $task->project->project_admin == user()->id)
+            )
+        );
+
+        // Send reminder notification to user
         event(new TaskReminderEvent($task));
 
         return Reply::success('messages.reminderMailSuccess');
@@ -1905,10 +1927,22 @@ class TaskController extends AccountBaseController
 
     public function sendNotifications($id)
     {
-        $task = Task::findOrFail($id);
+        $task = Task::with('users', 'project')->findOrFail($id);
+
+        // Seuls les admins et les créateurs/assignés de la tâche peuvent re-déclencher des notifications
+        $taskUsers = $task->users->pluck('id')->toArray();
+        abort_403(
+            !(in_array('admin', user_roles())
+            || est_arbitre()
+            || $task->added_by == user()->id
+            || in_array(user()->id, $taskUsers)
+            || ($task->project && $task->project->project_admin == user()->id)
+            )
+        );
+
         $dispatcher = new \App\Services\NotificationDispatcher();
         $channels = ['email', 'whatsapp'];
-        
+
         try {
             $dispatcher->dispatchTaskDelegation($task, $channels);
             return Reply::success('Notifications envoyées avec succès.');
