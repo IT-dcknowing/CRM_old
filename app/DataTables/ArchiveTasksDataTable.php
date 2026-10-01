@@ -209,15 +209,8 @@ class ArchiveTasksDataTable extends BaseDataTable
                   </div>';
             })
             ->editColumn('board_column', function ($row) use ($taskBoardColumns) {
-                $taskUsers = $row->users->pluck('id')->toArray();
-
-                if (
-                    $this->changeStatusPermission == 'all'
-                    || ($this->changeStatusPermission == 'added' && $row->added_by == user()->id)
-                    || ($this->changeStatusPermission == 'owned' && in_array(user()->id, $taskUsers))
-                    || ($this->changeStatusPermission == 'both' && (in_array(user()->id, $taskUsers) || $row->added_by == user()->id))
-                    || ($row->project_admin == user()->id)
-                ) {
+                // Seul l'employe assigne peut changer le statut de la tache.
+                if (est_assigne_tache($row)) {
                     $status = '<select class="form-control select-picker change-status" data-task-id="' . $row->id . '">';
 
                     foreach ($taskBoardColumns as $item) {
