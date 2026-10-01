@@ -320,6 +320,9 @@ class TasksDataTable extends BaseDataTable
 
                     foreach ($taskBoardColumns as $item) {
                         if ($item->id != $taskBoardColumn->id) {
+                            if ($item->slug == 'completed' && !in_array(user()->id, $taskUsers) && $item->id != $row->board_column_id) {
+                                continue;
+                            }
                             $status .= '<option ';
 
                             if ($item->id == $row->board_column_id) {
@@ -532,6 +535,7 @@ class TasksDataTable extends BaseDataTable
                     $model->where(
                         function ($q) {
                         $q->where('tasks.added_by', '=', user()->id)
+                            ->orWhere('tasks.created_by', '=', user()->id)
                             ->orWhere('mention_users.user_id', user()->id);
                     }
                     );
@@ -542,6 +546,7 @@ class TasksDataTable extends BaseDataTable
                         function ($q) use ($request) {
                         $q->where('task_users.user_id', '=', user()->id);
                         $q->orWhere('tasks.added_by', '=', user()->id)
+                            ->orWhere('tasks.created_by', '=', user()->id)
                             ->orWhere('mention_users.user_id', user()->id);
 
                         if (in_array('client', user_roles())) {
@@ -626,6 +631,7 @@ class TasksDataTable extends BaseDataTable
                 $model->where(
                     function ($q) {
                     $q->where('tasks.added_by', '=', user()->id)
+                        ->orWhere('tasks.created_by', '=', user()->id)
                         ->orWhere('mention_users.user_id', user()->id);
 
                 }
@@ -638,6 +644,7 @@ class TasksDataTable extends BaseDataTable
                     function ($q) use ($request) {
                     $q->where('task_users.user_id', '=', user()->id);
                     $q->orWhere('tasks.added_by', '=', user()->id)
+                        ->orWhere('tasks.created_by', '=', user()->id)
                         ->orWhere('mention_users.user_id', user()->id);
 
                     if (in_array('client', user_roles())) {

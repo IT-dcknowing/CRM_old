@@ -17,12 +17,8 @@
                 <div class="card-header bg-white  border-bottom-grey  justify-content-between p-20">
                     <div class="row">
                         <div class="col-lg-8 col-10">
-                            @if ($changeStatusPermission == 'all'
-                            || ($changeStatusPermission == 'added' && $task->added_by == user()->id)
-                            || ($changeStatusPermission == 'owned' && in_array(user()->id, $taskUsers))
-                            || ($changeStatusPermission == 'both' && (in_array(user()->id, $taskUsers) || $task->added_by == user()->id))
-                            || ($task->project && $task->project->project_admin == user()->id)
-                            )
+                            {{-- Règle métier : seul l'utilisateur assigné peut voir et cliquer sur « Marquer comme terminé » --}}
+                            @if (in_array(user()->id, $taskUsers))
                             {{-- approval_send --}}
                                 @php
                                     $userRoles = user_roles();

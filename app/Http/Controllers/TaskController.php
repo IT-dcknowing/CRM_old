@@ -294,6 +294,11 @@ class TaskController extends AccountBaseController
 
         $taskBoardColumn = TaskboardColumn::where('slug', $status)->first();
 
+        // Règle métier : seul l'utilisateur assigné peut marquer la tâche comme terminée
+        if ($status === 'completed' || ($taskBoardColumn && $taskBoardColumn->slug === 'completed')) {
+            abort_403(!in_array(user()->id, $taskUsers));
+        }
+
         // Entrer dans « En attente d'approbation » ou en sortir reste
         // reserve a l'arbitre, quelle que soit la permission change_status.
         $this->verifierTransitionApprobation($task, $taskBoardColumn);
@@ -1143,13 +1148,13 @@ class TaskController extends AccountBaseController
         abort_403(
             !(in_array('admin', user_roles())
             || est_arbitre()
-            || ($editTaskPermission == 'all' && ($this->task->added_by == user()->id || in_array(user()->id, $taskUsers)))
+            || ($editTaskPermission == 'all' && ($this->task->added_by == user()->id || $this->task->created_by == user()->id || in_array(user()->id, $taskUsers)))
             || ($editTaskPermission == 'owned' && in_array(user()->id, $taskUsers))
-            || ($editTaskPermission == 'added' && $this->task->added_by == user()->id)
+            || ($editTaskPermission == 'added' && ($this->task->added_by == user()->id || $this->task->created_by == user()->id))
             || ($this->task->project && ($this->task->project->project_admin == user()->id))
-            || ($editTaskPermission == 'both' && (in_array(user()->id, $taskUsers) || $this->task->added_by == user()->id))
+            || ($editTaskPermission == 'both' && (in_array(user()->id, $taskUsers) || $this->task->added_by == user()->id || $this->task->created_by == user()->id))
             || ($editTaskPermission == 'owned' && (in_array('client', user_roles()) && $this->task->project && ($this->task->project->client_id == user()->id)))
-            || ($editTaskPermission == 'both' && (in_array('client', user_roles()) && ($this->task->project && ($this->task->project->client_id == user()->id)) || $this->task->added_by == user()->id))
+            || ($editTaskPermission == 'both' && (in_array('client', user_roles()) && ($this->task->project && ($this->task->project->client_id == user()->id)) || $this->task->added_by == user()->id || $this->task->created_by == user()->id))
             )
         );
 
@@ -1277,13 +1282,13 @@ class TaskController extends AccountBaseController
         abort_403(
             !(in_array('admin', user_roles())
             || est_arbitre()
-            || ($editTaskPermission == 'all' && ($task->added_by == user()->id || in_array(user()->id, $taskUsers)))
+            || ($editTaskPermission == 'all' && ($task->added_by == user()->id || $task->created_by == user()->id || in_array(user()->id, $taskUsers)))
             || ($editTaskPermission == 'owned' && in_array(user()->id, $taskUsers))
-            || ($editTaskPermission == 'added' && $task->added_by == user()->id)
+            || ($editTaskPermission == 'added' && ($task->added_by == user()->id || $task->created_by == user()->id))
             || ($task->project && ($task->project->project_admin == user()->id))
-            || ($editTaskPermission == 'both' && (in_array(user()->id, $taskUsers) || $task->added_by == user()->id))
+            || ($editTaskPermission == 'both' && (in_array(user()->id, $taskUsers) || $task->added_by == user()->id || $task->created_by == user()->id))
             || ($editTaskPermission == 'owned' && (in_array('client', user_roles()) && $task->project && ($task->project->client_id == user()->id)))
-            || ($editTaskPermission == 'both' && (in_array('client', user_roles()) && ($task->project && ($task->project->client_id == user()->id)) || $task->added_by == user()->id))
+            || ($editTaskPermission == 'both' && (in_array('client', user_roles()) && ($task->project && ($task->project->client_id == user()->id)) || $task->added_by == user()->id || $task->created_by == user()->id))
             )
         );
 
@@ -1299,6 +1304,11 @@ class TaskController extends AccountBaseController
         if ($request->has('board_column_id')) {
 
             $taskBoardColumn = TaskboardColumn::findOrFail($request->board_column_id);
+
+            // Règle métier : seul l'utilisateur assigné peut marquer la tâche comme terminée
+            if ($taskBoardColumn->slug == 'completed' && $task->boardColumn->slug != 'completed') {
+                abort_403(!in_array(user()->id, $taskUsers));
+            }
 
             // Meme regle que sur le tableau : le formulaire d'edition ne
             // doit pas offrir un contournement de l'etape d'approbation.
@@ -1494,13 +1504,17 @@ class TaskController extends AccountBaseController
          */
         $isAdmin = in_array('admin', user_roles());
         $isArbitre = est_arbitre();
-        $isTaskCreator = $this->task->added_by == user()->id;
+        $isTaskCreator = ($this->task->added_by == user()->id || $this->task->created_by == user()->id);
         $isTaskAssignee = in_array(user()->id, $taskUsers);
         $isTaskMentioned = !is_null($this->task->mentionTask) && in_array(user()->id, $mentionUser);
-        $isProjectAdmin = $this->task->project_id && $this->task->project->project_admin == user()->id;
+        $isProjectAdmin = $this->task->project_id && !is_null($this->task->project) && $this->task->project->project_admin == user()->id;
         $isClientOfProject = in_array('client', user_roles())
             && $this->task->project_id
+            && !is_null($this->task->project)
             && $this->task->project->client_id == user()->id;
+
+        // Outil collaboratif : tout collaborateur peut consulter le détail des tâches non privées
+        $isCollaborativeView = ($this->task->is_private == 0 && (in_array('employee', user_roles()) || in_array($viewTaskPermission, ['all', 'both', 'owned', 'added'])));
 
         abort_403(
             !(
@@ -1512,6 +1526,7 @@ class TaskController extends AccountBaseController
             || $isTaskMentioned
             || $isProjectAdmin
             || $isClientOfProject
+            || $isCollaborativeView
             )
         );
 
