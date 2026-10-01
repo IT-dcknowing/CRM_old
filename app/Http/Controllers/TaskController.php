@@ -233,7 +233,13 @@ class TaskController extends AccountBaseController
         $taskBoardColumn = TaskboardColumn::findOrFail(request()->status);
 
         $ids = explode(',', $request->row_ids);
-        $cibles = $this->tachesAutorisees('edit_tasks', $ids)->pluck('id');
+
+        // Le statut ne change que pour les taches dont l'utilisateur est
+        // assigne (ou qu'il arbitre) : les autres sont ignorees.
+        $cibles = $this->tachesAutorisees('edit_tasks', $ids)
+            ->load('boardColumn')
+            ->filter(fn ($tache) => $this->peutChangerStatut($tache, $taskBoardColumn))
+            ->pluck('id');
 
         if ($cibles->isNotEmpty()) {
             if ($taskBoardColumn && $taskBoardColumn->slug == 'completed') {
@@ -276,32 +282,13 @@ class TaskController extends AccountBaseController
         $taskId = $request->taskId;
         $status = $request->status;
 
-        $task = Task::withTrashed()->with('project', 'users')->findOrFail($taskId);
-
-        $taskUsers = $task->users->pluck('id')->toArray();
-
-        $this->editPermission = user()->permission('edit_tasks');
-        $this->changeStatusPermission = user()->permission('change_status');
-        abort_403(
-            !(
-            $this->changeStatusPermission == 'all'
-            || ($this->changeStatusPermission == 'added' && $task->added_by == user()->id)
-            || ($this->changeStatusPermission == 'owned' && in_array(user()->id, $taskUsers))
-            || ($this->changeStatusPermission == 'both' && (in_array(user()->id, $taskUsers) || $task->added_by == user()->id))
-            || ($task->project && $task->project->project_admin == user()->id)
-            )
-        );
+        $task = Task::withTrashed()->with('project', 'users', 'boardColumn')->findOrFail($taskId);
 
         $taskBoardColumn = TaskboardColumn::where('slug', $status)->first();
 
-        // Règle métier : seul l'utilisateur assigné peut marquer la tâche comme terminée
-        if ($status === 'completed' || ($taskBoardColumn && $taskBoardColumn->slug === 'completed')) {
-            abort_403(!in_array(user()->id, $taskUsers));
-        }
-
-        // Entrer dans « En attente d'approbation » ou en sortir reste
-        // reserve a l'arbitre, quelle que soit la permission change_status.
-        $this->verifierTransitionApprobation($task, $taskBoardColumn);
+        // Seul l'assigne change le statut ; entrer dans « En attente
+        // d'approbation » ou en sortir reste reserve a l'arbitre.
+        $this->verifierChangementStatut($task, $taskBoardColumn);
 
         $task->board_column_id = $taskBoardColumn->id;
 
@@ -1145,18 +1132,7 @@ class TaskController extends AccountBaseController
          * en est le créateur ou l'assigné. La vérification est faite côté
          * serveur pour éviter les contournements par manipulation d'URL.
          */
-        abort_403(
-            !(in_array('admin', user_roles())
-            || est_arbitre()
-            || ($editTaskPermission == 'all' && ($this->task->added_by == user()->id || $this->task->created_by == user()->id || in_array(user()->id, $taskUsers)))
-            || ($editTaskPermission == 'owned' && in_array(user()->id, $taskUsers))
-            || ($editTaskPermission == 'added' && ($this->task->added_by == user()->id || $this->task->created_by == user()->id))
-            || ($this->task->project && ($this->task->project->project_admin == user()->id))
-            || ($editTaskPermission == 'both' && (in_array(user()->id, $taskUsers) || $this->task->added_by == user()->id || $this->task->created_by == user()->id))
-            || ($editTaskPermission == 'owned' && (in_array('client', user_roles()) && $this->task->project && ($this->task->project->client_id == user()->id)))
-            || ($editTaskPermission == 'both' && (in_array('client', user_roles()) && ($this->task->project && ($this->task->project->client_id == user()->id)) || $this->task->added_by == user()->id || $this->task->created_by == user()->id))
-            )
-        );
+        abort_403(!peut_modifier_tache($this->task));
 
         $getCustomFieldGroupsWithFields = $this->task->getCustomFieldGroupsWithFields();
 
@@ -1279,18 +1255,7 @@ class TaskController extends AccountBaseController
          * Même règle que pour l'édition : seul le créateur ou l'assigné
          * (ou un admin/arbitre) peut modifier la tâche.
          */
-        abort_403(
-            !(in_array('admin', user_roles())
-            || est_arbitre()
-            || ($editTaskPermission == 'all' && ($task->added_by == user()->id || $task->created_by == user()->id || in_array(user()->id, $taskUsers)))
-            || ($editTaskPermission == 'owned' && in_array(user()->id, $taskUsers))
-            || ($editTaskPermission == 'added' && ($task->added_by == user()->id || $task->created_by == user()->id))
-            || ($task->project && ($task->project->project_admin == user()->id))
-            || ($editTaskPermission == 'both' && (in_array(user()->id, $taskUsers) || $task->added_by == user()->id || $task->created_by == user()->id))
-            || ($editTaskPermission == 'owned' && (in_array('client', user_roles()) && $task->project && ($task->project->client_id == user()->id)))
-            || ($editTaskPermission == 'both' && (in_array('client', user_roles()) && ($task->project && ($task->project->client_id == user()->id)) || $task->added_by == user()->id || $task->created_by == user()->id))
-            )
-        );
+        abort_403(!peut_modifier_tache($task));
 
         $dueDate = ($request->has('without_duedate') || empty($request->due_date)) ? null : companyToCarbon($request->due_date);
         $task->heading = $request->heading;
@@ -1305,14 +1270,10 @@ class TaskController extends AccountBaseController
 
             $taskBoardColumn = TaskboardColumn::findOrFail($request->board_column_id);
 
-            // Règle métier : seul l'utilisateur assigné peut marquer la tâche comme terminée
-            if ($taskBoardColumn->slug == 'completed' && $task->boardColumn->slug != 'completed') {
-                abort_403(!in_array(user()->id, $taskUsers));
-            }
-
             // Meme regle que sur le tableau : le formulaire d'edition ne
-            // doit pas offrir un contournement de l'etape d'approbation.
-            $this->verifierTransitionApprobation($task, $taskBoardColumn);
+            // doit offrir ni un contournement de l'etape d'approbation, ni
+            // un changement de statut a qui n'est pas assigne.
+            $this->verifierChangementStatut($task, $taskBoardColumn);
 
             $task->board_column_id = $request->board_column_id;
             $task->approval_send = 0;
@@ -1326,6 +1287,10 @@ class TaskController extends AccountBaseController
         }
 
         if ($request->select_value == 'Waiting Approval') {
+
+            // Envoi en approbation depuis le formulaire : meme regle que
+            // sendApproval(), reserve a l'assigne (ou a l'arbitre).
+            $this->verifierDemandeApprobation($task);
 
             $taskBoardColumn = TaskboardColumn::where('column_name', $request->select_value)->where('company_id', company()->id)->first();
             $task->board_column_id = $taskBoardColumn->id;
@@ -1805,12 +1770,13 @@ class TaskController extends AccountBaseController
     public function storeStatusReason(ActionTask $request)
     {
 
-        $task = Task::with('project')->findOrFail($request->taskId);
+        $task = Task::with('project', 'users', 'boardColumn')->findOrFail($request->taskId);
         $taskBoardColumn = TaskboardColumn::where('slug', $request->taskStatus)->first();
 
         // Sortie de « En attente d'approbation » avec motif : c'est l'arbitrage
-        // lui-meme, donc reserve a l'administrateur.
-        $this->verifierTransitionApprobation($task, $taskBoardColumn);
+        // lui-meme, donc reserve a l'administrateur. Hors approbation, seul
+        // l'assigne change le statut.
+        $this->verifierChangementStatut($task, $taskBoardColumn);
 
         $task->board_column_id = $taskBoardColumn->id;
         $task->approval_send = 0;

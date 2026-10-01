@@ -2,7 +2,6 @@
     $editTaskPermission = user()->permission('edit_tasks');
     $deleteTaskPermission = user()->permission('delete_tasks');
     $sendReminderPermission = user()->permission('send_reminder');
-    $changeStatusPermission = user()->permission('change_status');
     $viewProjectPermission = user()->permission('view_projects');
 
 @endphp
@@ -17,8 +16,9 @@
                 <div class="card-header bg-white  border-bottom-grey  justify-content-between p-20">
                     <div class="row">
                         <div class="col-lg-8 col-10">
-                            {{-- Règle métier : seul l'utilisateur assigné peut voir et cliquer sur « Marquer comme terminé » --}}
-                            @if (in_array(user()->id, $taskUsers))
+                            {{-- Seul l'employe assigne peut changer le statut de la tache
+                                 (l'arbitre garde la main sur une tache en attente d'approbation). --}}
+                            @if (peut_changer_statut_tache($task))
                             {{-- approval_send --}}
                                 @php
                                     $userRoles = user_roles();
