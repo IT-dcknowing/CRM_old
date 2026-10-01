@@ -1483,15 +1483,17 @@ class TaskController extends AccountBaseController
         /*
          * AUTORISATION D'ACCES AU DETAIL D'UNE TACHE (backend)
          *
-         * Un collaborateur (non-admin) ne peut consulter une tâche que s'il
-         * en est le créateur, l'assigné ou le mentionné. Cette vérification
-         * est faite côté serveur : manipuler l'URL ou l'ID de la tâche ne
-         * contourne pas cette règle.
+         * Un collaborateur (non-admin) peut consulter une tâche s'il en est
+         * le créateur, l'assigné ou le mentionné, ou si sa permission
+         * view_tasks vaut 'all' et que la tâche n'est pas privée. Cette
+         * vérification est faite côté serveur : manipuler l'URL ou l'ID de
+         * la tâche ne contourne pas cette règle.
          *
          * Les admins (roles_arbitres) voient toutes les tâches.
          */
         $isAdmin = in_array('admin', user_roles());
         $isArbitre = est_arbitre();
+        $canViewAllPublicTasks = $viewTaskPermission == 'all' && !$this->task->is_private;
         $isTaskCreator = $this->task->added_by == user()->id;
         $isTaskAssignee = in_array(user()->id, $taskUsers);
         $isTaskMentioned = !is_null($this->task->mentionTask) && in_array(user()->id, $mentionUser);
@@ -1505,6 +1507,7 @@ class TaskController extends AccountBaseController
             $overrideViewPermission == true
             || $isAdmin
             || $isArbitre
+            || $canViewAllPublicTasks
             || $isTaskCreator
             || $isTaskAssignee
             || $isTaskMentioned
@@ -1898,16 +1901,13 @@ class TaskController extends AccountBaseController
         return Reply::success('messages.reminderMailSuccess');
     }
 
+    /* Appele en AJAX par les formulaires de tache a chaque changement de date
+       ou d'assigne. Le module Conges etant retire, leaves() renvoie toujours
+       null : on ne parse plus les dates, dont la saisie libre (ex. "29-Aug-2003"
+       hors format societe) faisait lever une InvalidFormatException (erreur 500). */
     public function checkLeaves()
     {
-        $startDate = request()->start_date ? companyToYmd(request()->start_date) : null;
-        $dueDate = request()->due_date ? companyToYmd(request()->due_date) : null;
-
-        if (request()->start_date && request()->due_date && request()->user_id) {
-            $data = $this->leaves(request()->user_id, $startDate, $dueDate);
-
-            return reply::dataOnly(['data' => $data]);
-        }
+        return Reply::dataOnly(['data' => null]);
     }
 
     /* Module Conges retire du perimetre du cabinet (cf. audit nettoyage-modules) :
