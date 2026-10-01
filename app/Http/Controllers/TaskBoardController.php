@@ -12,6 +12,7 @@ use App\Models\TaskCategory;
 use App\Models\TaskLabelList;
 use App\Models\User;
 use App\Models\UserTaskboardSetting;
+use App\Traits\ApprobationTache;
 use App\Traits\pusherConfigTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -20,6 +21,7 @@ class TaskBoardController extends AccountBaseController
 {
 
     use pusherConfigTrait;
+    use ApprobationTache;
 
     public function __construct()
     {
@@ -555,8 +557,16 @@ class TaskBoardController extends AccountBaseController
         $taskIds = $request->taskIds;
         $boardColumnId = $request->boardColumnId;
         $priorities = $request->prioritys;
+        $movingTaskId = $request->movingTaskId;
 
         $board = TaskboardColumn::findOrFail($boardColumnId);
+
+        // Seule la carte glissee peut changer de colonne, et seulement si
+        // l'utilisateur lui est assigne (l'approbation restant a l'arbitre).
+        if ($movingTaskId) {
+            $movingTask = Task::with('users', 'project', 'boardColumn')->findOrFail($movingTaskId);
+            $this->verifierChangementStatut($movingTask, $board);
+        }
 
         if (isset($taskIds) && count($taskIds) > 0) {
 
@@ -566,33 +576,29 @@ class TaskBoardController extends AccountBaseController
 
             foreach ($taskIds as $key => $taskId) {
                 if (!is_null($taskId)) {
-                    $task = Task::with('labels', 'users')->findOrFail($taskId);
+                    $task = Task::with('labels')->findOrFail($taskId);
+                    $changeDeColonne = $task->board_column_id != $boardColumnId;
 
-                    if ($board->slug == 'completed') {
-                        $taskUsers = $task->users->pluck('id')->toArray();
-                        abort_403(!in_array(user()->id, $taskUsers));
-
-                        $task->update(
-                            [
-                                'board_column_id' => $boardColumnId,
-                                'completed_on' => now()->format('Y-m-d'),
-                                'column_priority' => $priorities[$key]
-                            ]
-                        );
-                    }
-                    else {
-                        $task->update(
-                            [
-                                'board_column_id' => $boardColumnId,
-                                'column_priority' => $priorities[$key]
-                            ]
-                        );
+                    // Les autres cartes de la colonne ne font que se reordonner :
+                    // aucune ne doit pouvoir changer de statut par ce biais.
+                    if ($changeDeColonne && $task->id != $movingTaskId) {
+                        continue;
                     }
 
+                    $donnees = [
+                        'board_column_id' => $boardColumnId,
+                        'column_priority' => $priorities[$key]
+                    ];
+
+                    if ($changeDeColonne) {
+                        $donnees['completed_on'] = $board->slug == 'completed' ? now()->format('Y-m-d') : null;
+                    }
+
+                    $task->update($donnees);
                 }
             }
 
-            $this->triggerPusher('task-updated-channel', 'task-updated', ['user_id' => $this->user->id, 'task_id' => $request->draggingTaskId]);
+            $this->triggerPusher('task-updated-channel', 'task-updated', ['user_id' => $this->user->id, 'task_id' => $movingTaskId]);
         }
 
         return Reply::dataOnly(['status' => 'success', 'data' => '']);
