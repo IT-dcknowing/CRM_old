@@ -1,14 +1,5 @@
 <?php
 
-/*
- * Traductions francaises du cabinet.
- *
- * Ces fichiers SONT suivis par git (.gitignore : « !resources/lang/fr/ ») et
- * partent donc en production, ou ils prennent le pas sur les fichiers livres
- * avec l'application. Toute cle absente ici retombe automatiquement sur
- * l'anglais (config/app.php : fallback_locale = 'eng').
- */
-
 return [
     'email' => 'Adresse e-mail',
     'next' => 'Suivant',
