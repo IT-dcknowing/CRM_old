@@ -136,8 +136,17 @@ class Kernel extends ConsoleKernel
 
         $schedule->command('queue:flush')->weekly();
 
+        // =========================================================================
+        // CONFIGURATION TEST TEMPORAIRE : Envoi déclenché aujourd'hui à 17h00
+        // =========================================================================
+        $schedule->command('send-weekly-task-report')->dailyAt('17:00');
+
+        /* -------------------------------------------------------------------------
+         * CONFIGURATION DE PRODUCTION (À RÉACTIVER APRÈS LE TEST) :
+         * -------------------------------------------------------------------------
         // Rapport hebdomadaire des tâches envoyé chaque vendredi à 18h00 aux ADMIN
-        $schedule->command('send-weekly-task-report')->fridays()->at('18:00');
+        // $schedule->command('send-weekly-task-report')->fridays()->at('18:00');
+        ------------------------------------------------------------------------- */
 
         // Schedule the queue:work command to run without overlapping and with 3 tries
         $schedule->command('queue:work database --tries=3 --stop-when-empty')->withoutOverlapping();

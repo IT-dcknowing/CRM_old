@@ -608,10 +608,20 @@ class TaskController extends AccountBaseController
             $this->categories = TaskCategory::where('company_id', $societe)
                 ->orderBy('category_name')->get(['id', 'category_name']);
             $this->statuts = TaskboardColumn::orderBy('priority')->get(['id', 'column_name', 'slug', 'label_color']);
+            $this->collaborateurs = DB::table('users')
+                ->join('role_user', 'role_user.user_id', '=', 'users.id')
+                ->join('roles', 'roles.id', '=', 'role_user.role_id')
+                ->where('roles.name', '<>', 'client')
+                ->where('users.company_id', $societe)
+                ->where('users.status', 'active')
+                ->select('users.id', 'users.name', 'users.email')
+                ->distinct()
+                ->orderBy('users.name')
+                ->get();
             $this->nomFichier = $request->file('import_file')->getClientOriginalName();
 
-                    $this->resultat = $resultat;
-                    $this->jeton = $jeton;
+            $this->resultat = $resultat;
+            $this->jeton = $jeton;
 
             return Reply::dataOnly([
                 'status' => 'success',
@@ -866,7 +876,8 @@ class TaskController extends AccountBaseController
         $task->start_date = companyToCarbon($request->start_date) ?? now();
         $task->due_date = $dueDate;
         $task->project_id = $request->project_id;
-        $task->task_category_id = $request->category_id;
+        $categoryIds = is_array($request->category_id) ? array_filter($request->category_id) : ($request->category_id ? [$request->category_id] : []);
+        $task->task_category_id = !empty($categoryIds) ? reset($categoryIds) : null;
         $task->priority = $request->priority;
         $task->board_column_id = $taskBoardColumn->id;
 
@@ -930,6 +941,9 @@ class TaskController extends AccountBaseController
         }
 
         $task->save();
+
+        // Save categories (domains)
+        $task->taskCategories()->sync($categoryIds);
 
         // Save labels
         if ($request->task_labels) {
@@ -1262,7 +1276,8 @@ class TaskController extends AccountBaseController
         $task->description = trim_editor($request->description);
         $task->start_date = companyToCarbon($request->start_date) ?? now();
         $task->due_date = $dueDate;
-        $task->task_category_id = $request->category_id;
+        $categoryIds = is_array($request->category_id) ? array_filter($request->category_id) : ($request->category_id ? [$request->category_id] : []);
+        $task->task_category_id = !empty($categoryIds) ? reset($categoryIds) : null;
         $task->priority = $request->priority;
 
 
@@ -1344,6 +1359,9 @@ class TaskController extends AccountBaseController
             $task->task_short_code = $project->project_short_code . '-' . $this->getTaskShortCode($project->project_short_code, $projectLastTaskCount);
         }
         $task->save();
+
+        // save categories (domains)
+        $task->taskCategories()->sync($categoryIds);
 
         // save labels
         $task->labels()->sync($request->task_labels);

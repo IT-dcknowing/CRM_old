@@ -28,7 +28,7 @@ class StoreRequest extends CoreRequest
     {
         $setting = company();
         $rules = [
-            'employee_id' => 'required|unique:employee_details,employee_id,null,id,company_id,' . company()->id.'|max:100',
+            'employee_id' => 'nullable|max:100',
             'name' => 'required|max:50',
             'email' => 'required|email:rfc,strict|unique:users,email,null,id,company_id,' . company()->id.'|max:100',
             'password' => 'required|min:8|max:50',

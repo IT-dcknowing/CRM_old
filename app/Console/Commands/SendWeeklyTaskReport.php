@@ -19,14 +19,14 @@ class SendWeeklyTaskReport extends Command
      *
      * @var string
      */
-    protected $signature = 'send-weekly-task-report {--week= : Semaine ISO au format YYYY-Www (ex: 2026-W36). Par défaut la semaine courante}';
+    protected $signature = 'send-weekly-task-report {--week= : Semaine ISO au format YYYY-Www (ex: 2026-W36). Par défaut la semaine courante} {--email= : Adresse e-mail de test}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Envoie le rapport hebdomadaire des tâches au format PDF par e-mail à tous les administrateurs.';
+    protected $description = 'Envoie le rapport hebdomadaire des tâches au format PDF par e-mail.';
 
     /**
      * Execute the console command.
@@ -35,7 +35,7 @@ class SendWeeklyTaskReport extends Command
      */
     public function handle()
     {
-        $this->info('Démarrage de l\'envoi des rapports hebdomadaires aux administrateurs...');
+        $this->info('Démarrage de l\'envoi des rapports hebdomadaires...');
 
         $companies = Company::active()->get();
 
@@ -76,7 +76,19 @@ class SendWeeklyTaskReport extends Command
                 $pdf->setPaper('a4', 'portrait');
                 $pdfContent = $pdf->output();
 
-                // 4. Récupération des destinataires : tous les ADMIN + les comptes spécifiés
+                // =========================================================================
+                // CONFIGURATION DE TEST TEMPORAIRE : Envoi UNIQUEMENT à bleibaulouh@gmail.com
+                // =========================================================================
+                $testEmail = $this->option('email') ?: 'bleibaulouh@gmail.com';
+                $virtualUser = new User();
+                $virtualUser->name = 'Destinataire Test (' . $testEmail . ')';
+                $virtualUser->email = $testEmail;
+                $virtualUser->company_id = $company->id;
+                $recipients = collect([$virtualUser]);
+
+                /* -------------------------------------------------------------------------
+                 * CONFIGURATION DE PRODUCTION (À RÉACTIVER APRÈS LE TEST) :
+                 * -------------------------------------------------------------------------
                 $recipients = User::allAdmins($company->id);
 
                 $specificEmails = [
@@ -102,6 +114,7 @@ class SendWeeklyTaskReport extends Command
                 $recipients = $recipients->unique('email')->filter(function ($u) {
                     return !empty($u->email);
                 });
+                ------------------------------------------------------------------------- */
 
                 if ($recipients->isEmpty()) {
                     $this->warn("Aucun destinataire trouvé pour {$company->company_name}.");

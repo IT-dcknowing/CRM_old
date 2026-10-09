@@ -198,10 +198,28 @@ trait ImportationTaches
             ->select('id', 'project_name', 'project_short_code')->get()
             ->keyBy(fn($p) => $this->normaliser($p->project_name));
 
-        /* L'assignation est desormais automatique : l'utilisateur connecte
-           est toujours l'assigne. Le chargement des collaborateurs a ete
-           retire pour alleger la requete et ne plus exposer la liste des
-           utilisateurs dans le traitement. */
+        $collaborateurs = DB::table('users')
+            ->join('role_user', 'role_user.user_id', '=', 'users.id')
+            ->join('roles', 'roles.id', '=', 'role_user.role_id')
+            ->where('roles.name', '<>', 'client')
+            ->where('users.company_id', $societe)
+            ->where('users.status', 'active')
+            ->select('users.id', 'users.name', 'users.email')
+            ->distinct()
+            ->orderBy('users.name')
+            ->get();
+
+        $collabsParNom = [];
+        $collabsParEmail = [];
+        $collabsParId = [];
+
+        foreach ($collaborateurs as $c) {
+            $collabsParNom[$this->normaliser($c->name)] = $c;
+            if (!empty($c->email)) {
+                $collabsParEmail[$this->normaliser($c->email)] = $c;
+            }
+            $collabsParId[$c->id] = $c;
+        }
 
         $categories = DB::table('task_category')
             ->where('company_id', $societe)
@@ -236,12 +254,16 @@ trait ImportationTaches
         }
 
         return (object) [
-            'projets'    => $projets,
-            'categories' => $categories,
-            'statuts'    => $statuts,
-            'existantes' => $existantes,
-            'projetDefaut' => $projetDefaut ? ($projets->firstWhere('id', $projetDefaut) ?: null) : null,
-            'defaut'     => TaskboardColumn::where('slug', 'incomplete')->first() ?? TaskboardColumn::first(),
+            'projets'                => $projets,
+            'collaborateurs'         => $collabsParNom,
+            'collaborateursParEmail' => $collabsParEmail,
+            'collaborateursParId'    => $collabsParId,
+            'listeCollaborateurs'    => $collaborateurs,
+            'categories'             => $categories,
+            'statuts'                => $statuts,
+            'existantes'             => $existantes,
+            'projetDefaut'           => $projetDefaut ? ($projets->firstWhere('id', $projetDefaut) ?: null) : null,
+            'defaut'                 => TaskboardColumn::where('slug', 'incomplete')->first() ?? TaskboardColumn::first(),
 
             /* Le meme droit que le formulaire de creation d'un projet.
                L'import ne doit pas etre un moyen d'obtenir ce qu'on ne
@@ -343,11 +365,30 @@ trait ImportationTaches
         /* Priorité : medium par defaut */
         $priorite = 'medium';
 
-        /* Collaborateurs : l'assignation est desormais automatique.
-           L'utilisateur connecte sera assigne a toutes ses taches a la
-           creation. La colonne « Assigne a » n'existe plus dans le modele. */
-        $gens     = [];
-        $nomsGens = [];
+        /* Collaborateurs : si la colonne est renseignée, on cherche l'employé correspondant.
+           Si la colonne est vide, la tâche est automatiquement attribuée à l'utilisateur connecté. */
+        $nomAssigne = $lire('assigned_to');
+        $assigne = null;
+
+        if ($nomAssigne !== '') {
+            $normAssigne = $this->normaliser($nomAssigne);
+            $assigne = $refs->collaborateurs[$normAssigne]
+                ?? ($refs->collaborateursParEmail[$normAssigne] ?? null);
+
+            if (!$assigne) {
+                $erreurs[] = sprintf(__('Ligne %d : le collaborateur « %s » n\'existe pas ou n\'est pas actif.'), $numero, $nomAssigne);
+            }
+        } else {
+            // Assignation par défaut à l'utilisateur connecté
+            $assigne = $refs->collaborateursParId[user()->id] ?? (object)[
+                'id' => user()->id,
+                'name' => user()->name,
+                'email' => user()->email,
+            ];
+        }
+
+        $userId = $assigne ? $assigne->id : user()->id;
+        $userName = $assigne ? $assigne->name : (user()?->name ?? '');
 
         /* Dates */
         $debut = $this->lireDate($lire('start_date'));
@@ -372,24 +413,27 @@ trait ImportationTaches
         }
 
         return (object) [
-            'numero'      => $numero,
-            'titre'       => $titre,
-            'description' => $lire('description'),
-            'projet'      => $projet,
-            'projet_id'   => $projet?->id,
-            'projetNom'   => $nomProjet,
-            'categorie'   => $categorie,
-            'categorie_id'=> $categorie?->id,
-            'statut'      => $statut,
-            'statut_id'   => $statut?->id,
-            'priorite'    => $priorite,
-            'gens'        => $gens,
-            'gensNoms'    => $nomsGens,
-            'debut'       => $debut,
-            'debut_str'   => $debut ? $debut->format(company()->date_format) : ($lire('start_date') ?: ''),
-            'fin'         => $fin,
-            'fin_str'     => $fin ? $fin->format(company()->date_format) : ($lire('due_date') ?: ''),
-            'erreurs'     => $erreurs,
+            'numero'       => $numero,
+            'titre'        => $titre,
+            'description'  => $lire('description'),
+            'projet'       => $projet,
+            'projet_id'    => $projet?->id,
+            'projetNom'    => $nomProjet,
+            'categorie'    => $categorie,
+            'categorie_id' => $categorie?->id,
+            'statut'       => $statut,
+            'statut_id'    => $statut?->id,
+            'priorite'     => $priorite,
+            'user_id'      => $userId,
+            'user_name'    => $userName,
+            'assigned_to'  => $nomAssigne,
+            'gens'         => [$userId],
+            'gensNoms'     => [$userName],
+            'debut'        => $debut,
+            'debut_str'    => $debut ? $debut->format(company()->date_format) : ($lire('start_date') ?: ''),
+            'fin'          => $fin,
+            'fin_str'      => $fin ? $fin->format(company()->date_format) : ($lire('due_date') ?: ''),
+            'erreurs'      => $erreurs,
         ];
     }
 
@@ -516,6 +560,14 @@ trait ImportationTaches
             ->whereNull('deleted_at')->where('company_id', $societe)
             ->pluck('project_name', 'id');
 
+        $collaborateursValides = DB::table('users')
+            ->join('role_user', 'role_user.user_id', '=', 'users.id')
+            ->join('roles', 'roles.id', '=', 'role_user.role_id')
+            ->where('roles.name', '<>', 'client')
+            ->where('users.company_id', $societe)
+            ->where('users.status', 'active')
+            ->pluck('users.name', 'users.id');
+
         $categoriesValides = DB::table('task_category')
             ->where('company_id', $societe)
             ->pluck('category_name', 'id');
@@ -532,7 +584,7 @@ trait ImportationTaches
         $doublonsImportCourant = [];
 
         DB::transaction(function () use (
-            $lignesDonnees, $projetsValides, $categoriesValides, $statutsValides,
+            $lignesDonnees, $projetsValides, $collaborateursValides, $categoriesValides, $statutsValides,
             $statutDefaut, $attente, &$creees, &$ignorees, &$aNotifier, &$comptageParProjet,
             &$doublonsImportCourant
         ) {
@@ -640,11 +692,16 @@ trait ImportationTaches
                 }
 
                 $task->created_by = user()->id;
+                $task->added_by = user()->id;
+                $task->last_updated_by = user()->id;
                 $task->save();
 
-                /* Sécurité stricte : L'utilisateur connecté est SYSTÉMATIQUEMENT
-                   l'assigné et le créateur. */
-                $task->users()->sync([user()->id]);
+                /* Assignation : collaborateur sélectionné ou utilisateur connecté par défaut */
+                $assigneeId = !empty($item['user_id']) && isset($collaborateursValides[$item['user_id']])
+                    ? (int)$item['user_id']
+                    : user()->id;
+
+                $task->users()->sync([$assigneeId]);
 
                 // Historique
                 $dejaTrace = DB::table('task_history')->where('task_id', $task->id)->exists();
@@ -659,7 +716,7 @@ trait ImportationTaches
                     ]);
                 }
 
-                $aNotifier[] = ['task' => $task, 'gens' => [user()->id]];
+                $aNotifier[] = ['task' => $task, 'gens' => [$assigneeId]];
                 $creees++;
             }
         });
@@ -680,6 +737,15 @@ trait ImportationTaches
      */
     protected function creerTachesImportees(array $lignes): int
     {
+        $societe = company()->id;
+        $collaborateursValides = DB::table('users')
+            ->join('role_user', 'role_user.user_id', '=', 'users.id')
+            ->join('roles', 'roles.id', '=', 'role_user.role_id')
+            ->where('roles.name', '<>', 'client')
+            ->where('users.company_id', $societe)
+            ->where('users.status', 'active')
+            ->pluck('users.name', 'users.id');
+
         $attente = TaskboardColumn::waitingForApprovalColumn();
         $creees = 0;
         $comptageParProjet = [];
@@ -690,7 +756,7 @@ trait ImportationTaches
            depuis une transaction qui echoue serait un mensonge. */
         $aNotifier = [];
 
-        DB::transaction(function () use ($lignes, $attente, &$creees, &$aNotifier, &$comptageParProjet, &$doublonsImportCourant) {
+        DB::transaction(function () use ($lignes, $collaborateursValides, $attente, &$creees, &$aNotifier, &$comptageParProjet, &$doublonsImportCourant) {
             foreach ($lignes as $l) {
                 $titre = trim((string)($l->titre ?? ''));
                 if ($titre === '') {
@@ -759,13 +825,17 @@ trait ImportationTaches
                         : $rang + 1;
                 }
 
+                $task->created_by = user()->id;
+                $task->added_by = user()->id;
+                $task->last_updated_by = user()->id;
                 $task->save();
 
-                /* Assignation automatique : l'utilisateur connecte est
-                   toujours l'assigne de ses propres taches importees.
-                   Cela garantit qu'aucune donnee du fichier Excel ne peut
-                   detourner l'attribution vers un autre compte. */
-                $task->users()->sync([user()->id]);
+                /* Assignation : collaborateur du fichier ou utilisateur connecté par défaut */
+                $assigneeId = !empty($l->user_id) && isset($collaborateursValides[$l->user_id])
+                    ? (int)$l->user_id
+                    : user()->id;
+
+                $task->users()->sync([$assigneeId]);
 
                 /* Historique. */
                 $dejaTrace = DB::table('task_history')
@@ -783,7 +853,7 @@ trait ImportationTaches
                     ]);
                 }
 
-                $aNotifier[] = ['task' => $task, 'gens' => [user()->id]];
+                $aNotifier[] = ['task' => $task, 'gens' => [$assigneeId]];
 
                 $creees++;
             }

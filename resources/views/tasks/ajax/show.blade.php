@@ -292,8 +292,18 @@
                     @endif
 
                     @if (($taskSettings->task_category == 'yes' && in_array('client', user_roles())) || in_array('admin', user_roles()) || in_array('employee', user_roles()))
+                        @php
+                            $taskCats = $task->taskCategories;
+                            if ($taskCats->isEmpty() && $task->category) {
+                                $catsDisplay = '<span class="badge badge-secondary">' . e($task->category->category_name) . '</span>';
+                            } elseif ($taskCats->isNotEmpty()) {
+                                $catsDisplay = $taskCats->map(fn($c) => '<span class="badge badge-secondary mr-1">' . e($c->category_name) . '</span>')->implode(' ');
+                            } else {
+                                $catsDisplay = '--';
+                            }
+                        @endphp
                         <x-cards.data-row :label="__('modules.tasks.taskCategory')"
-                                          :value="$task->category->category_name ?? '--'" html="true"/>
+                                          :value="$catsDisplay" html="true"/>
                     @endif
 
                     @if (($taskSettings->description == 'yes' && in_array('client', user_roles())) || in_array('admin', user_roles()) || in_array('employee', user_roles()))
