@@ -76,45 +76,41 @@ class SendWeeklyTaskReport extends Command
                 $pdf->setPaper('a4', 'portrait');
                 $pdfContent = $pdf->output();
 
-                // =========================================================================
-                // CONFIGURATION DE TEST TEMPORAIRE : Envoi UNIQUEMENT à bleibaulouh@gmail.com
-                // =========================================================================
-                $testEmail = $this->option('email') ?: 'bleibaulouh@gmail.com';
-                $virtualUser = new User();
-                $virtualUser->name = 'Destinataire Test (' . $testEmail . ')';
-                $virtualUser->email = $testEmail;
-                $virtualUser->company_id = $company->id;
-                $recipients = collect([$virtualUser]);
+                // Récupération des destinataires : option --email pour les tests, sinon tous les admins en production
+                if ($this->option('email')) {
+                    $testEmail = $this->option('email');
+                    $virtualUser = new User();
+                    $virtualUser->name = 'Destinataire Test (' . $testEmail . ')';
+                    $virtualUser->email = $testEmail;
+                    $virtualUser->company_id = $company->id;
+                    $recipients = collect([$virtualUser]);
+                } else {
+                    $recipients = User::allAdmins($company->id);
 
-                /* -------------------------------------------------------------------------
-                 * CONFIGURATION DE PRODUCTION (À RÉACTIVER APRÈS LE TEST) :
-                 * -------------------------------------------------------------------------
-                $recipients = User::allAdmins($company->id);
+                    $specificEmails = [
+                        'constant.keyman@dcknowing.com',
+                        'donalde.keyman@dcknowing.com',
+                    ];
 
-                $specificEmails = [
-                    'constant.keyman@dcknowing.com',
-                    'donalde.keyman@dcknowing.com',
-                ];
+                    $specificUsers = User::whereIn('email', $specificEmails)->get();
+                    $recipients = $recipients->concat($specificUsers);
 
-                $specificUsers = User::whereIn('email', $specificEmails)->get();
-                $recipients = $recipients->concat($specificUsers);
-
-                // Ajout sous forme de compte virtuel si non trouvé en base (garantie de réception)
-                foreach ($specificEmails as $email) {
-                    if (!$recipients->contains('email', $email)) {
-                        $virtualUser = new User();
-                        $virtualUser->name = explode('@', $email)[0];
-                        $virtualUser->email = $email;
-                        $virtualUser->company_id = $company->id;
-                        $recipients->push($virtualUser);
+                    // Ajout sous forme de compte virtuel si non trouvé en base (garantie de réception)
+                    foreach ($specificEmails as $email) {
+                        if (!$recipients->contains('email', $email)) {
+                            $virtualUser = new User();
+                            $virtualUser->name = explode('@', $email)[0];
+                            $virtualUser->email = $email;
+                            $virtualUser->company_id = $company->id;
+                            $recipients->push($virtualUser);
+                        }
                     }
-                }
 
-                // Dédoublonnage par adresse e-mail
-                $recipients = $recipients->unique('email')->filter(function ($u) {
-                    return !empty($u->email);
-                });
-                ------------------------------------------------------------------------- */
+                    // Dédoublonnage par adresse e-mail
+                    $recipients = $recipients->unique('email')->filter(function ($u) {
+                        return !empty($u->email);
+                    });
+                }
 
                 if ($recipients->isEmpty()) {
                     $this->warn("Aucun destinataire trouvé pour {$company->company_name}.");
