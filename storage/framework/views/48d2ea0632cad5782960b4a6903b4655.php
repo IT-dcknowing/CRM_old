@@ -48,6 +48,8 @@ body { font-family: DejaVu Sans, sans-serif; font-size: 8.5pt; color: #111827; m
 .kpi .sub { font-size: 6.8pt; color: #9ca3af; }
 .kpi td.ok { background: #f2f8e9; border-color: #cbe0a8; }
 .kpi td.ok .val { color: #3f6212; }
+.kpi td.warn { background: #fef9e7; border-color: #f3dfa2; }
+.kpi td.warn .val { color: #a16207; }
 .kpi td.err { background: #fdf1f0; border-color: #f2c9c6; }
 .kpi td.err .val { color: #b42318; }
 
@@ -151,29 +153,29 @@ tr { page-break-inside: avoid; }
                 <div class="sub"><?php echo e($k->total ? round($k->termines / $k->total * 100) : 0); ?> % <?php echo e(__('du total')); ?></div>
             </td>
             <td>
+                <div class="lab"><?php echo e(__('En cours')); ?></div>
+                <div class="val"><?php echo e($k->enCours); ?></div>
+                <div class="sub"><?php echo e(__('en traitement')); ?></div>
+            </td>
+            <td>
                 <div class="lab"><?php echo e(__('À faire')); ?></div>
                 <div class="val"><?php echo e($k->aFaire); ?></div>
                 <div class="sub"><?php echo e(__('non démarrées')); ?></div>
-            </td>
-            <td class="<?php echo e($k->retards > 0 ? 'err' : ''); ?>">
-                <div class="lab"><?php echo e(__('En retard')); ?></div>
-                <div class="val"><?php echo e($k->retards); ?></div>
-                <div class="sub"><?php echo e(__('échéance dépassée')); ?></div>
             </td>
         </tr>
     </table>
 
     <table class="kpi" style="margin-bottom:11pt">
         <tr>
-            <td>
-                <div class="lab"><?php echo e(__('En cours')); ?></div>
-                <div class="val"><?php echo e($k->enCours); ?></div>
-                <div class="sub"><?php echo e(__('en traitement')); ?></div>
+            <td class="<?php echo e($k->incompletes > 0 ? 'warn' : ''); ?>">
+                <div class="lab"><?php echo e(__('Incomplètes')); ?></div>
+                <div class="val"><?php echo e($k->incompletes); ?></div>
+                <div class="sub"><?php echo e(__('à compléter')); ?></div>
             </td>
-            <td>
-                <div class="lab"><?php echo e(__('En attente')); ?></div>
-                <div class="val"><?php echo e($k->attente); ?></div>
-                <div class="sub"><?php echo e(__("d'approbation")); ?></div>
+            <td class="<?php echo e($k->retards > 0 ? 'err' : ''); ?>">
+                <div class="lab"><?php echo e(__('En retard')); ?></div>
+                <div class="val"><?php echo e($k->retards); ?></div>
+                <div class="sub"><?php echo e(__('échéance dépassée')); ?></div>
             </td>
             <td>
                 <div class="lab"><?php echo e(__('Délai moyen')); ?></div>
@@ -207,11 +209,12 @@ tr { page-break-inside: avoid; }
             <table class="data">
                 <thead>
                     <tr>
-                        <th width="34%"><?php echo e(__('Collaborateur')); ?></th>
+                        <th width="28%"><?php echo e(__('Collaborateur')); ?></th>
                         <th class="num"><?php echo e(__('Tâches')); ?></th>
                         <th class="num"><?php echo e(__('Terminées')); ?></th>
                         <th class="num"><?php echo e(__('En cours')); ?></th>
                         <th class="num"><?php echo e(__('À faire')); ?></th>
+                        <th class="num"><?php echo e(__('Incomplètes')); ?></th>
                         <th class="num"><?php echo e(__('En retard')); ?></th>
                         <th class="num"><?php echo e(__('Délai moyen')); ?></th>
                     </tr>
@@ -224,6 +227,7 @@ tr { page-break-inside: avoid; }
                         <td class="num"><?php echo e($c->termines); ?></td>
                         <td class="num"><?php echo e($c->enCours); ?></td>
                         <td class="num"><?php echo e($c->aFaire); ?></td>
+                        <td class="num"><?php echo e($c->incompletes); ?></td>
                         <td class="num">
                             <?php if($c->retards > 0): ?>
                                 <span class="p p-err"><?php echo e($c->retards); ?></span>

@@ -250,7 +250,11 @@ class TaskController extends AccountBaseController
                 ]);
             }
             else {
-                Task::whereIn('id', $cibles)->update(['board_column_id' => $request->status]);
+                Task::whereIn('id', $cibles)->update([
+                    'status' => 'incomplete',
+                    'board_column_id' => $request->status,
+                    'completed_on' => null,
+                ]);
             }
         }
 
@@ -298,9 +302,13 @@ class TaskController extends AccountBaseController
 
         if ($taskBoardColumn->slug == 'completed') {
             $task->status = 'completed';
-            $task->completed_on = now()->format('Y-m-d');
+            // Renseigner automatiquement la date du jour si absente ou lors du passage à Terminée
+            if (empty($task->completed_on) || $task->getOriginal('board_column_id') != $taskBoardColumn->id) {
+                $task->completed_on = now()->format('Y-m-d');
+            }
         }
         else {
+            $task->status = 'incomplete';
             $task->completed_on = null;
         }
 
@@ -1294,9 +1302,14 @@ class TaskController extends AccountBaseController
             $task->approval_send = 0;
 
             if ($taskBoardColumn->slug == 'completed') {
-                $task->completed_on = now()->format('Y-m-d');
+                $task->status = 'completed';
+                // Éviter de remplacer inutilement une date de réalisation déjà enregistrée lors d'une simple modification
+                if (empty($task->completed_on) || $task->getOriginal('board_column_id') != $taskBoardColumn->id) {
+                    $task->completed_on = now()->format('Y-m-d');
+                }
             }
             else {
+                $task->status = 'incomplete';
                 $task->completed_on = null;
             }
         }
