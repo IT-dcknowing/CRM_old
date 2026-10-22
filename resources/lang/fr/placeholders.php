@@ -1,18 +1,6 @@
 <?php
 
-/*
- * Traductions francaises du cabinet.
- *
- * Ces fichiers SONT suivis par git (.gitignore : « !resources/lang/fr/ ») et
- * partent donc en production, ou ils prennent le pas sur les fichiers livres
- * avec l'application. Toute cle absente ici retombe automatiquement sur
- * l'anglais (config/app.php : fallback_locale = 'eng').
- */
-
 return [
-
-    /* --- Identite et coordonnees ------------------------------------- */
-
     'name' => 'ex. Kouassi Konan',
     'email' => 'ex. kouassi.konan@exemple.com',
     'mobile' => 'ex. 0700000000',
@@ -32,9 +20,6 @@ return [
     'department' => 'ex. Ressources humaines',
     'skills' => 'ex. communication, ReactJS',
     'twitterId' => 'ex. 182180xxxxxx1843842',
-
-    /* --- Projets, taches, contrats -------------------------------- */
-
     'project' => 'Saisir le nom de le projet',
     'writeshortcode' => 'Code court unique de le projet',
     'taskshortcode' => 'Code court unique de la tâche',
@@ -48,9 +33,6 @@ return [
     'hourEstimate' => 'ex. 500',
     'searchForProjects' => 'Rechercher des projets',
     'searchForCompany' => 'Rechercher une entreprise',
-
-    /* --- Champs generiques ------------------------------------------- */
-
     'date' => 'Sélectionner une date',
     'dateRange' => 'Date de début à date de fin',
     'days' => 'ex. 3 jours',
@@ -70,9 +52,6 @@ return [
     'noneResultsText' => 'Aucun résultat pour {0}',
     'selectAllText' => 'Tout sélectionner',
     'deselectAllText' => 'Tout désélectionner',
-
-    /* --- Modules divers ---------------------------------------------- */
-
     'knowledgeBase' => 'Mettre à jour votre photo de profil',
     'leaveType' => 'ex. Maladie, Convenance personnelle',
     'ticketType' => 'ex. Assistance',
@@ -91,9 +70,6 @@ return [
     'shiftShortCode' => 'ex. EN',
     'latitude' => 'ex. 5.3600',
     'longitude' => 'ex. -4.0083',
-
-    /* --- Cles techniques (valeurs volontairement non traduites) ------- */
-
     'webhook' => 'ex. samplewebhook123',
     'key' => 'ex. 0f99088a2f31e70daxxxx',
     'secret' => 'ex. cbabcd0948aed7dd9xxxx',
@@ -106,9 +82,6 @@ return [
     'recaptchaV3' => 'ex. 6LeL_s8ZAAAAAMVC2clQdxxxXXXxxxxxXXX',
     'recaptchaSecret' => 'ex. XXXXXXxxxxxXXXXXXxxxxx',
     'fileSetting' => 'ex. application/x-zip-compressed',
-
-    /* --- Sous-groupes ------------------------------------------------ */
-
     'invoices' => [
         'invoicePrefix' => 'Saisir le préfixe des factures',
         'estimatePrefix' => 'Saisir le préfixe des devis',
@@ -132,7 +105,6 @@ return [
         'BankDetails' => 'Ajouter les coordonnées de paiement (compte bancaire, virement…)',
         'title' => 'Description du paiement',
     ],
-
     'currency' => [
         'currencyName' => 'ex. Franc CFA',
         'currencySymbol' => 'ex. F',
@@ -140,85 +112,68 @@ return [
         'thousandSeparator' => 'ex. ,',
         'decimalSeparator' => 'ex. .',
     ],
-
     'ticket' => [
         'replyTicket' => 'Saisir le titre du modèle',
         'templateText' => 'Saisir ici le texte du modèle',
     ],
-
     'tickets' => [
         'ticketChannel' => 'ex. Facebook, Téléphone, etc.',
         'ticketGroup' => 'ex. Commercial, Assistance, etc.',
     ],
-
     'payments' => [
         'remark' => 'Saisir un résumé du paiement.',
         'transactionId' => 'Saisir l’identifiant de la transaction',
         'paymentGateway' => 'ex. PayPal, Stripe, Virement, Espèces, etc.',
     ],
-
     'offlinePayment' => [
         'method' => 'ex. Espèces, Chèque, etc.',
         'description' => 'ex. en dollars US',
     ],
-
     'expense' => [
         'item' => 'ex. Clavier sans fil',
         'vendor' => 'ex. Société Exemple',
     ],
-
     'timelog' => [
         'memo' => 'ex. Travail sur le nouveau logo',
     ],
-
     'attendance' => [
         'workFrom' => 'ex. Bureau, Domicile, etc.',
     ],
-
     'leave' => [
         'reason' => 'ex. Ne me sens pas bien',
     ],
-
     'appreciation' => [
         'title' => 'ex. Employé du mois',
     ],
-
     'estimateRequest' => [
         'reason' => 'ex. Hors budget',
     ],
-
     'gdpr' => [
         'additionDescription' => 'Saisir une description complémentaire',
     ],
-
     'role' => [
         'roleName' => 'ex. RH',
     ],
-
     'language' => [
         'languageName' => 'ex. Français',
         'languageCode' => 'ex. fr',
     ],
-
     'client' => [
         'skype' => 'ex. nomUtilisateurSkype',
         'linkedin' => 'ex. https://www.linkedin.com/XXXXXXXXXX/',
         'twitter' => 'ex. @kouassikonan',
         'facebook' => 'ex. https://www.facebook.com/XXXXXXXXXX/',
     ],
-
     'bankaccount' => [
         'accountName' => 'ex. Kouassi Konan',
         'bankName' => 'ex. Banque Atlantique',
         'accountNumber' => 'ex. 123456789',
         'balance' => 'ex. 25 000 F',
     ],
-
     'storageSetting' => [
         'awsKey' => 'ex. AKIAXXXXX67FNYNM2P',
         'awsBucket' => 'ex. test-bucket',
     ],
-
     'paymentGateway' => [
         'sandboxPaypalClientId' => 'ex. AW-Ydt5KHz2FwhAikHsObpRrpB55qE8MyvUkHbQsFb_6_2Unv3WNBSmBxEqA8N74JzOaFTPBUI-MG4sB',
         'livePaypalClientId' => 'ex. AW-Ydt5KHz2FwhAikHsObpRrpB55qE8MyvUkHbQsFb_6_2Unv3WNBSmBxEqA8N74JzOaFTPBUI-MG4sB',
@@ -229,5 +184,4 @@ return [
         'paystackKey' => 'ex. pk_live_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
         'flutterwaveKey' => 'ex. FLWPUBK-xxxxxxxxxxxxxxxxxxxxx-X',
     ],
-
 ];

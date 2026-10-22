@@ -63,6 +63,7 @@
                 $k->total ? round($k->termines / $k->total * 100) . ' % du total' : '—', 'ok', 'completed'],
             ['À faire', $k->aFaire, 'non démarrées', '', 'to_do'],
             ['En cours', $k->enCours, 'en traitement', '', 'doing'],
+            ['Incomplètes', $k->incompletes, 'à compléter', $k->incompletes > 0 ? 'warn' : '', 'incomplete'],
             ['En retard', $k->retards, 'échéance dépassée', $k->retards > 0 ? 'err' : '', 'retard'],
             ['En attente', $k->attente, "d'approbation", '', 'waiting_approval'],
             ['Délai moyen', $k->delaiMoyen ?? '—',
@@ -155,6 +156,7 @@
                         <th><?php echo app('translator')->get('Terminées'); ?></th>
                         <th><?php echo app('translator')->get('En cours'); ?></th>
                         <th><?php echo app('translator')->get('À faire'); ?></th>
+                        <th><?php echo app('translator')->get('Incomplètes'); ?></th>
                         <th><?php echo app('translator')->get('En retard'); ?></th>
                         <th><?php echo app('translator')->get('Délai moyen'); ?></th>
                         <?php if($k->pointeTaches > 0): ?><th><?php echo app('translator')->get('Pointé'); ?></th><?php endif; ?>
@@ -166,6 +168,7 @@
                         <td><strong><?php echo e($c->nom); ?></strong></td>
                         <?php $__currentLoopData = [['tous', $c->total, ''], ['completed', $c->termines, ''],
                                    ['doing', $c->enCours, ''], ['to_do', $c->aFaire, ''],
+                                   ['incomplete', $c->incompletes, ''],
                                    ['retard', $c->retards, ' est-retard']]; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as [$slug, $val, $cls]): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                             <td>
                                 <button type="button" class="dck-hebdo__cpt<?php echo e($cls); ?>"

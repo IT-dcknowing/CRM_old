@@ -25,16 +25,21 @@ $editMilestonePermission = user()->permission('edit_project_milestones');
                     </div>
 
                     <div class="col-md-6 col-lg-6">
-                        <x-forms.label class="my-3" fieldId="category_id"
+                        <x-forms.label class="my-3" fieldId="task_category_id"
                             :fieldLabel="__('modules.tasks.taskCategory')">
                         </x-forms.label>
                         <x-forms.input-group>
-                            <select class="form-control select-picker" name="category_id" id="task_category_id"
+                            @php
+                                $selectedCategories = $task->taskCategories->pluck('id')->toArray();
+                                if (empty($selectedCategories) && $task->task_category_id) {
+                                    $selectedCategories = [$task->task_category_id];
+                                }
+                            @endphp
+                            <select class="form-control select-picker" multiple name="category_id[]" id="task_category_id"
                                 data-live-search="true" data-size="8">
-                                <option value="">--</option>
                                 @if ($viewTaskCategoryPermission == 'all' || $viewTaskCategoryPermission == 'added')
                                     @foreach ($categories as $category)
-                                        <option @selected($task->task_category_id == $category->id) value="{{ $category->id }}">
+                                        <option @selected(in_array($category->id, $selectedCategories)) value="{{ $category->id }}">
                                             {{ $category->category_name }}
                                         </option>
                                     @endforeach
@@ -254,11 +259,8 @@ $editMilestonePermission = user()->permission('edit_project_milestones');
                             </div>
 
 
-                            @if ($changeStatusPermission == 'all'
-                            || ($changeStatusPermission == 'added' && $task->added_by == user()->id)
-                            || ($changeStatusPermission == 'owned' && in_array(user()->id, $taskUsers))
-                            || ($changeStatusPermission == 'both' && (in_array(user()->id, $taskUsers) || $task->added_by == user()->id || $task->project->project_admin == user()->id))
-                            )
+                            {{-- Seul l'employe assigne peut changer le statut de la tache. --}}
+                            @if (est_assigne_tache($task))
                                 <div class="col-lg-3 col-md-6">
                                     @if ($task->board_column_id === $waitingApprovalTaskBoardColumn->id)
                                         @foreach ($taskboardColumns as $item)
@@ -303,6 +305,15 @@ $editMilestonePermission = user()->permission('edit_project_milestones');
                                         @endforeach
                                     </x-forms.select>
                                     @endif
+                                </div>
+                            @else
+                                {{-- Statut affiche en lecture seule : il n'est pas envoye. --}}
+                                <div class="col-lg-3 col-md-6">
+                                    <label class="f-14 text-dark-grey mb-12 mt-3">@lang('app.status')</label>
+                                    <x-forms.input-group>
+                                        <input type="text" class="form-control height-35 f-15 readonly-background" disabled
+                                            value="{{ in_array(optional($task->boardColumn)->slug, ['completed', 'incomplete']) ? __('app.' . $task->boardColumn->slug) : optional($task->boardColumn)->column_name }}">
+                                    </x-forms.input-group>
                                 </div>
                             @endif
 
@@ -491,7 +502,7 @@ $editMilestonePermission = user()->permission('edit_project_milestones');
                 <x-form-actions>
                     <x-forms.button-primary id="save-task-form" class="mr-3" icon="check">@lang('app.save')
                     </x-forms.button-primary>
-                    <x-forms.button-cancel :link="route('tasks.index')" class="border-0">@lang('app.cancel')
+                    <x-forms.button-cancel :link="$backUrl ?? route('taskboards.index')" class="border-0">@lang('app.cancel')
                     </x-forms.button-cancel>
                 </x-form-actions>
 
@@ -678,7 +689,12 @@ $editMilestonePermission = user()->permission('edit_project_milestones');
                 $.easyBlockUI();
             });
             taskDropzone.on('queuecomplete', function() {
-                var msgs = "@lang('messages.recordSaved')";
+                if ($('#taskboard-columns').length) {
+                    // Depuis le tableau des taches, on y revient.
+                    window.location.reload();
+                    return;
+                }
+
                 window.location.href = "{{ route('tasks.index') }}"
             });
             taskDropzone.on('removedfile', function () {
@@ -866,6 +882,9 @@ $editMilestonePermission = user()->permission('edit_project_milestones');
                             }
                             else if ($('#allTasks-table').length) {
                                 window.LaravelDataTables["allTasks-table"].draw(false);
+                            } else if ($('#taskboard-columns').length && typeof loadData === 'function') {
+                                // Modification lancee depuis le tableau des taches : on y reste.
+                                loadData();
                             } else {
                                 window.location.href = response.redirectUrl;
                             }

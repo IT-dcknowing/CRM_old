@@ -41,6 +41,15 @@
                 <i class="fa fa-lock"></i>
             </span>
         <?php endif; ?>
+
+        
+        <?php if(peut_modifier_tache($task)): ?>
+            <a href="<?php echo e(route('tasks.edit', [$task->id])); ?>" class="dck-tk__edit openRightModal"
+               data-redirect-url="<?php echo e(url()->full()); ?>"
+               title="<?php echo app('translator')->get('app.edit'); ?>" aria-label="<?php echo app('translator')->get('app.edit'); ?>">
+                <i class="fa fa-edit"></i>
+            </a>
+        <?php endif; ?>
     </div>
 
     

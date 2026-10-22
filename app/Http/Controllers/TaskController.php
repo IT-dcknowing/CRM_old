@@ -233,7 +233,13 @@ class TaskController extends AccountBaseController
         $taskBoardColumn = TaskboardColumn::findOrFail(request()->status);
 
         $ids = explode(',', $request->row_ids);
-        $cibles = $this->tachesAutorisees('edit_tasks', $ids)->pluck('id');
+
+        // Le statut ne change que pour les taches dont l'utilisateur est
+        // assigne (ou qu'il arbitre) : les autres sont ignorees.
+        $cibles = $this->tachesAutorisees('edit_tasks', $ids)
+            ->load('boardColumn')
+            ->filter(fn ($tache) => $this->peutChangerStatut($tache, $taskBoardColumn))
+            ->pluck('id');
 
         if ($cibles->isNotEmpty()) {
             if ($taskBoardColumn && $taskBoardColumn->slug == 'completed') {
@@ -244,7 +250,11 @@ class TaskController extends AccountBaseController
                 ]);
             }
             else {
-                Task::whereIn('id', $cibles)->update(['board_column_id' => $request->status]);
+                Task::whereIn('id', $cibles)->update([
+                    'status' => 'incomplete',
+                    'board_column_id' => $request->status,
+                    'completed_on' => null,
+                ]);
             }
         }
 
@@ -276,27 +286,13 @@ class TaskController extends AccountBaseController
         $taskId = $request->taskId;
         $status = $request->status;
 
-        $task = Task::withTrashed()->with('project', 'users')->findOrFail($taskId);
-
-        $taskUsers = $task->users->pluck('id')->toArray();
-
-        $this->editPermission = user()->permission('edit_tasks');
-        $this->changeStatusPermission = user()->permission('change_status');
-        abort_403(
-            !(
-            $this->changeStatusPermission == 'all'
-            || ($this->changeStatusPermission == 'added' && $task->added_by == user()->id)
-            || ($this->changeStatusPermission == 'owned' && in_array(user()->id, $taskUsers))
-            || ($this->changeStatusPermission == 'both' && (in_array(user()->id, $taskUsers) || $task->added_by == user()->id))
-            || ($task->project && $task->project->project_admin == user()->id)
-            )
-        );
+        $task = Task::withTrashed()->with('project', 'users', 'boardColumn')->findOrFail($taskId);
 
         $taskBoardColumn = TaskboardColumn::where('slug', $status)->first();
 
-        // Entrer dans « En attente d'approbation » ou en sortir reste
-        // reserve a l'arbitre, quelle que soit la permission change_status.
-        $this->verifierTransitionApprobation($task, $taskBoardColumn);
+        // Seul l'assigne change le statut ; entrer dans « En attente
+        // d'approbation » ou en sortir reste reserve a l'arbitre.
+        $this->verifierChangementStatut($task, $taskBoardColumn);
 
         $task->board_column_id = $taskBoardColumn->id;
 
@@ -306,9 +302,13 @@ class TaskController extends AccountBaseController
 
         if ($taskBoardColumn->slug == 'completed') {
             $task->status = 'completed';
-            $task->completed_on = now()->format('Y-m-d');
+            // Renseigner automatiquement la date du jour si absente ou lors du passage à Terminée
+            if (empty($task->completed_on) || $task->getOriginal('board_column_id') != $taskBoardColumn->id) {
+                $task->completed_on = now()->format('Y-m-d');
+            }
         }
         else {
+            $task->status = 'incomplete';
             $task->completed_on = null;
         }
 
@@ -379,8 +379,17 @@ class TaskController extends AccountBaseController
 
         $taskUsers = $task->users->pluck('id')->toArray();
 
+        /*
+         * AUTORISATION DE SUPPRESSION (backend)
+         *
+         * Un collaborateur (non-admin) ne peut supprimer une tâche que s'il
+         * en est le créateur ou l'assigné. Protège contre la suppression
+         * par manipulation de l'ID dans l'URL.
+         */
         abort_403(
-            !($this->deletePermission == 'all'
+            !(in_array('admin', user_roles())
+            || est_arbitre()
+            || ($this->deletePermission == 'all' && ($task->added_by == user()->id || in_array(user()->id, $taskUsers)))
             || ($this->deletePermission == 'owned' && in_array(user()->id, $taskUsers))
             || ($task->project && ($task->project->project_admin == user()->id))
             || ($this->deletePermission == 'added' && $task->added_by == user()->id)
@@ -607,6 +616,16 @@ class TaskController extends AccountBaseController
             $this->categories = TaskCategory::where('company_id', $societe)
                 ->orderBy('category_name')->get(['id', 'category_name']);
             $this->statuts = TaskboardColumn::orderBy('priority')->get(['id', 'column_name', 'slug', 'label_color']);
+            $this->collaborateurs = DB::table('users')
+                ->join('role_user', 'role_user.user_id', '=', 'users.id')
+                ->join('roles', 'roles.id', '=', 'role_user.role_id')
+                ->where('roles.name', '<>', 'client')
+                ->where('users.company_id', $societe)
+                ->where('users.status', 'active')
+                ->select('users.id', 'users.name', 'users.email')
+                ->distinct()
+                ->orderBy('users.name')
+                ->get();
             $this->nomFichier = $request->file('import_file')->getClientOriginalName();
 
             $this->resultat = $resultat;
@@ -861,11 +880,12 @@ class TaskController extends AccountBaseController
         $task = new Task();
         $task->heading = $request->heading;
         $task->description = trim_editor($request->description);
-        $dueDate = ($request->has('without_duedate')) ? null : Carbon::createFromFormat(company()->date_format, $request->due_date);
-        $task->start_date = Carbon::createFromFormat(company()->date_format, $request->start_date);
+        $dueDate = ($request->has('without_duedate') || empty($request->due_date)) ? null : companyToCarbon($request->due_date);
+        $task->start_date = companyToCarbon($request->start_date) ?? now();
         $task->due_date = $dueDate;
         $task->project_id = $request->project_id;
-        $task->task_category_id = $request->category_id;
+        $categoryIds = is_array($request->category_id) ? array_filter($request->category_id) : ($request->category_id ? [$request->category_id] : []);
+        $task->task_category_id = !empty($categoryIds) ? reset($categoryIds) : null;
         $task->priority = $request->priority;
         $task->board_column_id = $taskBoardColumn->id;
 
@@ -882,8 +902,8 @@ class TaskController extends AccountBaseController
 
         $task->is_private = $request->has('is_private') ? 1 : 0;
         $task->billable = $request->has('billable') && $request->billable ? 1 : 0;
-        $task->estimate_hours = $request->estimate_hours;
-        $task->estimate_minutes = $request->estimate_minutes;
+        $task->estimate_hours = (int) $request->estimate_hours;
+        $task->estimate_minutes = (int) $request->estimate_minutes;
 
         if ($request->board_column_id) {
             $task->board_column_id = $request->board_column_id;
@@ -923,7 +943,15 @@ class TaskController extends AccountBaseController
             }
         }
 
+        if (user()) {
+            $task->added_by = user()->id;
+            $task->last_updated_by = user()->id;
+        }
+
         $task->save();
+
+        // Save categories (domains)
+        $task->taskCategories()->sync($categoryIds);
 
         // Save labels
         if ($request->task_labels) {
@@ -1102,7 +1130,7 @@ class TaskController extends AccountBaseController
         $redirectUrl = urldecode($request->redirect_url);
 
         if ($redirectUrl == '') {
-            $redirectUrl = route('tasks.index');
+            $redirectUrl = route('taskboards.index');
         }
 
         return Reply::successWithData(__('messages.recordSaved'), ['redirectUrl' => $redirectUrl, 'taskID' => $task->id]);
@@ -1119,16 +1147,14 @@ class TaskController extends AccountBaseController
         $editTaskPermission = user()->permission('edit_tasks');
         $this->task = Task::with('users', 'label', 'project', )->findOrFail($id)->withCustomFields();
         $this->taskUsers = $taskUsers = $this->task->users->pluck('id')->toArray();
-        abort_403(
-            !($editTaskPermission == 'all'
-            || ($editTaskPermission == 'owned' && in_array(user()->id, $taskUsers))
-            || ($editTaskPermission == 'added' && $this->task->added_by == user()->id)
-            || ($this->task->project && ($this->task->project->project_admin == user()->id))
-            || ($editTaskPermission == 'both' && (in_array(user()->id, $taskUsers) || $this->task->added_by == user()->id))
-            || ($editTaskPermission == 'owned' && (in_array('client', user_roles()) && $this->task->project && ($this->task->project->client_id == user()->id)))
-            || ($editTaskPermission == 'both' && (in_array('client', user_roles()) && ($this->task->project && ($this->task->project->client_id == user()->id)) || $this->task->added_by == user()->id))
-            )
-        );
+        /*
+         * AUTORISATION D'EDITION (backend)
+         *
+         * Un collaborateur (non-admin) ne peut modifier une tâche que s'il
+         * en est le créateur ou l'assigné. La vérification est faite côté
+         * serveur pour éviter les contournements par manipulation d'URL.
+         */
+        abort_403(!peut_modifier_tache($this->task));
 
         $getCustomFieldGroupsWithFields = $this->task->getCustomFieldGroupsWithFields();
 
@@ -1245,23 +1271,21 @@ class TaskController extends AccountBaseController
         $editTaskPermission = user()->permission('edit_tasks');
         $taskUsers = $task->users->pluck('id')->toArray();
 
-        abort_403(
-            !($editTaskPermission == 'all'
-            || ($editTaskPermission == 'owned' && in_array(user()->id, $taskUsers))
-            || ($editTaskPermission == 'added' && $task->added_by == user()->id)
-            || ($task->project && ($task->project->project_admin == user()->id))
-            || ($editTaskPermission == 'both' && (in_array(user()->id, $taskUsers) || $task->added_by == user()->id))
-            || ($editTaskPermission == 'owned' && (in_array('client', user_roles()) && $task->project && ($task->project->client_id == user()->id)))
-            || ($editTaskPermission == 'both' && (in_array('client', user_roles()) && ($task->project && ($task->project->client_id == user()->id)) || $task->added_by == user()->id))
-            )
-        );
+        /*
+         * AUTORISATION DE MISE A JOUR (backend)
+         *
+         * Même règle que pour l'édition : seul le créateur ou l'assigné
+         * (ou un admin/arbitre) peut modifier la tâche.
+         */
+        abort_403(!peut_modifier_tache($task));
 
-        $dueDate = ($request->has('without_duedate')) ? null : Carbon::createFromFormat(company()->date_format, $request->due_date);
+        $dueDate = ($request->has('without_duedate') || empty($request->due_date)) ? null : companyToCarbon($request->due_date);
         $task->heading = $request->heading;
         $task->description = trim_editor($request->description);
-        $task->start_date = Carbon::createFromFormat(company()->date_format, $request->start_date);
+        $task->start_date = companyToCarbon($request->start_date) ?? now();
         $task->due_date = $dueDate;
-        $task->task_category_id = $request->category_id;
+        $categoryIds = is_array($request->category_id) ? array_filter($request->category_id) : ($request->category_id ? [$request->category_id] : []);
+        $task->task_category_id = !empty($categoryIds) ? reset($categoryIds) : null;
         $task->priority = $request->priority;
 
 
@@ -1270,21 +1294,31 @@ class TaskController extends AccountBaseController
             $taskBoardColumn = TaskboardColumn::findOrFail($request->board_column_id);
 
             // Meme regle que sur le tableau : le formulaire d'edition ne
-            // doit pas offrir un contournement de l'etape d'approbation.
-            $this->verifierTransitionApprobation($task, $taskBoardColumn);
+            // doit offrir ni un contournement de l'etape d'approbation, ni
+            // un changement de statut a qui n'est pas assigne.
+            $this->verifierChangementStatut($task, $taskBoardColumn);
 
             $task->board_column_id = $request->board_column_id;
             $task->approval_send = 0;
 
             if ($taskBoardColumn->slug == 'completed') {
-                $task->completed_on = now()->format('Y-m-d');
+                $task->status = 'completed';
+                // Éviter de remplacer inutilement une date de réalisation déjà enregistrée lors d'une simple modification
+                if (empty($task->completed_on) || $task->getOriginal('board_column_id') != $taskBoardColumn->id) {
+                    $task->completed_on = now()->format('Y-m-d');
+                }
             }
             else {
+                $task->status = 'incomplete';
                 $task->completed_on = null;
             }
         }
 
         if ($request->select_value == 'Waiting Approval') {
+
+            // Envoi en approbation depuis le formulaire : meme regle que
+            // sendApproval(), reserve a l'assigne (ou a l'arbitre).
+            $this->verifierDemandeApprobation($task);
 
             $taskBoardColumn = TaskboardColumn::where('column_name', $request->select_value)->where('company_id', company()->id)->first();
             $task->board_column_id = $taskBoardColumn->id;
@@ -1294,8 +1328,8 @@ class TaskController extends AccountBaseController
         $task->dependent_task_id = $request->has('dependent') && $request->has('dependent_task_id') && $request->dependent_task_id != '' ? $request->dependent_task_id : null;
         $task->is_private = $request->has('is_private') ? 1 : 0;
         $task->billable = $request->has('billable') && $request->billable ? 1 : 0;
-        $task->estimate_hours = $request->estimate_hours;
-        $task->estimate_minutes = $request->estimate_minutes;
+        $task->estimate_hours = (int) $request->estimate_hours;
+        $task->estimate_minutes = (int) $request->estimate_minutes;
 
         if ($request->project_id != '') {
             $task->project_id = $request->project_id;
@@ -1339,6 +1373,9 @@ class TaskController extends AccountBaseController
         }
         $task->save();
 
+        // save categories (domains)
+        $task->taskCategories()->sync($categoryIds);
+
         // save labels
         $task->labels()->sync($request->task_labels);
 
@@ -1360,10 +1397,6 @@ class TaskController extends AccountBaseController
             $this->notifierNouveauxAssignes(
                 $task, array_diff($request->user_id, $taskUsers));
         }
-
-        // Dispatch delegation notification if changed
-        $dispatcher = new \App\Services\NotificationDispatcher();
-        $channels = $request->chosen_channels ?? ['email', 'whatsapp'];
 
         // Dispatch pro notifications automatically
         $dispatcher = new \App\Services\NotificationDispatcher();
@@ -1448,33 +1481,42 @@ class TaskController extends AccountBaseController
         $viewTaskPermission = user()->permission('view_tasks');
         $mentionUser = $this->task->mentionTask->pluck('user_id')->toArray();
 
-        $overrideViewPermission = false;
-
-        if (request()->has('tab') && request('tab') === 'project') {
-            $overrideViewPermission = true;
-        }
+        /*
+         * AUTORISATION D'ACCES AU DETAIL D'UNE TACHE (backend)
+         *
+         * Un collaborateur (non-admin) peut consulter une tâche s'il en est
+         * le créateur, l'assigné ou le mentionné, ou si sa permission
+         * view_tasks vaut 'all' et que la tâche n'est pas privée. Cette
+         * vérification est faite côté serveur : manipuler l'URL ou l'ID de
+         * la tâche ne contourne pas cette règle.
+         *
+         * Les admins (roles_arbitres) voient toutes les tâches.
+         * NOTE : le paramètre ?tab=project ne contourne PAS cette vérification.
+         */
+        $isAdmin = in_array('admin', user_roles());
+        $isArbitre = est_arbitre();
+        $isTaskCreator = ($this->task->added_by == user()->id || $this->task->created_by == user()->id);
+        $isTaskAssignee = in_array(user()->id, $taskUsers);
+        $isTaskMentioned = !is_null($this->task->mentionTask) && in_array(user()->id, $mentionUser);
+        $isProjectAdmin = $this->task->project_id && !is_null($this->task->project) && $this->task->project->project_admin == user()->id;
+        $isClientOfProject = in_array('client', user_roles())
+            && $this->task->project_id
+            && !is_null($this->task->project)
+            && $this->task->project->client_id == user()->id;
+        $hasAllPermission = ($viewTaskPermission == 'all' && $this->task->is_private == 0);
 
         abort_403(
             !(
-            $overrideViewPermission == true
-            || $viewTaskPermission == 'all'
-            || ($viewTaskPermission == 'added' && $this->task->added_by == user()->id)
-            || ($viewTaskPermission == 'owned' && in_array(user()->id, $taskUsers))
-            || ($viewTaskPermission == 'both' && (in_array(user()->id, $taskUsers) || $this->task->added_by == user()->id))
-            || ($viewTaskPermission == 'owned' && in_array('client', user_roles()) && $this->task->project_id && $this->task->project->client_id == user()->id)
-            || ($viewTaskPermission == 'both' && in_array('client', user_roles()) && $this->task->project_id && $this->task->project->client_id == user()->id)
-            || ($this->viewUnassignedTasksPermission == 'all' && in_array('employee', user_roles()))
-            || ($this->task->project_id && $this->task->project->project_admin == user()->id)
-            || ((!is_null($this->task->mentionTask)) && in_array(user()->id, $mentionUser))
+            $isAdmin
+            || $isArbitre
+            || $isTaskCreator
+            || $isTaskAssignee
+            || $isTaskMentioned
+            || $isProjectAdmin
+            || $isClientOfProject
+            || $hasAllPermission
             )
-
         );
-
-        if (!$this->task->project_id || ($this->task->project_id && $this->task->project->project_admin != user()->id)) {
-
-            abort_403($this->viewUnassignedTasksPermission == 'none' && count($taskUsers) == 0 && ((is_null($this->task->mentionTask)) && in_array(user()->id, $mentionUser)));
-
-        }
 
         if ($this->task->task_short_code) {
             $this->pageTitle = __('app.task') . ' # ' . $this->task->task_short_code;
@@ -1757,12 +1799,13 @@ class TaskController extends AccountBaseController
     public function storeStatusReason(ActionTask $request)
     {
 
-        $task = Task::with('project')->findOrFail($request->taskId);
+        $task = Task::with('project', 'users', 'boardColumn')->findOrFail($request->taskId);
         $taskBoardColumn = TaskboardColumn::where('slug', $request->taskStatus)->first();
 
         // Sortie de « En attente d'approbation » avec motif : c'est l'arbitrage
-        // lui-meme, donc reserve a l'administrateur.
-        $this->verifierTransitionApprobation($task, $taskBoardColumn);
+        // lui-meme, donc reserve a l'administrateur. Hors approbation, seul
+        // l'assigne change le statut.
+        $this->verifierChangementStatut($task, $taskBoardColumn);
 
         $task->board_column_id = $taskBoardColumn->id;
         $task->approval_send = 0;
@@ -1795,7 +1838,19 @@ class TaskController extends AccountBaseController
 
     public function updateTaskDuration(Request $request, $id)
     {
-        $task = Task::findOrFail($id);
+        $task = Task::with('users', 'project')->findOrFail($id);
+
+        $editTaskPermission = user()->permission('edit_tasks');
+        $taskUsers = $task->users->pluck('id')->toArray();
+
+        abort_403(
+            !(in_array('admin', user_roles())
+            || est_arbitre()
+            || ($task->project && $task->project->project_admin == user()->id)
+            || ($editTaskPermission != 'none' && ($task->added_by == user()->id || in_array(user()->id, $taskUsers)))
+            )
+        );
+
         $task->start_date = Carbon::createFromFormat('d/m/Y', $request->start_date)->format('Y-m-d');
         $task->due_date = (!is_null($task->due_date)) ?Carbon::createFromFormat('d/m/Y', $request->end_date)->addDay()->format('Y-m-d') : null;
         $task->save();
@@ -1837,7 +1892,17 @@ class TaskController extends AccountBaseController
         $options = '<option value="">--</option>';
 
         if ($id != 0) {
-            $members = Task::with('users')->findOrFail($id);
+            $members = Task::with('users', 'project')->findOrFail($id);
+
+            // Seuls les utilisateurs ayant accès à la tâche peuvent voir ses membres
+            $taskUsers = $members->users->pluck('id')->toArray();
+            $canView = in_array('admin', user_roles())
+                || est_arbitre()
+                || $members->added_by == user()->id
+                || in_array(user()->id, $taskUsers)
+                || ($members->project && $members->project->project_admin == user()->id);
+
+            abort_403(!$canView);
 
             foreach ($members->users as $item) {
                 if ($item->status == 'active') {
@@ -1853,24 +1918,32 @@ class TaskController extends AccountBaseController
     public function reminder()
     {
         $taskID = request()->id;
-        $task = Task::with('users')->findOrFail($taskID);
+        $task = Task::with('users', 'project')->findOrFail($taskID);
 
-        // Send  reminder notification to user
+        // Vérification : seuls les utilisateurs liés à la tâche peuvent envoyer un rappel
+        $taskUsers = $task->users->pluck('id')->toArray();
+        abort_403(
+            !(in_array('admin', user_roles())
+            || est_arbitre()
+            || $task->added_by == user()->id
+            || in_array(user()->id, $taskUsers)
+            || ($task->project && $task->project->project_admin == user()->id)
+            )
+        );
+
+        // Send reminder notification to user
         event(new TaskReminderEvent($task));
 
         return Reply::success('messages.reminderMailSuccess');
     }
 
+    /* Appele en AJAX par les formulaires de tache a chaque changement de date
+       ou d'assigne. Le module Conges etant retire, leaves() renvoie toujours
+       null : on ne parse plus les dates, dont la saisie libre (ex. "29-Aug-2003"
+       hors format societe) faisait lever une InvalidFormatException (erreur 500). */
     public function checkLeaves()
     {
-        $startDate = request()->start_date ? companyToYmd(request()->start_date) : null;
-        $dueDate = request()->due_date ? companyToYmd(request()->due_date) : null;
-
-        if (request()->start_date && request()->due_date && request()->user_id) {
-            $data = $this->leaves(request()->user_id, $startDate, $dueDate);
-
-            return reply::dataOnly(['data' => $data]);
-        }
+        return Reply::dataOnly(['data' => null]);
     }
 
     /* Module Conges retire du perimetre du cabinet (cf. audit nettoyage-modules) :
@@ -1883,10 +1956,22 @@ class TaskController extends AccountBaseController
 
     public function sendNotifications($id)
     {
-        $task = Task::findOrFail($id);
+        $task = Task::with('users', 'project')->findOrFail($id);
+
+        // Seuls les admins et les créateurs/assignés de la tâche peuvent re-déclencher des notifications
+        $taskUsers = $task->users->pluck('id')->toArray();
+        abort_403(
+            !(in_array('admin', user_roles())
+            || est_arbitre()
+            || $task->added_by == user()->id
+            || in_array(user()->id, $taskUsers)
+            || ($task->project && $task->project->project_admin == user()->id)
+            )
+        );
+
         $dispatcher = new \App\Services\NotificationDispatcher();
         $channels = ['email', 'whatsapp'];
-        
+
         try {
             $dispatcher->dispatchTaskDelegation($task, $channels);
             return Reply::success('Notifications envoyées avec succès.');

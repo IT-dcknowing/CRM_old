@@ -29,20 +29,26 @@
                     </div>
 
                     <div class="col-md-6 col-lg-6">
-                        <x-forms.label class="my-3" fieldId="category_id"
+                        <x-forms.label class="my-3" fieldId="task_category_id"
                                        :fieldLabel="__('modules.tasks.taskCategory')">
                         </x-forms.label>
                         <x-forms.input-group>
-                            <select class="form-control select-picker" name="category_id" id="task_category_id"
+                            @php
+                                $selectedCategories = [];
+                                if (!is_null($task)) {
+                                    $selectedCategories = $task->taskCategories->pluck('id')->toArray();
+                                    if (empty($selectedCategories) && $task->task_category_id) {
+                                        $selectedCategories = [$task->task_category_id];
+                                    }
+                                }
+                            @endphp
+                            <select class="form-control select-picker" multiple name="category_id[]" id="task_category_id"
                                     data-live-search="true" data-size="8">
-                                <option value="">--</option>
                                 @if ($viewTaskCategoryPermission == 'all' || $viewTaskCategoryPermission == 'added')
                                     @foreach ($categories as $category)
                                         <option
-                                            @if (!is_null($task) && $task->task_category_id == $category->id) selected
-                                            @endif value="{{ $category->id }}">{{ html_entity_decode($category->category_name) }}
+                                            @selected(in_array($category->id, $selectedCategories)) value="{{ $category->id }}">{{ html_entity_decode($category->category_name) }}
                                         </option>
-
                                     @endforeach
                                 @endif
                             </select>
@@ -101,7 +107,7 @@
                     <div class="col-md-5 col-lg-3">
                         <x-forms.datepicker fieldId="task_start_date" fieldRequired="true"
                                             :fieldLabel="__('modules.projects.startDate')" fieldName="start_date"
-                                            :fieldValue="(($task) ? $task->start_date->format(company()->date_format) : now(company()->timezone)->translatedFormat(company()->date_format))"
+                                            :fieldValue="(($task) ? $task->start_date->format(company()->date_format) : now(company()->timezone)->format(company()->date_format))"
                                             :fieldPlaceholder="__('placeholders.date')"/>
                     </div>
 
@@ -109,7 +115,7 @@
                          @if($task && is_null($task->due_date)) style="display: none" @endif>
                         <x-forms.datepicker fieldId="due_date" fieldRequired="true" :fieldLabel="__('app.dueDate')"
                                 fieldName="due_date" :fieldPlaceholder="__('placeholders.date')"
-                                :fieldValue="(($task && $task->due_date) ? $task->due_date->format(company()->date_format) : now(company()->timezone)->translatedFormat(company()->date_format))"/>
+                                :fieldValue="(($task && $task->due_date) ? $task->due_date->format(company()->date_format) : now(company()->timezone)->format(company()->date_format))"/>
                     </div>
                     <div class="col-md-2 col-lg-2 pt-5">
                         <x-forms.checkbox class="mr-0 mr-lg-2 mr-md-2" :checked="$task ? is_null($task->due_date) : ''"
@@ -457,7 +463,6 @@
                                                    fieldId="file-upload-dropzone"/>
                             <input type="hidden" name="image_url" id="image_url">
                         </div>
-                        <input type="hidden" name="taskID" id="taskID">
                         <input type="hidden" name="addedFiles" id="addedFiles">
                     @endif
 
@@ -476,7 +481,7 @@
                     <x-forms.button-secondary class="mr-3 d-none d-md-block" id="save-more-task-form"
                                               icon="check-double">@lang('app.saveAddMore')
                     </x-forms.button-secondary>
-                    <x-forms.button-cancel :link="route('tasks.index')" class="border-0">@lang('app.cancel')
+                    <x-forms.button-cancel :link="$backUrl ?? route('taskboards.index')" class="border-0">@lang('app.cancel')
                     </x-forms.button-cancel>
                 </x-form-actions>
 
@@ -563,9 +568,24 @@
             });
         });
 
+        // Erreurs d'envoi des fichiers et destination apres creation.
+        var uploadErreurs = [];
+        var redirectionTache = null;
+
+        /* Apres la creation : depuis le tableau des taches, on y reste (le
+           tableau est recharge) ; ailleurs, on suit l'URL de redirection. */
+        function apresCreationTache(url) {
+            if ($('#taskboard-columns').length) {
+                window.location.reload();
+                return;
+            }
+
+            window.location.href = url;
+        }
+
         if (add_task_files == "all" || add_task_files == "added") {
 
-            let checkSize = false;
+            var checkSize = false;
 
             Dropzone.autoDiscover = false;
             //Dropzone class
@@ -597,9 +617,30 @@
                 $.easyBlockUI();
             });
             taskDropzone.on('queuecomplete', function () {
-                if (checkSize == false) {
-                    window.location.href = localStorage.getItem("redirect_task");
+                $.easyUnblockUI();
+
+                if (checkSize == true) {
+                    return;
                 }
+
+                // La tache est deja creee : meme si un fichier a echoue, on
+                // quitte le formulaire, sinon un second clic sur « Enregistrer »
+                // creerait la tache en double.
+                if (uploadErreurs.length > 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: "@lang('messages.recordSaved')",
+                        text: "@lang('app.fileNotUploaded') : " + uploadErreurs.join(' '),
+                        confirmButtonText: "@lang('app.ok')",
+                        customClass: {confirmButton: 'btn btn-primary'},
+                        buttonsStyling: false
+                    }).then(function () {
+                        apresCreationTache(redirectionTache);
+                    });
+                    return;
+                }
+
+                apresCreationTache(redirectionTache);
             });
             taskDropzone.on('removedfile', function () {
                 var grp = $('div#file-upload-dropzone').closest(".form-group");
@@ -607,7 +648,23 @@
                 $(grp).removeClass("has-error");
                 $(label).removeClass("is-invalid");
             });
-            taskDropzone.on('error', function (file, message) {
+            taskDropzone.on('error', function (file, message, xhr) {
+                // Reponse JSON du serveur (403, 422, 500) : on garde le texte.
+                if (typeof message === 'object' && message !== null) {
+                    message = message.message || message.error || "@lang('app.fileNotUploaded')";
+                }
+
+                // Echec a l'envoi, apres la creation de la tache : le message
+                // est montre une fois la file d'envoi terminee.
+                if (xhr) {
+                    if (uploadErreurs.indexOf(message) === -1) {
+                        uploadErreurs.push(message);
+                    }
+                    return;
+                }
+
+                // Fichier refuse avant tout envoi (taille, type) : il est
+                // retire et le formulaire reste ouvert pour corriger.
                 taskDropzone.removeFile(file);
                 var grp = $('div#file-upload-dropzone').closest(".form-group");
                 var label = $('div#file-upload-box').siblings("label");
@@ -908,7 +965,8 @@
                         if (typeof taskDropzone !== 'undefined' && taskDropzone.getQueuedFiles().length > 0) {
                             taskID = response.taskID;
                             $('#taskID').val(response.taskID);
-                            (response.add_more == true) ? localStorage.setItem("redirect_task", window.location.href) : localStorage.setItem("redirect_task", response.redirectUrl);
+                            redirectionTache = (response.add_more == true) ? window.location.href : response.redirectUrl;
+                            uploadErreurs = [];
                             taskDropzone.processQueue();
                         } else if (response.add_more == true) {
 
@@ -927,7 +985,7 @@
 
 
                         } else {
-                            window.location.href = response.redirectUrl;
+                            apresCreationTache(response.redirectUrl);
                         }
 
                         if (typeof showTable !== 'undefined' && typeof showTable === 'function') {
@@ -939,7 +997,7 @@
         }
 
         $('#assign-self').click(function () {
-            $('#selectAssignee').val('{{ $user->id }}');
+            $('#selectAssignee').val('{{ user()->id }}');
             $('#selectAssignee').selectpicker('refresh');
         });
 

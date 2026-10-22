@@ -31,6 +31,7 @@ use App\Console\Commands\SendTimeTracker;
 use App\Console\Commands\InActiveEmployee;
 use App\Console\Commands\AssignShiftRotation;
 use App\Console\Commands\AssignEmployeeShiftRotation;
+use App\Console\Commands\SendWeeklyTaskReport;
 use DateTimeZone;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
@@ -73,6 +74,7 @@ class Kernel extends ConsoleKernel
         CreateEmployeeLeaveQuotaHistory::class,
         AssignShiftRotation::class,
         AssignEmployeeShiftRotation::class,
+        SendWeeklyTaskReport::class,
     ];
 
     /**
@@ -133,6 +135,9 @@ class Kernel extends ConsoleKernel
         $schedule->command('carry-forward-leave')->monthly();
 
         $schedule->command('queue:flush')->weekly();
+
+        // Rapport hebdomadaire des tâches envoyé chaque lundi à 06h00 aux ADMIN (après la clôture du dimanche)
+        $schedule->command('send-weekly-task-report')->mondays()->at('06:00');
 
         // Schedule the queue:work command to run without overlapping and with 3 tries
         $schedule->command('queue:work database --tries=3 --stop-when-empty')->withoutOverlapping();

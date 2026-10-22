@@ -57,7 +57,7 @@
                                 'start_date'  => __('Format :') . ' ' . company()->date_format,
                                 'due_date'    => __('Meme format. Doit etre posterieure a la date de debut.'),
                                 'status'      => __('Un des statuts du tableau ; voir la liste ci-dessous.'),
-                                'assigned'    => __("Le nom d'un collaborateur, a choisir dans la liste."),
+                                'assigned_to' => __("Le nom d'un collaborateur existant, ou laissez vide pour vous l'attribuer."),
                                 'category'    => __("Un domaine existant, a choisir dans la liste."),
                                 'description' => __('Texte libre.'),
                             ];
@@ -89,8 +89,8 @@
 
                 <p class="dck-import__note">
                     <i class="fa fa-user-check mr-1"></i>
-                    <strong>@lang('Assignation automatique') :</strong>
-                    @lang("Toutes les taches importees vous sont automatiquement assignees.")
+                    <strong>@lang('Assignation des tâches') :</strong>
+                    @lang("Si la colonne « Assigné à » est vide, la tâche vous sera automatiquement attribuée.")
                 </p>
             </div>
         </div>
@@ -512,6 +512,7 @@
                 var startDate = startDateInput ? startDateInput.value.trim() : '';
                 var dueDate = row.querySelector('.field-due-date') ? row.querySelector('.field-due-date').value.trim() : '';
                 var description = row.querySelector('.field-description') ? row.querySelector('.field-description').value.trim() : '';
+                var userId = row.querySelector('.field-assignee') ? row.querySelector('.field-assignee').value : '';
 
                 var rowHasMissing = false;
 
@@ -544,7 +545,8 @@
                     priority: priority,
                     start_date: startDate,
                     due_date: dueDate,
-                    description: description
+                    description: description,
+                    user_id: userId
                 });
             });
 

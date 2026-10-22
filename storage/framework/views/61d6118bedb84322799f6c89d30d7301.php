@@ -1,7 +1,6 @@
 <?php
 $addTaskPermission = user()->permission('add_tasks');
 $addStatusPermission = user()->permission('add_status');
-$changeStatusPermission = user()->permission('change_status');
 ?>
 
 <?php $__currentLoopData = $result['boardColumns']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key => $column): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
@@ -135,28 +134,17 @@ $changeStatusPermission = user()->permission('change_status');
                     </div><!-- div end -->
 
                     <?php $__currentLoopData = $column['tasks']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $task): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                        <?php
-                            $taskUsers = $task->users ? $task->users->pluck('id')->toArray() : [];
-                        ?>
-
+                        
                         <?php if (isset($component)) { $__componentOriginal2ea4c1068dc1b109818e3dc41cd10d1b = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginal2ea4c1068dc1b109818e3dc41cd10d1b = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.cards.task-card','data' => ['draggable' => (($changeStatusPermission == 'all'
-                        || ($changeStatusPermission == 'added' && $task->added_by == user()->id)
-                        || ($changeStatusPermission == 'owned' && in_array(user()->id, $taskUsers))
-                        || ($changeStatusPermission == 'both' && (in_array(user()->id, $taskUsers) || $task->added_by == user()->id))
-                        || ($task->project && $task->project->project_admin == user()->id)) ? 'true' : 'false'),'task' => $task,'company' => $company]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? (array) $attributes->getIterator() : [])); ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.cards.task-card','data' => ['draggable' => (est_assigne_tache($task) ? 'true' : 'false'),'task' => $task,'company' => $company]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? (array) $attributes->getIterator() : [])); ?>
 <?php $component->withName('cards.task-card'); ?>
 <?php if ($component->shouldRender()): ?>
 <?php $__env->startComponent($component->resolveView(), $component->data()); ?>
 <?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag && $constructor = (new ReflectionClass(Illuminate\View\AnonymousComponent::class))->getConstructor()): ?>
 <?php $attributes = $attributes->except(collect($constructor->getParameters())->map->getName()->all()); ?>
 <?php endif; ?>
-<?php $component->withAttributes(['draggable' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute((($changeStatusPermission == 'all'
-                        || ($changeStatusPermission == 'added' && $task->added_by == user()->id)
-                        || ($changeStatusPermission == 'owned' && in_array(user()->id, $taskUsers))
-                        || ($changeStatusPermission == 'both' && (in_array(user()->id, $taskUsers) || $task->added_by == user()->id))
-                        || ($task->project && $task->project->project_admin == user()->id)) ? 'true' : 'false')),'task' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute($task),'company' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute($company)]); ?>
+<?php $component->withAttributes(['draggable' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute((est_assigne_tache($task) ? 'true' : 'false')),'task' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute($task),'company' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute($company)]); ?>
 <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginal2ea4c1068dc1b109818e3dc41cd10d1b)): ?>
@@ -310,6 +298,25 @@ $changeStatusPermission = user()->permission('change_status');
                     taskIds: taskIds,
                     prioritys: prioritys,
                     '_token': '<?php echo e(csrf_token()); ?>'
+                },
+                error: function(xhr) {
+                    // Deplacement refuse (tache non assignee, approbation...) :
+                    // le message est affiche et le tableau recharge pour remettre
+                    // la carte dans sa colonne d'origine.
+                    var message = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : "<?php echo app('translator')->get('messages.permissionDenied'); ?>";
+                    Swal.fire({
+                        icon: 'warning',
+                        title: message,
+                        confirmButtonText: "<?php echo app('translator')->get('app.ok'); ?>",
+                        customClass: {confirmButton: 'btn btn-primary'},
+                        buttonsStyling: false
+                    });
+
+                    if (typeof loadData === 'function') {
+                        loadData();
+                    } else {
+                        window.location.reload();
+                    }
                 },
                 success: function(response) {
                     if(response.status == 'failed'){

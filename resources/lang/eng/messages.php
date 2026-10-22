@@ -1,6 +1,6 @@
 <?php
 
-return array(
+return [
     'attendanceIsMarked' => 'Attendance is marked for the date',
     'autoClockOut' => 'Enter no of hours from the end time after which employee will be auto clocked out. <br><br><b>Example:</b> If shift end time is 6 PM and auto clockout value is 1 then employee will be auto clocked out at 7 PM.<br><br><b>Note</b>: Auto clock out will not work if allow clock-in outside shift hours is checked in attendance settings.',
     'flexibleAutoClockOut' => 'Enter no of hours after which employee will be auto clocked out. <br><br><b>Example:</b> If total shift hours are 8 hours and auto clockout value is 1 then employee will be auto clocked out after 9 Hours.',
@@ -175,25 +175,24 @@ return array(
     'noteAddedSuccess' => 'Note added successfully.',
     'promotionAddedSuccess' => 'Promotion added successfully.',
     'promotionUpdatedSuccess' => 'Promotion updated successfully.',
-    'welcome' => array(
+    'welcome' => [
         'message' => 'Welcome to the setup wizard',
         'title' => 'Welcome to the installer',
-    ),
+    ],
     'title' => 'Laravel installer',
-
     'next' => 'Following',
     'finish' => 'Install',
-    'final' => array(
+    'final' => [
         'title' => 'Finalized.',
         'finished' => 'The application has been installed successfully!',
         'exit' => 'Click here to exit.',
-    ),
-    'currency' => array(
+    ],
+    'currency' => [
         'currencyPosition' => 'This controls the position of the currency symbol. like $1 or 1$ or $ 1 or 1 $',
         'thousandSeparator' => 'This sets the thousand separators of displayed prices. like $10,000 or $1000,0000',
         'decimalSeparator' => 'This sets the decimal separator of displayed prices. like $10.00 or $10,00',
         'numberOfdecimals' => 'This sets the number of decimal points shown in displayed prices. like $10.00 or $10.000',
-    ),
+    ],
     'noGroupAdded' => 'No group added.',
     'noRoleFound' => 'No role found.',
     'noLeaveTypeAdded' => 'No leave type added.',
@@ -263,11 +262,11 @@ return array(
     'noProjectAssigned' => 'No project assigned to you.',
     'noAttendanceDetailToday' => 'No attendance detail for today.',
     'noSpacePlease' => 'No space please!',
-    'confirmation' => array(
+    'confirmation' => [
         'createCreditNotes' => 'Are you sure that you want to create the credit note?',
         'orderStatusChange' => 'Are you sure you want to change the order status?',
         'rejectConfirm' => 'Yes, reject',
-    ),
+    ],
     'invoiceSentSuccessfully' => 'Invoice sent Successfully',
     'offlineInvoiceApproved' => 'Offline Invoice Approved Successfully',
     'estimateSentSuccessfully' => 'Estimate sent Successfully',
@@ -358,10 +357,10 @@ return array(
     'filesMoveToCloudSuccessfully' => 'Files successfully moved to cloud storage.',
     'allFilesMovedToCloud' => 'All Files are already moved to cloud storage.',
     'unitDeleteError' => 'You cannot delete this unit as it is associated with finance and product items. Dissociate the unit from all items and try again.',
-    'fileFormat' => array(
+    'fileFormat' => [
         'ImageFile' => 'only .jpg, .jpeg, .png, .svg formats are allowed.',
         'multipleImageFile' => 'only .txt, .pdf, .doc, .xls, .xlsx, .docx, .rtf, .png, .jpg, .jpeg formats are allowed.',
-    ),
+    ],
     'leaveFileMessage' => 'You can attach the receipt of the prescription, doctor visit or travel document etc',
     'matchColumnMessage' => 'Please sort the data you have uploaded by matching the columns in the CSV to the fields in the associated fields.',
     'columnMatchSuccess' => '<strong>Well done!</strong> You have successfully matched all the columns. Please click on submit to save.',
@@ -373,7 +372,7 @@ return array(
     'importProcessStart' => 'Import process started. Please wait.',
     'confirmResetPermission' => 'This will reset permissions for all users with this role. Do you want to reset?',
     'invoiceDueOn' => 'Invoice Due On',
-    'googleCalendar' => array(
+    'googleCalendar' => [
         'confirmRemove' => 'Are you want to disable Google Calendar ?',
         'yesRemove' => 'Yes, Remove it!',
         'removedSuccess' => 'Google Calendar removed successfully.',
@@ -382,9 +381,9 @@ return array(
         'addGoogleCalendarUrl' => 'Add this redirect URI to your Google Console',
         'notificationTitle' => 'Notification Settings',
         'verifiedSuccess' => 'Google calendar settings verified successfully.',
-        'updatedSuccess' => 'Google calendar settings updated successfully.'
-    ),
-    'databasebackup' => array(
+        'updatedSuccess' => 'Google calendar settings updated successfully.',
+    ],
+    'databasebackup' => [
         'note' => 'Note: Due to the limited execution time and memory available to PHP, backing up very large databases may not be possible. If your database is very large you might need to backup directly from your SQL server via the command line, or have your server admin do it for you if you do not have root privileges.',
         'backupNotExist' => 'Backup file doesn\'t exist.',
         'backupDeleted' => 'Successfully deleted backup!',
@@ -393,7 +392,7 @@ return array(
         'createDatabaseBackupAlert' => 'Do you want to create Database Backup!',
         'confirmCreateDatabaseBackup' => 'Yes, Create It!',
         'info' => 'Note: Create a backup every :everyDayCount days at :time, auto delete backups older than :olderDayCount days (set -1 to disable) ',
-    ),
+    ],
     'notAllowedToAssignAdminPermission' => 'You\'re not allowed to assign admin role.',
     'downloadable' => 'Downloadable product gives access to a file upon purchase',
     'invalidData' => 'Invalid Data : ',
@@ -404,7 +403,7 @@ return array(
     'dragDropScreenInfo' => 'Drag and drop will work on desktop devices only.',
     'timerPausedSuccessfully' => 'Timer paused successfully.',
     'orderStatusChanged' => 'Order status changed successfully.',
-    'orderStatus' => array(
+    'orderStatus' => [
         'pending' => 'Pending order is ready to collect payment.',
         'onHold' => 'On hold order is waiting for payment or payment is pending.',
         'failed' => 'Failed order is failed to collect payment.',
@@ -412,8 +411,7 @@ return array(
         'completed' => 'Completed an order will create invoice and payment of order.',
         'canceled' => 'Canceled an order is canceled and can\'t be processed.',
         'refunded' => 'Refunded an order will create credit note of order.',
-
-    ),
+    ],
     'employeeEmergencyContact' => 'Emergency contact saved successfully.',
     'sameCurrencyInvoiceNote' => 'Only same currency Invoices will show here.',
     'alreadySigned' => 'Already signed',
@@ -455,7 +453,7 @@ return array(
     'probationMessage' => 'Probation Ends On',
     'internshipMessage' => 'Internship Ends On',
     'contractMessage' => 'Contract Ends On',
-    'probationEndDate' => "Enter the end date when the employee's probation is going to end and he/she is going to be the part of company permanently",
+    'probationEndDate' => 'Enter the end date when the employee\'s probation is going to end and he/she is going to be the part of company permanently',
     'noticePeriodStartDate' => 'Enter the start date when an employee is going to be in the notice period before leaving the company',
     'noticePeriodEndDate' => 'If the notice period date is in the future, the employee will automatically be marked as inactive on that date, and if the exit date is empty, it will be filled accordingly.',
     'lastDateTooltip' => 'If the exit date is in the future, the employee will be automatically marked inactive on that date. And if the exit date is in the past and the employee is set as active, they will be marked inactive by the next cron job.',
@@ -486,7 +484,7 @@ return array(
     'enableClientModule' => 'Enable Client Module to access this section.',
     'overwriteAttendanceTooltip' => 'This will delete the existing attendance and will create new attendance record for the selected duration',
     'brandingStyleToolTip' => 'Below branding style will work for left sidebar top and on login page.',
-    'leave' => array(
+    'leave' => [
         'noOfYearlyLeaves' => 'This field is designated to set the number of leaves provided to employees annually. ',
         'noOfMonthlyLeaves' => ' This field is designated to set the number of leaves provided to employees for a month.',
         'allowedNotice' => 'Check this if you want to allow employees in the <b>Notice Period</b> to apply for leaves of this type.',
@@ -502,16 +500,16 @@ return array(
         'monthlyLimit' => 'The maximum number of leaves of this type an employee can take per month.',
         'paidStatus' => 'This leave type will be paid or unpaid for all the employees',
         'overutilization' => 'This option handles the overutilization of this leave type.<br><br><b>Do not allow</b>: Overutilization of this leave type is NOT ALLOWED.<br><br><b>Allow and Mark Paid</b>: Overutilization of this leave type is allowed and extra leaves will be marked as PAID.<br><br><b>Allow and Mark Unpaid</b>: Overutilization of this leave type is allowed but extra leaves will be marked as UNPAID.',
-    ),
+    ],
     'noTicketChannelAdded' => 'No Ticket Channel Added',
     'roleNotFound' => 'Role not found for :user',
     'signUpUrlRequired' => 'The terms link field is required when sign up terms is enabled.',
     'adminPermissionsCantChange' => 'Admin permissions can not be changed',
     'customModuleInstalled' => 'Module installed successfully. You will be redirected to the custom module page. Activate the module to use it.',
-    'deal' => array(
+    'deal' => [
         'deletePipeline' => 'It has :stages stages and :deals deals. The all records will be deleted permanently.',
-        'deleteStage' => 'The all deals of this stage will be shifted into default stage.'
-    ),
+        'deleteStage' => 'The all deals of this stage will be shifted into default stage.',
+    ],
     'leadConversion' => 'Data is showing total records and link will show only default pipeline records.',
     'totalDealWidget' => 'Link will show default pipeline deals.',
     'clientSignUpDisabledByAdmin' => 'Client sign up is disabled by admin.',
@@ -548,5 +546,11 @@ return array(
     'willMarkHalfDay' => 'You have not completed total shift hours yet. If you clockout now, half day will be marked.',
     'SelectaDesignation' => 'Select a current designation.',
     'SelectaDepartment' => 'Select a current department.',
-
-);
+    'attendanceClockInFailed' => 'Attendance Clock In Failed.',
+    'clientNotFound' => 'Client not found.',
+    'recordDeleted' => 'Record deleted successfully.',
+    'requestNotFound' => 'Request not found.',
+    'requestProcessed' => 'Request processed successfully.',
+    'requestSubmitted' => 'Request submitted successfully.',
+    'selectRecipient' => 'Please select a recipient.',
+];

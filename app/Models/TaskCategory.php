@@ -45,4 +45,10 @@ class TaskCategory extends BaseModel
         }
     }
 
+    public function tasks(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Task::class, 'task_task_category', 'task_category_id', 'task_id');
+    }
+
 }
+

@@ -109,8 +109,8 @@ class EmployeeController extends AccountBaseController
 
         $this->skills = Skill::all()->pluck('name')->toArray();
         $this->countries = countries();
-        $this->lastEmployeeID = EmployeeDetails::count();
-        $this->checkifExistEmployeeId = EmployeeDetails::select('id')->where('employee_id', ($this->lastEmployeeID + 1))->first();
+        $this->lastEmployeeID = EmployeeDetails::nextEmployeeId();
+        $this->checkifExistEmployeeId = null;
         $this->employees = User::allEmployees(null, true);
         $this->languages = LanguageSetting::where('status', 'enabled')->get();
         $this->salutations = Salutation::cases();
@@ -364,9 +364,21 @@ class EmployeeController extends AccountBaseController
     {
         abort_403(user()->permission('edit_employees') != 'all');
 
+        abort_if(!in_array($request->status, ['active', 'deactive']), 422);
+
         $inactiveDate = $request->status == 'deactive' ? now() : null;
 
-        User::withoutGlobalScope(ActiveScope::class)->whereIn('id', explode(',', $request->row_ids))->update(['status' => $request->status, 'inactive_date' => $inactiveDate]);
+        // Jamais son propre compte ; un administrateur n'est modifie que par
+        // un administrateur.
+        $ids = User::withoutGlobalScope(ActiveScope::class)
+            ->with('roles')
+            ->whereIn('id', explode(',', $request->row_ids))
+            ->where('id', '<>', user()->id)
+            ->get()
+            ->filter(fn ($u) => !in_array('admin', $u->roles->pluck('name')->toArray()) || in_array('admin', user_roles()))
+            ->pluck('id');
+
+        User::withoutGlobalScope(ActiveScope::class)->whereIn('id', $ids)->update(['status' => $request->status, 'inactive_date' => $inactiveDate]);
     }
 
     /**
@@ -992,7 +1004,11 @@ class EmployeeController extends AccountBaseController
      */
     public function employeeData($request, $employee): void
     {
-        $employee->employee_id = $request->employee_id;
+        if ($employee->exists && !empty($employee->employee_id)) {
+            $employee->employee_id = $request->has('employee_id') && !empty($request->employee_id) ? $request->employee_id : $employee->employee_id;
+        } else {
+            $employee->employee_id = EmployeeDetails::nextEmployeeId($employee->company_id ?: company()?->id);
+        }
         $employee->address = $request->address;
         $employee->hourly_rate = $request->hourly_rate;
         $employee->slack_username = $request->slack_username;

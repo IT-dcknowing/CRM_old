@@ -296,14 +296,9 @@ class TasksDataTable extends BaseDataTable
 
         });
         $datatables->editColumn('board_column', function ($row) use ($taskBoardColumns) {
-            $taskUsers = $row->users->pluck('id')->toArray();
-
-            if ($this->changeStatusPermission == 'all'
-            || ($this->changeStatusPermission == 'added' && $row->added_by == user()->id)
-            || ($this->changeStatusPermission == 'owned' && in_array(user()->id, $taskUsers))
-            || ($this->changeStatusPermission == 'both' && (in_array(user()->id, $taskUsers) || $row->added_by == user()->id))
-            || ($row->project_admin == user()->id)
-            ) {
+            // Seul l'employe assigne peut changer le statut de la tache
+            // (l'arbitre garde la main sur les taches en attente d'approbation).
+            if (peut_changer_statut_tache($row)) {
                 $taskBoardColumn = $taskBoardColumns->firstWhere('slug', 'waiting_approval');
                 // Check if approval_send is 1, then disable the select dropdown
                 if ($row->approval_send == 1 && $row->need_approval_by_admin == 1 && (in_array('employee', user_roles()) && $row->project_admin != user()->id) && !in_array('admin', user_roles())) {
@@ -320,6 +315,9 @@ class TasksDataTable extends BaseDataTable
 
                     foreach ($taskBoardColumns as $item) {
                         if ($item->id != $taskBoardColumn->id) {
+                            if ($item->slug == 'completed' && !est_assigne_tache($row) && $item->id != $row->board_column_id) {
+                                continue;
+                            }
                             $status .= '<option ';
 
                             if ($item->id == $row->board_column_id) {
@@ -496,6 +494,63 @@ class TasksDataTable extends BaseDataTable
                 }
                 );
             }
+
+            /*
+             * VISIBILITE DES TACHES ENTRE COLLABORATEURS
+             *
+             * Pilotee par la permission view_tasks de l'utilisateur :
+             *   - all   : toutes les taches de l'entreprise (CompanyScope)
+             *   - owned / added / both : restreint ci-dessous, mentions incluses
+             * Les taches privees des autres restent masquees (filtre is_private plus haut).
+             */
+            if (($request->has('project_admin') && $request->project_admin != 1) || !$request->has('project_admin')) {
+                if ($this->viewTaskPermission == 'owned' && $this->projectView == false) {
+                    $model->where(
+                        function ($q) use ($request) {
+                        $q->where('task_users.user_id', '=', user()->id);
+                        $q->orWhere('mention_users.user_id', user()->id);
+
+                        if (in_array('client', user_roles())) {
+                            $q->orWhere('projects.client_id', '=', user()->id);
+                        }
+                    }
+                    );
+
+                    if ($projectId != 0 && $projectId != null && $projectId != 'all' && !in_array('client', user_roles())) {
+                        $model->where(
+                            function ($q) {
+                            $q->where('projects.project_admin', '<>', user()->id)
+                                ->orWhere('mention_users.user_id', user()->id);
+                        }
+                        );
+                    }
+                }
+
+                if ($this->viewTaskPermission == 'added' && $this->projectView == false) {
+                    $model->where(
+                        function ($q) {
+                        $q->where('tasks.added_by', '=', user()->id)
+                            ->orWhere('tasks.created_by', '=', user()->id)
+                            ->orWhere('mention_users.user_id', user()->id);
+                    }
+                    );
+                }
+
+                if ($this->viewTaskPermission == 'both' && $this->projectView == false) {
+                    $model->where(
+                        function ($q) use ($request) {
+                        $q->where('task_users.user_id', '=', user()->id);
+                        $q->orWhere('tasks.added_by', '=', user()->id)
+                            ->orWhere('tasks.created_by', '=', user()->id)
+                            ->orWhere('mention_users.user_id', user()->id);
+
+                        if (in_array('client', user_roles())) {
+                            $q->orWhere('projects.client_id', '=', user()->id);
+                        }
+                    }
+                    );
+                }
+            }
         }
 
         if ($request->assignedTo == 'unassigned' && $this->viewUnassignedTasksPermission == 'all' && !in_array('client', user_roles())) {
@@ -571,6 +626,7 @@ class TasksDataTable extends BaseDataTable
                 $model->where(
                     function ($q) {
                     $q->where('tasks.added_by', '=', user()->id)
+                        ->orWhere('tasks.created_by', '=', user()->id)
                         ->orWhere('mention_users.user_id', user()->id);
 
                 }
@@ -583,6 +639,7 @@ class TasksDataTable extends BaseDataTable
                     function ($q) use ($request) {
                     $q->where('task_users.user_id', '=', user()->id);
                     $q->orWhere('tasks.added_by', '=', user()->id)
+                        ->orWhere('tasks.created_by', '=', user()->id)
                         ->orWhere('mention_users.user_id', user()->id);
 
                     if (in_array('client', user_roles())) {
@@ -617,7 +674,16 @@ class TasksDataTable extends BaseDataTable
         }
 
         if ($request->category_id != '' && $request->category_id != null && $request->category_id != 'all') {
-            $model->where('tasks.task_category_id', '=', $request->category_id);
+            $catId = $request->category_id;
+            $model->where(function ($q) use ($catId) {
+                $q->where('tasks.task_category_id', '=', $catId)
+                  ->orWhereExists(function ($sub) use ($catId) {
+                      $sub->select(DB::raw(1))
+                          ->from('task_task_category')
+                          ->whereColumn('task_task_category.task_id', 'tasks.id')
+                          ->where('task_task_category.task_category_id', $catId);
+                  });
+            });
         }
 
         if ($request->billable != '' && $request->billable != null && $request->billable != 'all') {

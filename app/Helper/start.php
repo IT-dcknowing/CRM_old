@@ -125,6 +125,91 @@ if (!function_exists('est_arbitre')) {
 
 }
 
+if (!function_exists('est_assigne_tache')) {
+
+    /**
+     * L'utilisateur courant fait-il partie des personnes a qui la tache
+     * est assignee ?
+     *
+     * C'est la seule condition pour changer le statut d'une tache (bouton,
+     * liste deroulante ou glisser-deposer sur le tableau). Les transitions
+     * vers ou depuis « En attente d'approbation » restent a l'arbitre :
+     * voir ApprobationTache::verifierChangementStatut().
+     */
+    // @codingStandardsIgnoreLine
+    function est_assigne_tache($task)
+    {
+        if (is_null($task) || !user()) {
+            return false;
+        }
+
+        return $task->users->contains('id', user()->id);
+    }
+
+}
+
+if (!function_exists('peut_modifier_tache')) {
+
+    /**
+     * L'utilisateur courant peut-il modifier cette tache ?
+     *
+     * Regle unique partagee par TaskController::edit(), ::update() et le
+     * bouton « Modifier » des cartes du tableau des taches : un bouton
+     * visible doit toujours ouvrir un formulaire autorise.
+     */
+    // @codingStandardsIgnoreLine
+    function peut_modifier_tache($task)
+    {
+        if (is_null($task) || !user()) {
+            return false;
+        }
+
+        $permission = user()->permission('edit_tasks');
+        $userId = user()->id;
+        $assigne = est_assigne_tache($task);
+        $createur = $task->added_by == $userId || $task->created_by == $userId;
+        $project = $task->project;
+        $client = in_array('client', user_roles()) && $project && $project->client_id == $userId;
+
+        // Le createur garde toujours la main sur sa tache : c'etait deja
+        // l'effet (par priorite des operateurs) de l'ancienne condition.
+        return in_array('admin', user_roles())
+            || est_arbitre()
+            || $createur
+            || ($permission == 'all' && $assigne)
+            || ($permission == 'owned' && ($assigne || $client))
+            || ($permission == 'both' && ($assigne || $client))
+            || ($project && $project->project_admin == $userId);
+    }
+
+}
+
+if (!function_exists('peut_changer_statut_tache')) {
+
+    /**
+     * Faut-il proposer le changement de statut de cette tache a
+     * l'utilisateur courant ? Pendant de verifierChangementStatut() pour
+     * les vues : l'assigne, ou l'arbitre quand la tache attend son
+     * approbation.
+     */
+    // @codingStandardsIgnoreLine
+    function peut_changer_statut_tache($task)
+    {
+        if (est_assigne_tache($task)) {
+            return true;
+        }
+
+        if (optional($task->boardColumn)->slug !== 'waiting_approval') {
+            return false;
+        }
+
+        $projectAdmin = $task->project_admin ?? optional($task->project)->project_admin;
+
+        return est_arbitre() || ($projectAdmin && $projectAdmin == user()->id);
+    }
+
+}
+
 if (!function_exists('admin_theme')) {
 
     // @codingStandardsIgnoreLine
@@ -1244,11 +1329,41 @@ if (!function_exists('pdfStripTags')) {
 
 }
 
+if (!function_exists('companyToCarbon')) {
+
+    function companyToCarbon($date)
+    {
+        if (empty($date)) {
+            return null;
+        }
+
+        if ($date instanceof Carbon) {
+            return $date;
+        }
+
+        try {
+            return Carbon::createFromFormat(company()->date_format, $date);
+        } catch (\Throwable $e) {
+            try {
+                return Carbon::parse($date);
+            } catch (\Throwable $e2) {
+                return null;
+            }
+        }
+    }
+
+}
+
 if (!function_exists('companyToYmd')) {
 
     function companyToYmd($date)
     {
-        return Carbon::createFromFormat(company()->date_format, $date)->format('Y-m-d');
+        if (empty($date)) {
+            return null;
+        }
+
+        $carbon = companyToCarbon($date);
+        return $carbon ? $carbon->format('Y-m-d') : null;
     }
 
 }
@@ -1257,7 +1372,12 @@ if (!function_exists('companyToDateString')) {
 
     function companyToDateString($date)
     {
-        return Carbon::createFromFormat(company()->date_format, $date)->toDateString();
+        if (empty($date)) {
+            return null;
+        }
+
+        $carbon = companyToCarbon($date);
+        return $carbon ? $carbon->toDateString() : null;
     }
 
 }

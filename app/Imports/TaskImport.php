@@ -92,11 +92,21 @@ class TaskImport implements ToArray, WithCustomCsvSettings
                 ],
             ],
             [
-                'cle'     => 'category',
-                'nom'     => 'Domaine',
+                'cle'     => 'assigned_to',
+                'nom'     => 'Assigné à',
                 'requis'  => false,
                 'anciens' => [
-                    'Catégorie', 'Categorie', 'Catégorie de tâche', 'Categorie de tache',
+                    'Assigne a', 'Assigné', 'Assigne', 'Assignee', 'Assignees', 'Collaborateur',
+                    'Collaborateurs', 'Responsable', 'Assign to', 'Assigned to', 'Assigned To',
+                    'Membre', 'Membres', 'User', 'Users', 'Employé', 'Employe'
+                ],
+            ],
+            [
+                'cle'     => 'category',
+                'nom'     => 'Domaines',
+                'requis'  => false,
+                'anciens' => [
+                    'Domaine', 'Catégorie', 'Categorie', 'Catégorie de tâche', 'Categorie de tache',
                     'Category', 'Task Category', 'Domaines', 'Catégories', 'Categories'
                 ],
             ],

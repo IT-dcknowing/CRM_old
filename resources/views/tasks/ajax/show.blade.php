@@ -2,7 +2,6 @@
     $editTaskPermission = user()->permission('edit_tasks');
     $deleteTaskPermission = user()->permission('delete_tasks');
     $sendReminderPermission = user()->permission('send_reminder');
-    $changeStatusPermission = user()->permission('change_status');
     $viewProjectPermission = user()->permission('view_projects');
 
 @endphp
@@ -17,12 +16,9 @@
                 <div class="card-header bg-white  border-bottom-grey  justify-content-between p-20">
                     <div class="row">
                         <div class="col-lg-8 col-10">
-                            @if ($changeStatusPermission == 'all'
-                            || ($changeStatusPermission == 'added' && $task->added_by == user()->id)
-                            || ($changeStatusPermission == 'owned' && in_array(user()->id, $taskUsers))
-                            || ($changeStatusPermission == 'both' && (in_array(user()->id, $taskUsers) || $task->added_by == user()->id))
-                            || ($task->project && $task->project->project_admin == user()->id)
-                            )
+                            {{-- Seul l'employe assigne peut changer le statut de la tache
+                                 (l'arbitre garde la main sur une tache en attente d'approbation). --}}
+                            @if (peut_changer_statut_tache($task))
                             {{-- approval_send --}}
                                 @php
                                     $userRoles = user_roles();
@@ -296,8 +292,18 @@
                     @endif
 
                     @if (($taskSettings->task_category == 'yes' && in_array('client', user_roles())) || in_array('admin', user_roles()) || in_array('employee', user_roles()))
+                        @php
+                            $taskCats = $task->taskCategories;
+                            if ($taskCats->isEmpty() && $task->category) {
+                                $catsDisplay = '<span class="badge badge-secondary">' . e($task->category->category_name) . '</span>';
+                            } elseif ($taskCats->isNotEmpty()) {
+                                $catsDisplay = $taskCats->map(fn($c) => '<span class="badge badge-secondary mr-1">' . e($c->category_name) . '</span>')->implode(' ');
+                            } else {
+                                $catsDisplay = '--';
+                            }
+                        @endphp
                         <x-cards.data-row :label="__('modules.tasks.taskCategory')"
-                                          :value="$task->category->category_name ?? '--'" html="true"/>
+                                          :value="$catsDisplay" html="true"/>
                     @endif
 
                     @if (($taskSettings->description == 'yes' && in_array('client', user_roles())) || in_array('admin', user_roles()) || in_array('employee', user_roles()))
