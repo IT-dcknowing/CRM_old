@@ -19,8 +19,9 @@ $addDepartmentPermission = user()->permission('add_department');
 
                             <div class="col-md-3">
                                 <x-forms.text fieldId="employee_id" :fieldLabel="__('modules.employees.employeeId')"
-                                    fieldName="employee_id" :fieldValue="((!$checkifExistEmployeeId) ? ($lastEmployeeID+1) : '')" fieldRequired="true"
-                                    :fieldPlaceholder="__('modules.employees.employeeIdInfo')" :popover="__('modules.employees.employeeIdHelp')">
+                                    fieldName="employee_id" :fieldValue="$lastEmployeeID" fieldRequired="true"
+                                    :fieldPlaceholder="__('modules.employees.employeeIdInfo')" :popover="__('modules.employees.employeeIdHelp')"
+                                    fieldReadOnly="true">
                                 </x-forms.text>
                             </div>
                             <div class="col-lg-2 col-md-3">

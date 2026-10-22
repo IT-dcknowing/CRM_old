@@ -109,8 +109,8 @@ class EmployeeController extends AccountBaseController
 
         $this->skills = Skill::all()->pluck('name')->toArray();
         $this->countries = countries();
-        $this->lastEmployeeID = EmployeeDetails::count();
-        $this->checkifExistEmployeeId = EmployeeDetails::select('id')->where('employee_id', ($this->lastEmployeeID + 1))->first();
+        $this->lastEmployeeID = EmployeeDetails::nextEmployeeId();
+        $this->checkifExistEmployeeId = null;
         $this->employees = User::allEmployees(null, true);
         $this->languages = LanguageSetting::where('status', 'enabled')->get();
         $this->salutations = Salutation::cases();
@@ -1004,7 +1004,11 @@ class EmployeeController extends AccountBaseController
      */
     public function employeeData($request, $employee): void
     {
-        $employee->employee_id = $request->employee_id;
+        if ($employee->exists && !empty($employee->employee_id)) {
+            $employee->employee_id = $request->has('employee_id') && !empty($request->employee_id) ? $request->employee_id : $employee->employee_id;
+        } else {
+            $employee->employee_id = EmployeeDetails::nextEmployeeId($employee->company_id ?: company()?->id);
+        }
         $employee->address = $request->address;
         $employee->hourly_rate = $request->hourly_rate;
         $employee->slack_username = $request->slack_username;

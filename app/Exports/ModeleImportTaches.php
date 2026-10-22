@@ -35,6 +35,7 @@ class ModeleImportTaches implements FromArray, WithHeadings, WithStyles, WithEve
     private array $projets;
     private array $categories;
     private array $statuts;
+    private array $collaborateurs;
 
     public function __construct()
     {
@@ -50,6 +51,17 @@ class ModeleImportTaches implements FromArray, WithHeadings, WithStyles, WithEve
 
         $this->statuts = TaskboardColumn::orderBy('priority')
             ->pluck('column_name')->all();
+
+        $this->collaborateurs = DB::table('users')
+            ->join('role_user', 'role_user.user_id', '=', 'users.id')
+            ->join('roles', 'roles.id', '=', 'role_user.role_id')
+            ->where('roles.name', '<>', 'client')
+            ->where('users.company_id', $societe)
+            ->where('users.status', 'active')
+            ->orderBy('users.name')
+            ->pluck('users.name')
+            ->unique()
+            ->all();
     }
 
     public function headings(): array
@@ -64,6 +76,11 @@ class ModeleImportTaches implements FromArray, WithHeadings, WithStyles, WithEve
            sentiment d'un outil defaillant. */
         $format = company()->date_format;
 
+        $exDomaine = $this->categories[0] ?? 'Informatique';
+        if (isset($this->categories[1])) {
+            $exDomaine .= ', ' . $this->categories[1];
+        }
+
         return [
             [
                 'Exemple : préparer la déclaration TVA',
@@ -71,7 +88,8 @@ class ModeleImportTaches implements FromArray, WithHeadings, WithStyles, WithEve
                 now()->format($format),
                 now()->addDays(7)->format($format),
                 TaskboardColumn::where('slug', 'to_do')->value('column_name') ?: 'À faire',
-                $this->categories[0] ?? '',
+                $this->collaborateurs[0] ?? (user()?->name ?? ''),
+                $exDomaine,
                 'Ligne d’exemple : supprimez-la avant d’importer.',
             ],
         ];
@@ -97,7 +115,7 @@ class ModeleImportTaches implements FromArray, WithHeadings, WithStyles, WithEve
                 $this->ecrireListes($feuille->getParent());
                 $this->poserMenus($feuille);
 
-                foreach (range('A', 'G') as $colonne) {
+                foreach (range('A', 'H') as $colonne) {
                     $feuille->getColumnDimension($colonne)->setAutoSize(true);
                 }
 
@@ -128,9 +146,10 @@ class ModeleImportTaches implements FromArray, WithHeadings, WithStyles, WithEve
         $listes->setSheetState(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet::SHEETSTATE_HIDDEN);
 
         $colonnes = [
-            'A' => ['Projets',  $this->projets],
-            'B' => ['Domaines', $this->categories],
-            'C' => ['Statuts',  $this->statuts],
+            'A' => ['Projets',        $this->projets],
+            'B' => ['Domaines',       $this->categories],
+            'C' => ['Statuts',        $this->statuts],
+            'D' => ['Collaborateurs', $this->collaborateurs],
         ];
 
         foreach ($colonnes as $lettre => [$titre, $valeurs]) {
@@ -143,25 +162,25 @@ class ModeleImportTaches implements FromArray, WithHeadings, WithStyles, WithEve
             $listes->getColumnDimension($lettre)->setAutoSize(true);
         }
 
-        $listes->getStyle('A1:C1')->getFont()->setBold(true);
+        $listes->getStyle('A1:D1')->getFont()->setBold(true);
     }
 
     /**
      * Menus deroulants sur les colonnes a referentiel.
      *
-     * Trois colonnes sont guidees : Projet (B), Statut (E) et Domaine (F).
-     * La validation est bloquante sur les referentiels stricts pour eviter
-     * les fautes d'orthographe silencieuses a l'import.
+     * Colonnes guidees : Projet (B), Statut (E), Assigné à (F) et Domaines (G).
      */
     private function poserMenus(Worksheet $feuille): void
     {
         $menus = [
-            'B' => ['liste' => $this->projets,    'colonne' => 'A', 'strict' => true,
+            'B' => ['liste' => $this->projets,        'colonne' => 'A', 'strict' => true,
                     'aide' => 'Choisissez un projet dans la liste, ou laissez vide.'],
-            'E' => ['liste' => $this->statuts,    'colonne' => 'C', 'strict' => true,
+            'E' => ['liste' => $this->statuts,        'colonne' => 'C', 'strict' => true,
                     'aide' => 'Choisissez un statut. Vide, la tâche sera « Incomplète ».'],
-            'F' => ['liste' => $this->categories, 'colonne' => 'B', 'strict' => true,
-                    'aide' => 'Choisissez un domaine dans la liste, ou laissez vide.'],
+            'F' => ['liste' => $this->collaborateurs, 'colonne' => 'D', 'strict' => false,
+                    'aide' => 'Choisissez un collaborateur dans la liste, ou laissez vide pour vous l’assigner.'],
+            'G' => ['liste' => $this->categories,     'colonne' => 'B', 'strict' => false,
+                    'aide' => 'Choisissez un domaine ou saisissez-en plusieurs séparés par des virgules (ex: Informatique, Finance).'],
         ];
 
         foreach ($menus as $cible => $menu) {
@@ -181,7 +200,7 @@ class ModeleImportTaches implements FromArray, WithHeadings, WithStyles, WithEve
             $validation->setPrompt($menu['aide']);
 
             /* Bloquant sur les referentiels stricts, simple aide sur les
-               collaborateurs. */
+               collaborateurs et domaines multiples. */
             $validation->setShowErrorMessage($menu['strict']);
             $validation->setErrorTitle(__('Valeur inconnue'));
             $validation->setError(__("Choisissez une valeur de la liste déroulante."));
@@ -196,5 +215,4 @@ class ModeleImportTaches implements FromArray, WithHeadings, WithStyles, WithEve
             );
         }
     }
-
 }

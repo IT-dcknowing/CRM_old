@@ -29,20 +29,26 @@
                     </div>
 
                     <div class="col-md-6 col-lg-6">
-                        <x-forms.label class="my-3" fieldId="category_id"
+                        <x-forms.label class="my-3" fieldId="task_category_id"
                                        :fieldLabel="__('modules.tasks.taskCategory')">
                         </x-forms.label>
                         <x-forms.input-group>
-                            <select class="form-control select-picker" name="category_id" id="task_category_id"
+                            @php
+                                $selectedCategories = [];
+                                if (!is_null($task)) {
+                                    $selectedCategories = $task->taskCategories->pluck('id')->toArray();
+                                    if (empty($selectedCategories) && $task->task_category_id) {
+                                        $selectedCategories = [$task->task_category_id];
+                                    }
+                                }
+                            @endphp
+                            <select class="form-control select-picker" multiple name="category_id[]" id="task_category_id"
                                     data-live-search="true" data-size="8">
-                                <option value="">--</option>
                                 @if ($viewTaskCategoryPermission == 'all' || $viewTaskCategoryPermission == 'added')
                                     @foreach ($categories as $category)
                                         <option
-                                            @if (!is_null($task) && $task->task_category_id == $category->id) selected
-                                            @endif value="{{ $category->id }}">{{ html_entity_decode($category->category_name) }}
+                                            @selected(in_array($category->id, $selectedCategories)) value="{{ $category->id }}">{{ html_entity_decode($category->category_name) }}
                                         </option>
-
                                     @endforeach
                                 @endif
                             </select>

@@ -79,7 +79,9 @@ trait RapportHebdomadaire
             ->where('tasks.company_id', company()->id)
             ->where(function ($q) use ($debut, $fin, $bouges) {
                 $q->whereBetween('tasks.completed_on', [$debut, $fin])
-                  ->orWhereBetween('tasks.due_date', [$debut, $fin]);
+                  ->orWhereBetween('tasks.due_date', [$debut, $fin])
+                  ->orWhereBetween('tasks.start_date', [$debut, $fin])
+                  ->orWhereBetween('tasks.updated_at', [$debut, $fin]);
 
                 if ($bouges) {
                     $q->orWhereIn('tasks.id', $bouges);
@@ -116,13 +118,18 @@ trait RapportHebdomadaire
         $ids = $this->tachesDeLaSemaine($debut, $fin, $limiteA);
 
         $vide = (object) [
-            'debut'         => $debut,
-            'fin'           => $fin,
-            'limiteA'       => $limiteA,
-            'semaineIso'    => $debut->format('o-\WW'),
-            'taches'        => collect(),
-            'collaborateurs' => collect(),
-            'synthese'      => (object) [
+            'debut'                   => $debut,
+            'fin'                     => $fin,
+            'limiteA'                 => $limiteA,
+            'semaineIso'              => $debut->format('o-\WW'),
+            'taches'                  => collect(),
+            'collaborateurs'          => collect(),
+            'collaborateursStandards' => collect(),
+            'stagiaires'              => collect(),
+            'services'                => collect(),
+            'clients'                 => collect(),
+            'echeancesSuivantes'      => collect(),
+            'synthese'                => (object) [
                 'total' => 0, 'termines' => 0, 'enCours' => 0, 'aFaire' => 0,
                 'incompletes' => 0, 'attente' => 0, 'retards' => 0,
                 'delaiMoyen' => null, 'delaisJuges' => 0,
@@ -188,7 +195,7 @@ trait RapportHebdomadaire
                 'reference' => $t->task_short_code,
                 'titre'     => $t->heading,
                 'client'    => $t->client,
-                'projet' => $t->project_name,
+                'projet'    => $t->project_name,
                 'projetId'  => $t->projet_id,
                 'debut'     => $t->start_date ? Carbon::parse($t->start_date) : null,
                 'echeance'  => $t->due_date ? Carbon::parse($t->due_date) : null,
@@ -205,22 +212,30 @@ trait RapportHebdomadaire
                 'delai'     => $delai,
                 'gens'      => $gens,
                 'maj'       => Carbon::parse($t->updated_at),
-                /* « En retard » n'est pas un statut du tableau : c'est une
-                   tache non achevee dont l'echeance est depassee. */
+                /* « En retard » n'est pas un statut du tableau : c'est un
+                   indicateur pour une tache non achevee dont l'echeance est depassee. */
                 'retard'    => $t->slug !== 'completed'
                                && $t->due_date
                                && Carbon::parse($t->due_date)->endOfDay()->lt($aujourdhui),
             ];
         });
 
+        $collaborateurs = $this->activiteParCollaborateur($lignes, $limiteA);
+        [$collaborateursStandards, $stagiaires] = $this->separationStagiaires($collaborateurs);
+
         return (object) [
-            'debut'          => $debut,
-            'fin'            => $fin,
-            'limiteA'        => $limiteA,
-            'semaineIso'     => $debut->format('o-\WW'),
-            'taches'         => $lignes,
-            'synthese'       => $this->syntheseHebdomadaire($lignes),
-            'collaborateurs' => $this->activiteParCollaborateur($lignes, $limiteA),
+            'debut'                   => $debut,
+            'fin'                     => $fin,
+            'limiteA'                 => $limiteA,
+            'semaineIso'              => $debut->format('o-\WW'),
+            'taches'                  => $lignes,
+            'synthese'                => $this->syntheseHebdomadaire($lignes),
+            'collaborateurs'          => $collaborateurs,
+            'collaborateursStandards' => $collaborateursStandards,
+            'stagiaires'              => $stagiaires,
+            'services'                => $this->activiteParService($lignes),
+            'clients'                 => $this->activiteParClient($lignes),
+            'echeancesSuivantes'      => $this->echeancesSemaineSuivante($fin, $limiteA),
         ];
     }
 
@@ -231,14 +246,23 @@ trait RapportHebdomadaire
 
         $gens = $lignes->flatMap(fn($t) => $t->gens->pluck('id'))->unique();
 
+        $termines    = $lignes->filter(fn($t) => in_array($t->slug, ['completed', 'terminee', 'terminée']) || mb_strtolower($t->statut ?? '') === 'terminée')->count();
+        $enCours     = $lignes->filter(fn($t) => in_array($t->slug, ['doing', 'in_progress', 'en_cours']) || mb_strtolower($t->statut ?? '') === 'en cours')->count();
+        $aFaire      = $lignes->filter(fn($t) => in_array($t->slug, ['to_do', 'a_faire', 'a-faire', 'todo']) || mb_strtolower($t->statut ?? '') === 'à faire')->count();
+        $incompletes = $lignes->filter(fn($t) => in_array($t->slug, ['incomplete', 'incomplète']) || mb_strtolower($t->statut ?? '') === 'incomplète')->count();
+        $attente     = $lignes->filter(fn($t) => in_array($t->slug, ['waiting_approval', 'en_attente']) || str_contains(mb_strtolower($t->statut ?? ''), 'attente'))->count();
+
+        // Le retard est un indicateur distinct et ne s'additionne JAMAIS une seconde fois au total des tâches
+        $retards     = $lignes->where('retard', true)->count();
+
         return (object) [
             'total'        => $lignes->count(),
-            'termines'     => $lignes->where('slug', 'completed')->count(),
-            'enCours'      => $lignes->where('slug', 'doing')->count(),
-            'aFaire'       => $lignes->where('slug', 'to_do')->count(),
-            'incompletes'  => $lignes->where('slug', 'incomplete')->count(),
-            'attente'      => $lignes->where('slug', 'waiting_approval')->count(),
-            'retards'      => $lignes->where('retard', true)->count(),
+            'termines'     => $termines,
+            'enCours'      => $enCours,
+            'aFaire'       => $aFaire,
+            'incompletes'  => $incompletes,
+            'attente'      => $attente,
+            'retards'      => $retards,
             'delaiMoyen'   => $delais->isNotEmpty() ? round($delais->avg(), 1) : null,
             'delaisJuges'  => $delais->count(),
             'pointeHeures' => $pointes->isNotEmpty() ? round($pointes->sum(), 1) : 0,
@@ -276,29 +300,57 @@ trait RapportHebdomadaire
            limite a une personne reste limite a elle. */
         foreach ($limiteA ? [] : $this->collaborateursActifs() as $u) {
             $par[$u->id] = (object) [
-                'id' => $u->id, 'nom' => $u->name,
-                'total' => 0, 'termines' => 0, 'enCours' => 0,
-                'aFaire' => 0, 'retards' => 0, 'delais' => [], 'pointe' => 0,
+                'id'          => $u->id,
+                'nom'         => $u->name,
+                'total'       => 0,
+                'termines'    => 0,
+                'enCours'     => 0,
+                'aFaire'      => 0,
+                'incompletes' => 0,
+                'attente'     => 0,
+                'retards'     => 0,
+                'delais'      => [],
+                'pointe'      => 0,
             ];
         }
 
         foreach ($lignes as $t) {
             foreach ($t->gens as $g) {
                 $par[$g->id] ??= (object) [
-                    'id' => $g->id, 'nom' => $g->nom,
-                    'total' => 0, 'termines' => 0, 'enCours' => 0,
-                    'aFaire' => 0, 'retards' => 0, 'delais' => [], 'pointe' => 0,
+                    'id'          => $g->id,
+                    'nom'         => $g->nom,
+                    'total'       => 0,
+                    'termines'    => 0,
+                    'enCours'     => 0,
+                    'aFaire'      => 0,
+                    'incompletes' => 0,
+                    'attente'     => 0,
+                    'retards'     => 0,
+                    'delais'      => [],
+                    'pointe'      => 0,
                 ];
 
                 $l = $par[$g->id];
+                // Chaque tâche n'est comptabilisée qu'une seule fois dans le total du collaborateur
                 $l->total++;
 
-                if ($t->slug === 'completed') { $l->termines++; }
-                if ($t->slug === 'doing')     { $l->enCours++; }
-                if ($t->slug === 'to_do')     { $l->aFaire++; }
-                if ($t->retard)               { $l->retards++; }
-                if ($t->delai !== null)       { $l->delais[] = $t->delai; }
-                if ($t->pointe !== null)      { $l->pointe += $t->pointe; }
+                $isDoing      = in_array($t->slug, ['doing', 'in_progress', 'en_cours']) || mb_strtolower($t->statut ?? '') === 'en cours';
+                $isCompleted  = in_array($t->slug, ['completed', 'terminee', 'terminée']) || mb_strtolower($t->statut ?? '') === 'terminée';
+                $isToDo       = in_array($t->slug, ['to_do', 'a_faire', 'a-faire', 'todo']) || mb_strtolower($t->statut ?? '') === 'à faire';
+                $isIncomplete = in_array($t->slug, ['incomplete', 'incomplète']) || mb_strtolower($t->statut ?? '') === 'incomplète';
+                $isWaiting    = in_array($t->slug, ['waiting_approval', 'en_attente']) || str_contains(mb_strtolower($t->statut ?? ''), 'attente');
+
+                if ($isCompleted)       { $l->termines++; }
+                elseif ($isDoing)       { $l->enCours++; }
+                elseif ($isToDo)        { $l->aFaire++; }
+                elseif ($isIncomplete)  { $l->incompletes++; }
+                elseif ($isWaiting)     { $l->attente++; }
+                else                    { $l->aFaire++; }
+
+                // Indicateur de retard distinct (ne modifie pas le total)
+                if ($t->retard)         { $l->retards++; }
+                if ($t->delai !== null) { $l->delais[] = $t->delai; }
+                if ($t->pointe !== null){ $l->pointe += $t->pointe; }
             }
         }
 
@@ -314,6 +366,215 @@ trait RapportHebdomadaire
             // Les plus actifs d'abord, puis par ordre alphabetique.
             ->sortBy([['total', 'desc'], ['nom', 'asc']])
             ->values();
+    }
+
+    /**
+     * Amélioration version suivante : Regroupement des tâches et résultats par service.
+     */
+    protected function activiteParService($lignes)
+    {
+        $services = DB::table('teams')
+            ->where('company_id', company()->id)
+            ->select('id', 'team_name')
+            ->get();
+
+        // Récupérer le service de chaque employé
+        $employesServices = DB::table('employee_details')
+            ->whereNotNull('department_id')
+            ->pluck('department_id', 'user_id');
+
+        $parService = [];
+        foreach ($services as $srv) {
+            $parService[$srv->id] = (object) [
+                'id'          => $srv->id,
+                'nom'         => $srv->team_name,
+                'total'       => 0,
+                'termines'    => 0,
+                'enCours'     => 0,
+                'aFaire'      => 0,
+                'incompletes' => 0,
+                'retards'     => 0,
+                'delais'      => [],
+            ];
+        }
+
+        $sansService = (object) [
+            'id'          => null,
+            'nom'         => __('Non rattaché'),
+            'total'       => 0,
+            'termines'    => 0,
+            'enCours'     => 0,
+            'aFaire'      => 0,
+            'incompletes' => 0,
+            'retards'     => 0,
+            'delais'      => [],
+        ];
+
+        foreach ($lignes as $t) {
+            $servicesTouches = [];
+            foreach ($t->gens as $g) {
+                $srvId = $employesServices[$g->id] ?? null;
+                if ($srvId && isset($parService[$srvId])) {
+                    $servicesTouches[$srvId] = $parService[$srvId];
+                }
+            }
+
+            if (empty($servicesTouches)) {
+                $servicesTouches['sans'] = $sansService;
+            }
+
+            foreach ($servicesTouches as $s) {
+                $s->total++;
+                if (in_array($t->slug, ['completed', 'terminee', 'terminée']))   { $s->termines++; }
+                elseif (in_array($t->slug, ['doing', 'in_progress', 'en_cours'])) { $s->enCours++; }
+                elseif (in_array($t->slug, ['to_do', 'a_faire', 'a-faire']))      { $s->aFaire++; }
+                elseif (in_array($t->slug, ['incomplete', 'incomplète']))         { $s->incompletes++; }
+                else                                                              { $s->aFaire++; }
+
+                if ($t->retard) { $s->retards++; }
+                if ($t->delai !== null) { $s->delais[] = $t->delai; }
+            }
+        }
+
+        $liste = collect(array_values($parService));
+        if ($sansService->total > 0) {
+            $liste->push($sansService);
+        }
+
+        return $liste->map(function ($s) {
+            $s->delaiMoyen = !empty($s->delais) ? round(array_sum($s->delais) / count($s->delais), 1) : null;
+            unset($s->delais);
+            return $s;
+        })->sortByDesc('total')->values();
+    }
+
+    /**
+     * Amélioration version suivante : Regroupement des tâches et de leur avancement par client.
+     */
+    protected function activiteParClient($lignes)
+    {
+        $parClient = [];
+
+        foreach ($lignes as $t) {
+            $nomClient = $t->client ?: __('Cabinet / Sans client');
+
+            if (!isset($parClient[$nomClient])) {
+                $parClient[$nomClient] = (object) [
+                    'nom'         => $nomClient,
+                    'total'       => 0,
+                    'termines'    => 0,
+                    'enCours'     => 0,
+                    'aFaire'      => 0,
+                    'incompletes' => 0,
+                    'retards'     => 0,
+                ];
+            }
+
+            $c = $parClient[$nomClient];
+            $c->total++;
+
+            if (in_array($t->slug, ['completed', 'terminee', 'terminée']))   { $c->termines++; }
+            elseif (in_array($t->slug, ['doing', 'in_progress', 'en_cours'])) { $c->enCours++; }
+            elseif (in_array($t->slug, ['to_do', 'a_faire', 'a-faire']))      { $c->aFaire++; }
+            elseif (in_array($t->slug, ['incomplete', 'incomplète']))         { $c->incompletes++; }
+            else                                                              { $c->aFaire++; }
+
+            if ($t->retard) { $c->retards++; }
+        }
+
+        return collect(array_values($parClient))->sortByDesc('total')->values();
+    }
+
+    /**
+     * Amélioration version suivante : Séparation des stagiaires des autres collaborateurs.
+     */
+    protected function separationStagiaires($collaborateurs): array
+    {
+        if ($collaborateurs->isEmpty()) {
+            return [collect(), collect()];
+        }
+
+        $collabIds = $collaborateurs->pluck('id')->all();
+
+        // Stagiaires identifiés par leur désignation ou leurs rôles
+        $designationsStagiaires = DB::table('designations')
+            ->where('company_id', company()->id)
+            ->whereRaw('LOWER(name) LIKE ?', ['%stagiaire%'])
+            ->pluck('id');
+
+        $usersParDesignation = DB::table('employee_details')
+            ->whereIn('user_id', $collabIds)
+            ->whereIn('designation_id', $designationsStagiaires)
+            ->pluck('user_id')
+            ->all();
+
+        $usersParRole = DB::table('role_user')
+            ->join('roles', 'roles.id', '=', 'role_user.role_id')
+            ->whereIn('role_user.user_id', $collabIds)
+            ->whereRaw('LOWER(roles.name) LIKE ?', ['%stagiaire%'])
+            ->pluck('role_user.user_id')
+            ->all();
+
+        $stagiairesIds = array_unique(array_merge($usersParDesignation, $usersParRole));
+
+        $stagiaires = $collaborateurs->filter(fn($c) => in_array($c->id, $stagiairesIds))->values();
+        $standards  = $collaborateurs->filter(fn($c) => !in_array($c->id, $stagiairesIds))->values();
+
+        return [
+            'employes'   => $standards,
+            'stagiaires' => $stagiaires,
+            0            => $standards,
+            1            => $stagiaires,
+        ];
+    }
+
+    /**
+     * Amélioration version suivante : Échéances prévues pendant la semaine suivante.
+     */
+    protected function echeancesSemaineSuivante(Carbon $finSemaine, ?int $limiteA = null)
+    {
+        $debutSuivante = $finSemaine->copy()->addSecond()->startOfDay();
+        $finSuivante   = $debutSuivante->copy()->endOfWeek(Carbon::SUNDAY);
+
+        $requete = DB::table('tasks')
+            ->leftJoin('taskboard_columns', 'taskboard_columns.id', '=', 'tasks.board_column_id')
+            ->leftJoin('projects', 'projects.id', '=', 'tasks.project_id')
+            ->leftJoin('users AS cli', 'cli.id', '=', 'projects.client_id')
+            ->whereNull('tasks.deleted_at')
+            ->where('tasks.company_id', company()->id)
+            ->whereBetween('tasks.due_date', [$debutSuivante, $finSuivante]);
+
+        if ($limiteA !== null) {
+            $requete->whereExists(function ($q) use ($limiteA) {
+                $q->select(DB::raw(1))
+                  ->from('task_users')
+                  ->whereColumn('task_users.task_id', 'tasks.id')
+                  ->where('task_users.user_id', $limiteA);
+            });
+        }
+
+        $taches = $requete->select(
+            'tasks.id', 'tasks.task_short_code AS reference', 'tasks.heading AS titre',
+            'tasks.due_date AS echeance', 'tasks.priority AS priorite',
+            'taskboard_columns.column_name AS statut', 'taskboard_columns.slug', 'taskboard_columns.label_color AS couleur',
+            'projects.project_name AS projet', 'cli.name AS client'
+        )->orderBy('tasks.due_date')->get();
+
+        $ids = $taches->pluck('id')->all();
+        $affectations = DB::table('task_users')
+            ->join('users', 'users.id', '=', 'task_users.user_id')
+            ->whereIn('task_users.task_id', $ids)
+            ->select('task_users.task_id', 'users.id', 'users.name')
+            ->get()
+            ->groupBy('task_id');
+
+        return $taches->map(function ($t) use ($affectations) {
+            $t->gens = ($affectations[$t->id] ?? collect())
+                ->map(fn($u) => (object) ['id' => $u->id, 'nom' => $u->name])
+                ->values();
+            $t->echeance = $t->echeance ? Carbon::parse($t->echeance) : null;
+            return $t;
+        });
     }
 
 }

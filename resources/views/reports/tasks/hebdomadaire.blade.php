@@ -37,6 +37,7 @@
                 $k->total ? round($k->termines / $k->total * 100) . ' % du total' : '—', 'ok', 'completed'],
             ['À faire', $k->aFaire, 'non démarrées', '', 'to_do'],
             ['En cours', $k->enCours, 'en traitement', '', 'doing'],
+            ['Incomplètes', $k->incompletes, 'à compléter', $k->incompletes > 0 ? 'warn' : '', 'incomplete'],
             ['En retard', $k->retards, 'échéance dépassée', $k->retards > 0 ? 'err' : '', 'retard'],
             ['En attente', $k->attente, "d'approbation", '', 'waiting_approval'],
             ['Délai moyen', $k->delaiMoyen ?? '—',
@@ -129,6 +130,7 @@
                         <th>@lang('Terminées')</th>
                         <th>@lang('En cours')</th>
                         <th>@lang('À faire')</th>
+                        <th>@lang('Incomplètes')</th>
                         <th>@lang('En retard')</th>
                         <th>@lang('Délai moyen')</th>
                         @if ($k->pointeTaches > 0)<th>@lang('Pointé')</th>@endif
@@ -140,6 +142,7 @@
                         <td><strong>{{ $c->nom }}</strong></td>
                         @foreach ([['tous', $c->total, ''], ['completed', $c->termines, ''],
                                    ['doing', $c->enCours, ''], ['to_do', $c->aFaire, ''],
+                                   ['incomplete', $c->incompletes, ''],
                                    ['retard', $c->retards, ' est-retard']] as [$slug, $val, $cls])
                             <td>
                                 <button type="button" class="dck-hebdo__cpt{{ $cls }}"

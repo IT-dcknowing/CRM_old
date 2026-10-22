@@ -591,7 +591,9 @@ class TaskBoardController extends AccountBaseController
                     ];
 
                     if ($changeDeColonne) {
-                        $donnees['completed_on'] = $board->slug == 'completed' ? now()->format('Y-m-d') : null;
+                        $estTerminee = ($board->slug === 'completed');
+                        $donnees['status'] = $estTerminee ? 'completed' : 'incomplete';
+                        $donnees['completed_on'] = $estTerminee ? now()->format('Y-m-d') : null;
                     }
 
                     $task->update($donnees);

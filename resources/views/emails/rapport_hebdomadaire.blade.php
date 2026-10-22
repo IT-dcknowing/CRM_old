@@ -83,6 +83,10 @@
                 <td style="padding:10px 14px;border-bottom:1px solid #e5e7eb;font-size:13px;font-weight:600;color:#111827;text-align:right;">{{ $rapport->synthese->aFaire }}</td>
             </tr>
             <tr>
+                <td style="padding:10px 14px;border-bottom:1px solid #e5e7eb;font-size:13px;color:#6b7280;">Tâches incomplètes</td>
+                <td style="padding:10px 14px;border-bottom:1px solid #e5e7eb;font-size:13px;font-weight:600;color:#111827;text-align:right;">{{ $rapport->synthese->incompletes }}</td>
+            </tr>
+            <tr>
                 <td style="padding:10px 14px;border-bottom:1px solid #e5e7eb;font-size:13px;color:#6b7280;">Collaborateurs actifs cette semaine</td>
                 <td style="padding:10px 14px;border-bottom:1px solid #e5e7eb;font-size:13px;font-weight:600;color:#111827;text-align:right;">{{ $rapport->synthese->gens }}</td>
             </tr>
@@ -121,7 +125,7 @@
     <tr><td style="padding:18px 28px;background:#f9fafb;border-top:1px solid #e5e7eb;border-bottom-left-radius:12px;border-bottom-right-radius:12px;">
         <table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
             <td style="font-size:11.5px;line-height:1.5;color:#9ca3af;">
-                Ce rapport automatisé est envoyé chaque vendredi aux administrateurs de {{ $company->company_name }}.
+                Ce rapport automatisé est envoyé chaque lundi matin (après clôture de la semaine) aux administrateurs de {{ $company->company_name }}.
             </td>
         </tr></table>
     </td></tr>

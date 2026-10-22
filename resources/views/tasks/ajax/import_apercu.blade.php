@@ -187,11 +187,20 @@
                                   title="{{ $l->description }}">{{ $l->description }}</textarea>
                     </td>
 
-                    {{-- 9. Assigné à (Fixe non éditable : utilisateur connecté) --}}
+                    {{-- 9. Assigné à (Select collaborateur / par défaut connecté) --}}
                     <td>
-                        <span class="badge badge-light border text-dark p-2 w-100 text-left font-weight-normal d-flex align-items-center" title="@lang('Assigné automatiquement à votre compte')" data-toggle="tooltip">
-                            <i class="fa fa-user-lock text-primary mr-1"></i> {{ user()->name }}
-                        </span>
+                        <select name="tasks[{{ $idx }}][user_id]" class="form-control form-control-sm field-assignee">
+                            <option value="{{ user()->id }}" @selected(empty($l->user_id) || $l->user_id == user()->id)>
+                                {{ user()->name }} (@lang('Moi-même'))
+                            </option>
+                            @foreach ($collaborateurs as $collab)
+                                @if ($collab->id !== user()->id)
+                                    <option value="{{ $collab->id }}" @selected(isset($l->user_id) && $l->user_id == $collab->id)>
+                                        {{ $collab->name }}
+                                    </option>
+                                @endif
+                            @endforeach
+                        </select>
                     </td>
 
                     {{-- 10. Actions (Supprimer de la liste temporaire) --}}
@@ -315,11 +324,20 @@
                           rows="1"></textarea>
             </td>
 
-            {{-- 9. Assigné à (Fixe non éditable : connecté) --}}
+            {{-- 9. Assigné à (Select collaborateur / par défaut connecté) --}}
             <td>
-                <span class="badge badge-light border text-dark p-2 w-100 text-left font-weight-normal d-flex align-items-center" title="@lang('Assigné automatiquement à votre compte')" data-toggle="tooltip">
-                    <i class="fa fa-user-lock text-primary mr-1"></i> {{ user()->name }}
-                </span>
+                <select name="tasks[__INDEX__][user_id]" class="form-control form-control-sm field-assignee">
+                    <option value="{{ user()->id }}" selected>
+                        {{ user()->name }} (@lang('Moi-même'))
+                    </option>
+                    @foreach ($collaborateurs as $collab)
+                        @if ($collab->id !== user()->id)
+                            <option value="{{ $collab->id }}">
+                                {{ $collab->name }}
+                            </option>
+                        @endif
+                    @endforeach
+                </select>
             </td>
 
             {{-- 10. Actions (Supprimer de la liste temporaire) --}}

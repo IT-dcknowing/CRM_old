@@ -228,6 +228,17 @@ class Task extends BaseModel
         return $this->belongsTo(TaskCategory::class , 'task_category_id');
     }
 
+    public function taskCategories(): BelongsToMany
+    {
+        return $this->belongsToMany(TaskCategory::class, 'task_task_category', 'task_id', 'task_category_id');
+    }
+
+    public function categories(): BelongsToMany
+    {
+        return $this->belongsToMany(TaskCategory::class, 'task_task_category', 'task_id', 'task_category_id');
+    }
+
+
     public function subtasks(): HasMany
     {
         return $this->hasMany(SubTask::class , 'task_id');

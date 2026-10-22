@@ -436,7 +436,16 @@ class ArchiveTasksDataTable extends BaseDataTable
         }
 
         if ($request->category_id != '' && $request->category_id != null && $request->category_id != 'all') {
-            $model->where('tasks.task_category_id', '=', $request->category_id);
+            $catId = $request->category_id;
+            $model->where(function ($q) use ($catId) {
+                $q->where('tasks.task_category_id', '=', $catId)
+                  ->orWhereExists(function ($sub) use ($catId) {
+                      $sub->select(DB::raw(1))
+                          ->from('task_task_category')
+                          ->whereColumn('task_task_category.task_id', 'tasks.id')
+                          ->where('task_task_category.task_category_id', $catId);
+                  });
+            });
         }
 
         if ($request->billable != '' && $request->billable != null && $request->billable != 'all') {

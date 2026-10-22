@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>TaskFlow Web — Bilan de Projet | LEADER WORLD PERFECT SARL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+/* ── RESET ─────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --navy:#070d1a; --dark:#0b1221; --mid:#0f1a30;
+  --blue:#2563eb; --blue-l:#3b82f6; --blue-ll:#93c5fd;
+  --teal:#0891b2; --teal-l:#22d3ee;
+  --green:#059669; --green-l:#34d399;
+  --amber:#d97706; --amber-l:#fbbf24;
+  --red:#dc2626; --red-l:#f87171;
+  --purple:#7c3aed; --purple-l:#a78bfa;
+  --slate:#475569; --text1:#f1f5f9; --text2:#94a3b8; --text3:#475569;
+  --border:rgba(255,255,255,.07); --glass:rgba(255,255,255,.03);
+  --glass2:rgba(255,255,255,.06); --r:14px; --dur:.5s;
+}
+html,body{height:100%;font-family:'Inter',sans-serif;background:var(--navy);color:var(--text1);overflow:hidden;-webkit-font-smoothing:antialiased;}
+
+/* ── BG ─────────────────────────────────────────── */
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+.orb{position:absolute;border-radius:50%;filter:blur(120px);opacity:.13;animation:fo 16s ease-in-out infinite alternate;}
+.o1{width:700px;height:700px;background:var(--blue);top:-250px;left:-200px;}
+.o2{width:550px;height:550px;background:var(--teal);bottom:-200px;right:-150px;animation-delay:-7s;}
+.o3{width:400px;height:400px;background:var(--purple);top:35%;left:45%;animation-delay:-12s;}
+@keyframes fo{0%{transform:translate(0,0) scale(1);}100%{transform:translate(50px,35px) scale(1.1);}}
+.grid{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(59,130,246,.03) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(59,130,246,.03) 1px,transparent 1px);
+  background-size:56px 56px;}
+
+/* ── PROGRESS ───────────────────────────────────── */
+#pbar{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--blue-l),var(--teal-l));z-index:300;transition:width var(--dur) cubic-bezier(.4,0,.2,1);border-radius:0 2px 2px 0;}
+
+/* ── TOP HUD ────────────────────────────────────── */
+#hud{position:fixed;top:0;left:0;right:0;height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:rgba(7,13,26,.7);border-bottom:1px solid var(--border);backdrop-filter:blur(16px);z-index:200;}
+.hud-brand{font-size:.72rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text3);}
+.hud-brand span{color:var(--blue-ll);}
+#hud-ctr{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--text3);}
+.hud-actions{display:flex;gap:8px;}
+.hud-btn{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:var(--glass);color:var(--text2);font-size:.8rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;}
+.hud-btn:hover{background:var(--blue-l);color:#fff;border-color:var(--blue-l);}
+
+/* ── SLIDES ─────────────────────────────────────── */
+#deck{position:fixed;inset:0;top:44px;bottom:64px;overflow:hidden;z-index:1;}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:32px 56px;opacity:0;pointer-events:none;transform:translateX(64px);transition:opacity var(--dur) cubic-bezier(.4,0,.2,1),transform var(--dur) cubic-bezier(.4,0,.2,1);}
+.slide.active{opacity:1;pointer-events:all;transform:translateX(0);}
+.slide.out{opacity:0;transform:translateX(-64px);}
+.si{width:100%;max-width:1180px;margin:0 auto;}
+
+/* ── LABELS ─────────────────────────────────────── */
+.chip{display:inline-flex;align-items:center;gap:7px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:5px 14px;border-radius:100px;border:1px solid var(--border);background:var(--glass);color:var(--blue-ll);margin-bottom:20px;}
+.chip .dot{width:5px;height:5px;background:var(--blue-l);border-radius:50%;animation:pu 2s infinite;}
+@keyframes pu{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+/* ── TITLE / SUB ─────────────────────────────────── */
+.stitle{font-size:clamp(1.8rem,3.5vw,3rem);font-weight:800;line-height:1.1;margin-bottom:10px;background:linear-gradient(130deg,#f1f5f9 30%,var(--blue-ll));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.ssub{font-size:clamp(.85rem,1.3vw,1.05rem);color:var(--text2);margin-bottom:22px;line-height:1.6;max-width:700px;}
+
+/* ── GRID HELPERS ───────────────────────────────── */
+.g{display:grid;gap:12px;}
+.g2{grid-template-columns:repeat(2,1fr);}
+.g3{grid-template-columns:repeat(3,1fr);}
+.g4{grid-template-columns:repeat(4,1fr);}
+.g21{grid-template-columns:2fr 1fr;}
+.g12{grid-template-columns:1fr 2fr;}
+
+/* ── CARDS ───────────────────────────────────────── */
+.card{background:var(--glass);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;transition:.2s;}
+.card:hover{background:var(--glass2);transform:translateY(-2px);}
+.ci{font-size:1.3rem;margin-bottom:7px;}
+.ct{font-size:.85rem;font-weight:700;color:var(--text1);margin-bottom:5px;}
+.cx{font-size:.78rem;color:var(--text2);line-height:1.6;}
+.card.b-bl{border-color:rgba(59,130,246,.3);}
+.card.b-te{border-color:rgba(8,145,178,.3);}
+.card.b-gr{border-color:rgba(5,150,105,.3);}
+.card.b-am{border-color:rgba(217,119,6,.3);}
+.card.b-re{border-color:rgba(220,38,38,.3);}
+.card.b-pu{border-color:rgba(124,58,237,.3);}
+
+/* ── STATUS TAGS ─────────────────────────────────── */
+.st{display:inline-flex;align-items:center;gap:5px;font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:100px;border:1px solid;white-space:nowrap;}
+.st.ok {background:rgba(5,150,105,.12);border-color:rgba(52,211,153,.35);color:#6ee7b7;}
+.st.warn{background:rgba(217,119,6,.12);border-color:rgba(251,191,36,.35);color:#fcd34d;}
+.st.fix {background:rgba(124,58,237,.12);border-color:rgba(167,139,250,.35);color:#c4b5fd;}
+.st.no  {background:rgba(220,38,38,.12);border-color:rgba(248,113,113,.35);color:#fca5a5;}
+.st.chk {background:rgba(8,145,178,.12);border-color:rgba(34,211,238,.35);color:#67e8f9;}
+
+/* ── ICON LIST ───────────────────────────────────── */
+ul.il{list-style:none;display:flex;flex-direction:column;gap:8px;}
+ul.il li{display:flex;align-items:flex-start;gap:10px;font-size:.8rem;color:var(--text2);line-height:1.5;}
+.ico{flex-shrink:0;width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:.72rem;margin-top:1px;}
+.ico.gr{background:rgba(5,150,105,.15);color:#6ee7b7;}
+.ico.am{background:rgba(217,119,6,.15);color:#fcd34d;}
+.ico.re{background:rgba(220,38,38,.15);color:#fca5a5;}
+.ico.bl{background:rgba(59,130,246,.15);color:var(--blue-ll);}
+.ico.te{background:rgba(8,145,178,.15);color:#67e8f9;}
+.ico.pu{background:rgba(124,58,237,.15);color:#c4b5fd;}
+
+/* ── STAT ────────────────────────────────────────── */
+.sv{font-size:2rem;font-weight:900;line-height:1;margin-bottom:5px;background:linear-gradient(135deg,var(--blue-ll),var(--teal-l));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.sl{font-size:.7rem;color:var(--text2);text-transform:uppercase;letter-spacing:1px;font-weight:500;}
+
+/* ── BA TABLE ────────────────────────────────────── */
+.ba{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:0;}
+.ba-col{border-radius:var(--r);padding:18px 20px;}
+.ba-be{background:rgba(220,38,38,.06);border:1px solid rgba(248,113,113,.2);}
+.ba-af{background:rgba(5,150,105,.06);border:1px solid rgba(52,211,153,.2);}
+.ba-lbl{font-size:.68rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;}
+.ba-be .ba-lbl{color:#fca5a5;}
+.ba-af .ba-lbl{color:#6ee7b7;}
+.ba-arrow{font-size:1.3rem;color:var(--blue-ll);padding:0 16px;text-align:center;}
+
+/* ── HERO ─────────────────────────────────────────── */
+.h-logo{font-size:3.5rem;margin-bottom:14px;animation:dI .65s cubic-bezier(.34,1.56,.64,1) both;}
+@keyframes dI{from{opacity:0;transform:scale(.3) rotate(-15deg);}}
+.h-title{font-size:clamp(2.5rem,4.5vw,4rem);font-weight:900;text-align:center;background:linear-gradient(135deg,#fff 0%,var(--blue-ll) 55%,var(--teal-l) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.05;margin-bottom:12px;animation:fU .55s .15s both;}
+@keyframes fU{from{opacity:0;transform:translateY(18px);}}
+.h-sub{font-size:1rem;color:var(--text2);text-align:center;max-width:560px;line-height:1.65;margin-bottom:24px;animation:fU .55s .3s both;}
+.h-tags{display:flex;flex-wrap:wrap;justify-content:center;gap:9px;animation:fU .55s .45s both;}
+.tag{display:inline-flex;align-items:center;gap:5px;font-size:.73rem;font-weight:600;padding:4px 12px;border-radius:100px;border:1px solid;}
+.tag.bl{background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.35);color:var(--blue-ll);}
+.tag.te{background:rgba(8,145,178,.1);border-color:rgba(8,145,178,.35);color:var(--teal-l);}
+.tag.gr{background:rgba(5,150,105,.1);border-color:rgba(5,150,105,.35);color:var(--green-l);}
+.tag.am{background:rgba(217,119,6,.1);border-color:rgba(217,119,6,.35);color:var(--amber-l);}
+.tag.pu{background:rgba(124,58,237,.1);border-color:rgba(124,58,237,.35);color:var(--purple-l);}
+.tag.re{background:rgba(220,38,38,.1);border-color:rgba(220,38,38,.35);color:var(--red-l);}
+
+/* ── MODULE FLOW ─────────────────────────────────── */
+.flow{display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap;margin:18px 0;}
+.flow-item{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 20px;background:var(--glass);border:1px solid var(--border);border-radius:10px;min-width:110px;}
+.flow-item.active{background:rgba(37,99,235,.12);border-color:rgba(59,130,246,.4);}
+.flow-item.removed{background:rgba(220,38,38,.06);border-color:rgba(248,113,113,.25);opacity:.5;}
+.flow-icon{font-size:1.4rem;}
+.flow-lbl{font-size:.72rem;font-weight:600;color:var(--text2);}
+.flow-item.active .flow-lbl{color:var(--blue-ll);}
+.flow-sep{font-size:1.1rem;color:var(--text3);padding:0 6px;}
+
+/* ── DIVIDER ─────────────────────────────────────── */
+.div{height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);margin:16px 0;}
+
+/* ── SECTION HDR ─────────────────────────────────── */
+.sh{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+.sh-ico{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+.sh-ico.bl{background:rgba(59,130,246,.15);}
+.sh-ico.gr{background:rgba(5,150,105,.15);}
+.sh-ico.am{background:rgba(217,119,6,.15);}
+.sh-ico.re{background:rgba(220,38,38,.15);}
+.sh-ico.pu{background:rgba(124,58,237,.15);}
+.sh-ico.te{background:rgba(8,145,178,.15);}
+
+/* ── STATUS TABLE ────────────────────────────────── */
+.stable{width:100%;border-collapse:collapse;font-size:.78rem;}
+.stable thead th{text-align:left;padding:8px 12px;font-size:.68rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border);}
+.stable tbody td{padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.04);color:var(--text2);}
+.stable tbody td:first-child{color:var(--text1);font-weight:500;}
+.stable tbody tr:last-child td{border-bottom:none;}
+.stable tbody tr:hover td{background:var(--glass);}
+
+/* ── SCREENSHOT PLACEHOLDER ──────────────────────── */
+.scr-ph{border:1.5px dashed rgba(59,130,246,.25);border-radius:var(--r);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:rgba(59,130,246,.04);color:var(--text3);font-size:.75rem;font-weight:500;text-align:center;padding:16px;min-height:120px;}
+.scr-ph .ph-icon{font-size:1.8rem;opacity:.5;}
+
+/* ── NAV ─────────────────────────────────────────── */
+#nav{position:fixed;bottom:0;left:0;right:0;height:64px;display:flex;align-items:center;justify-content:center;gap:14px;background:rgba(7,13,26,.8);border-top:1px solid var(--border);backdrop-filter:blur(16px);z-index:200;}
+.nbtn{width:38px;height:38px;border-radius:50%;border:1px solid var(--border);background:var(--glass);color:var(--text1);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;}
+.nbtn:hover:not(:disabled){background:var(--blue-l);border-color:var(--blue-l);transform:scale(1.08);}
+.nbtn:disabled{opacity:.3;cursor:not-allowed;}
+#dots{display:flex;gap:5px;align-items:center;}
+.di{width:6px;height:6px;border-radius:3px;background:var(--text3);transition:.3s;cursor:pointer;}
+.di.on{width:20px;background:var(--blue-l);}
+#ctr{font-family:'JetBrains Mono',monospace;font-size:.75rem;color:var(--text3);min-width:48px;text-align:center;}
+
+/* ── NOTES ───────────────────────────────────────── */
+#np{position:fixed;bottom:80px;right:20px;width:290px;background:rgba(7,13,26,.97);border:1px solid var(--border);border-radius:var(--r);padding:16px;z-index:200;display:none;box-shadow:0 8px 40px rgba(0,0,0,.6);}
+#np.on{display:block;}
+#np-h{font-size:.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue-ll);margin-bottom:8px;}
+#np-t{font-size:.77rem;color:var(--text2);line-height:1.6;}
+
+/* ── RESPONSIVE ──────────────────────────────────── */
+@media(max-width:900px){.slide{padding:24px 20px;}.g3{grid-template-columns:repeat(2,1fr);}.g4{grid-template-columns:repeat(2,1fr);}.ba{grid-template-columns:1fr;}.ba-arrow{display:none;}.g21,.g12{grid-template-columns:1fr;}}
+@media(max-width:600px){.g2{grid-template-columns:1fr;}}
+code{font-family:'JetBrains Mono',monospace;font-size:.8em;color:var(--blue-ll);}
+</style>
+</head>
+<body>
+
+<!-- BG -->
+<div class="bg"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+<div class="grid"></div>
+
+<!-- PROGRESS -->
+<div id="pbar"></div>
+
+<!-- TOP HUD -->
+<div id="hud">
+  <div class="hud-brand"><span>TaskFlow Web</span> &nbsp;—&nbsp; Bilan de projet · LWP SARL</div>
+  <div id="hud-ctr">01 / 09</div>
+  <div class="hud-actions">
+    <button class="hud-btn" id="note-btn" title="Notes orales (N)">🎤</button>
+    <button class="hud-btn" id="fs-btn" title="Plein écran (F)">⛶</button>
+  </div>
+</div>
+
+<!-- NOTES PANEL -->
+<div id="np"><div id="np-h">🎤 Notes orales</div><div id="np-t"></div></div>
+
+<!-- DECK -->
+<div id="deck">
+
+<!-- ═══ SLIDE 1 — TITRE ═══ -->
+<div class="slide active"
+     data-note="Bonjour à tous. Je vous présente aujourd'hui le bilan du projet TaskFlow Web, mené au sein de LEADER WORLD PERFECT SARL. L'objectif de ce bilan n'est pas de faire une vitrine de l'application, mais de dresser un état honnête et factuel : ce qui fonctionne, ce qui reste à stabiliser, et la direction que nous souhaitons donner pour 2027.">
+<div class="si" style="display:flex;flex-direction:column;align-items:center;text-align:center;">
+  <div class="h-logo">⚡</div>
+  <div class="h-title">TaskFlow Web</div>
+  <p class="h-sub">Bilan de projet — Application interne de gestion et de suivi de l'activité professionnelle<br><strong style="color:var(--text1);">LEADER WORLD PERFECT SARL</strong></p>
+  <div class="h-tags">
+    <span class="tag bl">Laravel · PHP</span>
+    <span class="tag te">MySQL</span>
+    <span class="tag gr">Blade · AJAX</span>
+    <span class="tag am">Application interne</span>
+    <span class="tag pu">Refonte fonctionnelle</span>
+  </div>
+  <div class="div" style="margin-top:28px;width:100%;"></div>
+  <p style="font-size:.75rem;color:var(--text3);">Bilan présenté à la direction · Octobre 2026</p>
+</div>
+</div>
+
+<!-- ═══ SLIDE 2 — POINT DE DÉPART ═══ -->
+<div class="slide"
+     data-note="Pour comprendre l'évolution de TaskFlow, il faut rappeler d'où il partait. L'application initiale était dense, avec de nombreux modules dont certains n'étaient pas ou peu utilisés. Cette complexité rendait l'application difficile à maintenir et peu adaptée aux besoins concrets de l'entreprise. La question qui s'est posée : faut-il continuer à accumuler des fonctionnalités, ou recentrer l'application sur ce qui est réellement utile ?">
+<div class="si">
+  <div class="chip"><span class="dot"></span>Slide 02 — Point de départ</div>
+  <h1 class="stitle">D'où partait TaskFlow ?</h1>
+  <p class="ssub">Un système riche mais trop complexe, difficile à maintenir et partiellement adapté aux besoins réels de l'entreprise.</p>
+
+  <div class="g g2">
+    <div class="card b-re">
+      <div class="ci">🗂️</div>
+      <div class="ct">Trop de modules, trop peu utilisés</div>
+      <div class="cx">L'application comportait de nombreux modules dont certains n'avaient pas de valeur opérationnelle réelle pour l'entreprise — et alourdissaient l'interface.</div>
+    </div>
+    <div class="card b-am">
+      <div class="ci">🔀</div>
+      <div class="ct">Module Diligences inadapté</div>
+      <div class="cx">La logique "Diligences" n'était pas suffisamment alignée avec les flux de travail réels. Elle devait évoluer vers une logique de gestion de Projets plus cohérente.</div>
+    </div>
+    <div class="card b-am">
+      <div class="ci">🔐</div>
+      <div class="ct">Gestion des droits à affiner</div>
+      <div class="cx">Certains affichages et accès n'étaient pas suffisamment adaptés aux différents profils utilisateurs de l'entreprise.</div>
+    </div>
+    <div class="card b-re">
+      <div class="ci">⚠️</div>
+      <div class="ct">Anomalies techniques connues</div>
+      <div class="cx">Des erreurs techniques (notamment erreur HTTP 500 sur la consultation des tâches) affectaient la fiabilité perçue de l'application.</div>
+    </div>
+  </div>
+
+  <div class="div"></div>
+  <div class="card" style="text-align:center;padding:14px;">
+    <p style="font-size:.82rem;color:var(--text2);">💡 <strong style="color:var(--text1);">Décision prise :</strong> plutôt qu'ajouter des fonctionnalités, recentrer l'application sur les besoins réels, supprimer ce qui n'est plus utile, et stabiliser ce qui existe.</p>
+  </div>
+</div>
+</div>
+
+<!-- ═══ SLIDE 3 — REFONTE ═══ -->
+<div class="slide"
+     data-note="La refonte est l'un des travaux les plus structurants de cette période. Nous n'avons pas simplement ajouté des fonctionnalités : nous avons revu l'organisation de l'application. Certains modules ont été supprimés ou écartés. La logique Diligences a évolué vers une logique Projets. Le résultat est une application plus lisible, plus maintenable, et mieux alignée avec les vrais besoins de LEADER WORLD PERFECT SARL.">
+<div class="si">
+  <div class="chip"><span class="dot"></span>Slide 03 — Refonte</div>
+  <h1 class="stitle">La refonte : simplifier pour mieux servir</h1>
+  <p class="ssub">Suppression des modules inutiles · Recentrage sur les fonctionnalités à valeur ajoutée · Évolution vers une logique Projets.</p>
+
+  <div style="margin-bottom:20px;">
+    <p style="font-size:.8rem;color:var(--text3);margin-bottom:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">Nouvelle organisation de TaskFlow Web</p>
+    <div class="flow">
+      <div class="flow-item active"><div class="flow-icon">👥</div><div class="flow-lbl">Employés</div></div>
+      <div class="flow-sep">→</div>
+      <div class="flow-item active"><div class="flow-icon">🤝</div><div class="flow-lbl">Clients</div></div>
+      <div class="flow-sep">→</div>
+      <div class="flow-item active"><div class="flow-icon">📁</div><div class="flow-lbl">Projets</div></div>
+      <div class="flow-sep">→</div>
+      <div class="flow-item active"><div class="flow-icon">✅</div><div class="flow-lbl">Tâches</div></div>
+      <div class="flow-sep">→</div>
+      <div class="flow-item active"><div class="flow-icon">📄</div><div class="flow-lbl">Contrats</div></div>
+    </div>
+  </div>
+
+  <div class="g g3">
+    <div class="card b-gr">
+      <div class="ci">✂️</div>
+      <div class="ct">Rationalisation</div>
+      <div class="cx">Suppression des modules non essentiels. L'interface est plus claire, plus rapide à prendre en main et plus simple à maintenir.</div>
+    </div>
+    <div class="card b-bl">
+      <div class="ci">🎯</div>
+      <div class="ct">Recentrage métier</div>
+      <div class="cx">Focalisation sur Employés → Clients → Projets → Tâches → Contrats : le cœur opérationnel de l'entreprise.</div>
+    </div>
+    <div class="card b-pu">
+      <div class="ci">🔄</div>
+      <div class="ct">Diligences → Projets</div>
+      <div class="cx">L'ancienne logique Diligences a été repensée et réorientée vers une gestion de Projets, plus cohérente avec les flux réels de l'entreprise.</div>
+    </div>
+  </div>
+
+  <div class="div"></div>
+  <div class="card" style="padding:12px 18px;">
+    <p style="font-size:.8rem;color:var(--text2);">🏗️ <strong style="color:var(--text1);">Bénéfice structurel :</strong> une base applicative plus cohérente facilite les évolutions futures, réduit les risques d'anomalie et améliore l'expérience utilisateur globale.</p>
+  </div>
+</div>
+</div>
+
+<!-- ═══ SLIDE 4 — AMÉLIORATIONS ═══ -->
+<div class="slide"
+     data-note="En parallèle de la refonte, de nombreuses améliorations fonctionnelles et techniques ont été réalisées. Côté fonctionnel : meilleure gestion des tâches, importation Excel, droits et profils, documents, notifications. Côté technique : les requêtes SQL ont été optimisées, ce qui améliore les temps de réponse et prépare l'application à une charge plus importante. Et les anomalies identifiées ont été corrigées.">
+<div class="si">
+  <div class="chip"><span class="dot"></span>Slide 04 — Améliorations</div>
+  <h1 class="stitle">Ce qui a été amélioré</h1>
+  <p class="ssub">Améliorations fonctionnelles, corrections d'anomalies et optimisations techniques réalisées au cours de cette période.</p>
+
+  <div class="g g21" style="align-items:start;">
+    <div class="g" style="gap:10px;">
+      <p style="font-size:.7rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:2px;">Fonctionnel</p>
+      <ul class="il">
+        <li><span class="ico gr">✓</span>Refonte et simplification de l'application</li>
+        <li><span class="ico gr">✓</span>Suppression des modules non essentiels</li>
+        <li><span class="ico gr">✓</span>Évolution Diligences → Projets</li>
+        <li><span class="ico gr">✓</span>Amélioration de la gestion et du suivi des tâches</li>
+        <li><span class="ico gr">✓</span>Importation de tâches depuis Excel (XLSX / CSV)</li>
+        <li><span class="ico gr">✓</span>Amélioration de la gestion des profils et droits</li>
+        <li><span class="ico gr">✓</span>Amélioration de la gestion des documents associés</li>
+        <li><span class="ico gr">✓</span>Amélioration des notifications e-mail</li>
+        <li><span class="ico gr">✓</span>Corrections issues des tests et de l'usage réel</li>
+      </ul>
+    </div>
+    <div>
+      <p style="font-size:.7rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:10px;">Technique</p>
+      <div class="card b-te" style="margin-bottom:10px;">
+        <div class="ci">⚙️</div>
+        <div class="ct">Optimisation des requêtes SQL</div>
+        <div class="cx" style="margin-bottom:10px;">Amélioration ciblée des accès à la base de données pour réduire les traitements inutiles et améliorer la réactivité de l'application.</div>
+        <ul class="il" style="margin-top:4px;">
+          <li><span class="ico te">→</span>Réduction des requêtes redondantes</li>
+          <li><span class="ico te">→</span>Meilleure gestion des chargements (eager loading)</li>
+          <li><span class="ico te">→</span>Application des droits au niveau requête (non plus côté affichage)</li>
+          <li><span class="ico te">→</span>Préparation à une utilisation plus importante</li>
+        </ul>
+      </div>
+      <div class="card b-bl">
+        <div class="ci">🐛</div>
+        <div class="ct">Correction d'anomalies critiques</div>
+        <ul class="il" style="margin-top:6px;">
+          <li><span class="ico bl">✓</span>Correction erreur HTTP 500 (vue Blade)</li>
+          <li><span class="ico bl">✓</span>Sécurisation du contrôleur de tâches</li>
+          <li><span class="ico bl">✓</span>Codes HTTP 403/404 propres sans crash</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══ SLIDE 5 — ÉTAT ACTUEL ═══ -->
+<div class="slide"
+     data-note="Voici l'état actuel de TaskFlow Web, tel qu'il est réellement — sans embellir et sans minimiser. Le cœur de l'application est fonctionnel : gestion des utilisateurs, des rôles, des tâches, des clients, des projets, des contrats et des notifications e-mail. Certains points sont opérationnels avec réserves, notamment les contrats, l'import Excel et la transition Projets. D'autres restent à vérifier ou à améliorer.">
+<div class="si">
+  <div class="chip"><span class="dot"></span>Slide 05 — État actuel</div>
+  <h1 class="stitle">État actuel de TaskFlow Web</h1>
+  <p class="ssub">Diagnostic factuel module par module — octobre 2026.</p>
+
+  <table class="stable">
+    <thead><tr>
+      <th>Module / Fonctionnalité</th>
+      <th>Statut</th>
+      <th>Observations</th>
+    </tr></thead>
+    <tbody>
+      <tr><td>Gestion des utilisateurs</td><td><span class="st ok">✅ Fonctionnel</span></td><td>Création, modification, activation/désactivation opérationnelles.</td></tr>
+      <tr><td>Gestion des rôles &amp; droits</td><td><span class="st ok">✅ Fonctionnel</span></td><td>Matrice de permissions par rôle opérationnelle. Affichage selon profil à harmoniser.</td></tr>
+      <tr><td>Gestion des tâches</td><td><span class="st ok">✅ Fonctionnel</span></td><td>Création, attribution, statuts, priorités, sous-tâches, commentaires, fichiers.</td></tr>
+      <tr><td>Attribution &amp; suivi des tâches</td><td><span class="st ok">✅ Fonctionnel</span></td><td>Attribution multi-utilisateurs, suivi d'avancement, tableau de bord tâches.</td></tr>
+      <tr><td>Gestion des clients</td><td><span class="st ok">✅ Fonctionnel</span></td><td>Création, consultation, association aux projets et contrats.</td></tr>
+      <tr><td>Gestion des projets</td><td><span class="st warn">⚠️ Fonct. avec réserves</span></td><td>Fonctionnel. Transition Diligences → Projets en cours de stabilisation.</td></tr>
+      <tr><td>Gestion des contrats</td><td><span class="st warn">⚠️ Fonct. avec réserves</span></td><td>Présent et utilisable. Points à corriger : création, affichage détail, gestion documents.</td></tr>
+      <tr><td>Importation Excel (tâches)</td><td><span class="st warn">⚠️ Fonct. avec réserves</span></td><td>Mécanisme en place (XLSX/CSV). Fiabilisation des données importées en cours.</td></tr>
+      <tr><td>Notifications e-mail</td><td><span class="st ok">✅ Fonctionnel</span></td><td>Envoi e-mail sur les événements concernés opérationnel.</td></tr>
+      <tr><td>Recherche transversale</td><td><span class="st fix">🔧 À améliorer</span></td><td>Fonctionne sur tâches, projets, clients, contrats. Performances à optimiser.</td></tr>
+      <tr><td>Profils &amp; affichages selon rôle</td><td><span class="st fix">🔧 À harmoniser</span></td><td>Certains affichages doivent encore être ajustés selon les profils utilisateurs.</td></tr>
+      <tr><td>Notifications SMS / WhatsApp</td><td><span class="st no">❌ Non disponible</span></td><td>Services/API non configurés. Non présentés comme opérationnels.</td></tr>
+    </tbody>
+  </table>
+</div>
+</div>
+
+<!-- ═══ SLIDE 6 — POINTS À AMÉLIORER ═══ -->
+<div class="slide"
+     data-note="Ce slide est important : il faut nommer précisément ce qui reste à améliorer, et ne pas rester dans le vague. Les contrats présentent des problèmes identifiés à la création, dans l'affichage du détail, et lors de la gestion des documents. Le module Projets est en cours de stabilisation après la transition Diligences. L'import Excel doit être fiabilisé. La recherche et la gestion des droits selon les profils nécessitent des ajustements. Enfin, les fonctionnalités récemment modifiées doivent encore être testées.">
+<div class="si">
+  <div class="chip"><span class="dot"></span>Slide 06 — Points à améliorer</div>
+  <h1 class="stitle">Ce qui reste à corriger &amp; améliorer</h1>
+  <p class="ssub">Points identifiés précisément — ni minimisés, ni exagérés.</p>
+
+  <div class="g g2" style="margin-bottom:12px;">
+    <div class="card b-am">
+      <div class="sh"><div class="sh-ico am">📄</div><div><div class="ct">Contrats</div></div></div>
+      <ul class="il">
+        <li><span class="ico am">!</span>Problèmes identifiés lors de la création de certains contrats</li>
+        <li><span class="ico am">!</span>Anomalies possibles sur l'affichage du détail d'un contrat</li>
+        <li><span class="ico am">!</span>Problèmes potentiels lors du téléchargement ou de la gestion des documents associés</li>
+      </ul>
+    </div>
+    <div class="card b-pu">
+      <div class="sh"><div class="sh-ico pu">📁</div><div><div class="ct">Projets</div></div></div>
+      <ul class="il">
+        <li><span class="ico pu">!</span>Certains traitements du module Projets doivent encore être affinés</li>
+        <li><span class="ico pu">!</span>La transition de la logique Diligences vers Projets doit continuer à être stabilisée</li>
+      </ul>
+    </div>
+    <div class="card b-te">
+      <div class="sh"><div class="sh-ico te">📥</div><div><div class="ct">Importation Excel</div></div></div>
+      <ul class="il">
+        <li><span class="ico te">!</span>Le processus d'importation doit encore être fiabilisé</li>
+        <li><span class="ico te">!</span>Certains ajustements nécessaires sur le traitement des données importées</li>
+      </ul>
+    </div>
+    <div class="card b-bl">
+      <div class="sh"><div class="sh-ico bl">🔍</div><div><div class="ct">Recherche &amp; Droits/Profils</div></div></div>
+      <ul class="il">
+        <li><span class="ico bl">!</span>Performances de recherche à optimiser pour un accès plus rapide</li>
+        <li><span class="ico bl">!</span>Certains affichages à harmoniser selon les rôles utilisateurs</li>
+        <li><span class="ico bl">!</span>Chaque profil doit accéder exactement aux fonctionnalités qui lui sont destinées</li>
+      </ul>
+    </div>
+  </div>
+  <div class="card" style="padding:12px 18px;">
+    <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;">
+      <div style="flex:1;min-width:200px;">
+        <div class="ct" style="margin-bottom:6px;">🔁 Stabilité générale</div>
+        <div class="cx">Les fonctionnalités récemment modifiées doivent continuer à être testées pour identifier et corriger les anomalies restantes.</div>
+      </div>
+      <div style="flex:1;min-width:200px;">
+        <div class="ct" style="margin-bottom:6px;">📵 Notifications externes</div>
+        <div class="cx">Les notifications e-mail sont <span class="st ok" style="font-size:.7rem;">✅ Fonctionnelles</span>. Les SMS/WhatsApp sont <span class="st no" style="font-size:.7rem;">❌ Non disponibles</span> — configuration API manquante.</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══ SLIDE 7 — BILAN ═══ -->
+<div class="slide"
+     data-note="Le bilan global de cette période est positif, malgré les points qui restent à corriger. L'évolution de TaskFlow s'est articulée autour de trois axes majeurs : la rationalisation, le recentrage et l'optimisation. L'application dispose aujourd'hui d'une base fonctionnelle plus cohérente. Certains modules sont encore en phase de stabilisation, mais c'est la réalité normale d'un projet en évolution active.">
+<div class="si">
+  <div class="chip"><span class="dot"></span>Slide 07 — Bilan</div>
+  <h1 class="stitle">Bilan global du projet</h1>
+  <p class="ssub">Trois dimensions structurantes · Une base plus cohérente · Des axes de consolidation identifiés.</p>
+
+  <div class="g g3" style="margin-bottom:16px;">
+    <div class="card b-bl" style="text-align:center;padding:22px 16px;">
+      <div style="font-size:1.8rem;margin-bottom:8px;">✂️</div>
+      <div class="ct">Rationalisation</div>
+      <div class="cx">Suppression des modules inutiles. Application plus légère, plus lisible, plus facile à maintenir.</div>
+    </div>
+    <div class="card b-gr" style="text-align:center;padding:22px 16px;">
+      <div style="font-size:1.8rem;margin-bottom:8px;">🎯</div>
+      <div class="ct">Recentrage</div>
+      <div class="cx">Focalisation sur le cœur métier : <strong style="color:var(--text1);">Employés · Clients · Projets · Tâches · Contrats</strong></div>
+    </div>
+    <div class="card b-pu" style="text-align:center;padding:22px 16px;">
+      <div style="font-size:1.8rem;margin-bottom:8px;">⚙️</div>
+      <div class="ct">Optimisation</div>
+      <div class="cx">Requêtes SQL, droits, import Excel, notifications, corrections d'anomalies critiques.</div>
+    </div>
+  </div>
+
+  <div class="ba">
+    <div class="ba-col ba-be">
+      <div class="ba-lbl">❌ Situation initiale</div>
+      <ul class="il">
+        <li><span class="ico re">✗</span>Application trop complexe, modules peu utilisés</li>
+        <li><span class="ico re">✗</span>Logique Diligences inadaptée</li>
+        <li><span class="ico re">✗</span>Anomalies techniques affectant la fiabilité</li>
+        <li><span class="ico re">✗</span>Droits et affichages non harmonisés</li>
+      </ul>
+    </div>
+    <div class="ba-arrow">→</div>
+    <div class="ba-col ba-af">
+      <div class="ba-lbl">✅ Situation actuelle</div>
+      <ul class="il">
+        <li><span class="ico gr">✓</span>Application recentrée sur 5 modules essentiels</li>
+        <li><span class="ico gr">✓</span>Transition vers une logique Projets engagée</li>
+        <li><span class="ico gr">✓</span>Anomalies critiques corrigées, codes HTTP propres</li>
+        <li><span class="ico gr">✓</span>Optimisation SQL et base plus performante</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="div"></div>
+  <div class="card" style="padding:12px 18px;text-align:center;">
+    <p style="font-size:.83rem;color:var(--text2);">📌 <strong style="color:var(--text1);">Niveau de maturité :</strong> base fonctionnelle consolidée sur les modules cœur · modules Contrats et Projets en phase de stabilisation · import Excel et recherche à fiabiliser.</p>
+  </div>
+</div>
+</div>
+
+<!-- ═══ SLIDE 8 — PERSPECTIVES 2027 ═══ -->
+<div class="slide"
+     data-note="Les perspectives 2027 sont organisées en trois horizons temporels. À court terme, l'objectif est de corriger les anomalies identifiées et de stabiliser les modules encore en cours. À moyen terme, nous voulons améliorer le reporting, les tableaux de bord et automatiser certaines opérations. À long terme, faire de TaskFlow un véritable outil de pilotage de l'activité de l'entreprise, avec des capacités d'analyse avancées.">
+<div class="si">
+  <div class="chip"><span class="dot"></span>Slide 08 — Perspectives</div>
+  <h1 class="stitle">Perspectives 2027</h1>
+  <p class="ssub">Trois horizons d'évolution · Priorités identifiées à partir du bilan terrain.</p>
+
+  <div class="g g3">
+    <div class="card b-bl">
+      <div class="sh"><div class="sh-ico bl">⚡</div><div style="font-size:.85rem;font-weight:700;">Court terme</div></div>
+      <ul class="il">
+        <li><span class="ico bl">→</span>Corriger les anomalies restantes sur les contrats</li>
+        <li><span class="ico bl">→</span>Finaliser la stabilisation du module Projets</li>
+        <li><span class="ico bl">→</span>Fiabiliser le processus d'importation Excel</li>
+        <li><span class="ico bl">→</span>Améliorer les performances de recherche</li>
+        <li><span class="ico bl">→</span>Harmoniser les affichages selon les profils</li>
+        <li><span class="ico bl">→</span>Poursuivre les tests utilisateurs</li>
+      </ul>
+    </div>
+    <div class="card b-gr">
+      <div class="sh"><div class="sh-ico gr">🗓️</div><div style="font-size:.85rem;font-weight:700;">Moyen terme</div></div>
+      <ul class="il">
+        <li><span class="ico gr">→</span>Améliorer les tableaux de bord</li>
+        <li><span class="ico gr">→</span>Renforcer le reporting et le suivi d'activité</li>
+        <li><span class="ico gr">→</span>Renforcer et étendre les notifications</li>
+        <li><span class="ico gr">→</span>Automatiser certaines opérations répétitives</li>
+        <li><span class="ico gr">→</span>Continuer l'optimisation technique (BDD, requêtes)</li>
+      </ul>
+    </div>
+    <div class="card b-pu">
+      <div class="sh"><div class="sh-ico pu">🚀</div><div style="font-size:.85rem;font-weight:700;">Long terme</div></div>
+      <ul class="il">
+        <li><span class="ico pu">→</span>Faire évoluer TaskFlow vers un outil de pilotage complet</li>
+        <li><span class="ico pu">→</span>Améliorer les capacités d'analyse et de suivi</li>
+        <li><span class="ico pu">→</span>Étudier l'IA si la valeur ajoutée est clairement démontrée</li>
+        <li><span class="ico pu">→</span>Améliorer l'interconnexion avec les autres outils internes</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="div"></div>
+  <div class="card" style="padding:12px 18px;">
+    <p style="font-size:.8rem;color:var(--text2);">⚠️ <strong style="color:var(--text1);">Aucun délai précis</strong> n'est communiqué ici : les estimations devront être établies après validation des priorités avec la direction et les équipes concernées.</p>
+  </div>
+</div>
+</div>
+
+<!-- ═══ SLIDE 9 — CONCLUSION ═══ -->
+<div class="slide"
+     data-note="Pour conclure : TaskFlow Web a connu une évolution significative. Le projet ne s'est pas contenté d'accumuler des fonctionnalités — il a été repensé, simplifié et optimisé. Le cœur de l'application est opérationnel. Des points de stabilisation restent à finaliser, et ils sont clairement identifiés. La direction 2027 est tracée. Je reste disponible pour vos questions.">
+<div class="si" style="display:flex;flex-direction:column;align-items:center;text-align:center;">
+  <div class="chip"><span class="dot"></span>Slide 09 — Conclusion</div>
+  <h1 class="stitle">Conclusion</h1>
+
+  <div class="g g3" style="margin:18px 0;text-align:left;width:100%;">
+    <div class="card b-gr" style="text-align:center;padding:20px 14px;">
+      <div style="font-size:1.7rem;margin-bottom:7px;">✂️🎯⚙️</div>
+      <div class="ct">Rationalisation · Recentrage · Optimisation</div>
+      <div class="cx">Trois axes qui ont guidé l'évolution de TaskFlow au cours de cette période.</div>
+    </div>
+    <div class="card b-bl" style="text-align:center;padding:20px 14px;">
+      <div style="font-size:1.7rem;margin-bottom:7px;">✅</div>
+      <div class="ct">Cœur fonctionnel consolidé</div>
+      <div class="cx">Employés, Clients, Projets, Tâches, Contrats : les modules essentiels sont opérationnels.</div>
+    </div>
+    <div class="card b-am" style="text-align:center;padding:20px 14px;">
+      <div style="font-size:1.7rem;margin-bottom:7px;">🔧</div>
+      <div class="ct">Axes de stabilisation identifiés</div>
+      <div class="cx">Contrats, import Excel, projets, recherche, droits : des travaux ciblés et planifiables.</div>
+    </div>
+  </div>
+
+  <p style="font-size:.95rem;color:var(--text2);max-width:620px;line-height:1.7;margin-bottom:20px;">
+    TaskFlow Web dispose aujourd'hui d'une base fonctionnelle <strong style="color:var(--text1);">plus cohérente, plus lisible et mieux adaptée aux besoins de LEADER WORLD PERFECT SARL</strong>.<br>
+    Les limites sont connues, les priorités sont établies et la direction 2027 est tracée.
+  </p>
+
+  <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:9px;margin-bottom:24px;">
+    <span class="tag gr">✅ Base opérationnelle</span>
+    <span class="tag bl">🎯 Application recentrée</span>
+    <span class="tag am">🔧 Stabilisation en cours</span>
+    <span class="tag pu">🚀 Perspectives 2027 définies</span>
+  </div>
+
+  <div style="color:var(--text3);font-size:.85rem;">LEADER WORLD PERFECT SARL &nbsp;·&nbsp; Bilan TaskFlow Web &nbsp;·&nbsp; Octobre 2026 &nbsp;·&nbsp; <strong style="color:var(--blue-ll);">Questions ?</strong></div>
+</div>
+</div>
+
+</div><!-- /deck -->
+
+<!-- NAV -->
+<div id="nav">
+  <button class="nbtn" id="bp" title="Précédent (←)">←</button>
+  <div id="dots"></div>
+  <span id="ctr">01 / 09</span>
+  <button class="nbtn" id="bn" title="Suivant (→)">→</button>
+</div>
+
+<!-- JS -->
+<script>
+const slides=Array.from(document.querySelectorAll('.slide'));
+const total=slides.length;
+let cur=0;
+const pbar=document.getElementById('pbar');
+const ctr=document.getElementById('ctr');
+const hudCtr=document.getElementById('hud-ctr');
+const dw=document.getElementById('dots');
+const bp=document.getElementById('bp');
+const bn=document.getElementById('bn');
+const np=document.getElementById('np');
+const npt=document.getElementById('np-t');
+
+slides.forEach((_,i)=>{const d=document.createElement('div');d.className='di'+(i===0?' on':'');d.addEventListener('click',()=>go(i));dw.appendChild(d);});
+
+function go(idx){
+  if(idx<0||idx>=total)return;
+  slides[cur].classList.remove('active');
+  slides[cur].classList.add('out');
+  const prev=slides[cur];
+  setTimeout(()=>{prev.classList.remove('out');},600);
+  cur=idx;
+  slides[cur].classList.add('active');
+  const pct=((cur+1)/total*100);
+  pbar.style.width=pct+'%';
+  const s=String(cur+1).padStart(2,'0')+' / '+String(total).padStart(2,'0');
+  ctr.textContent=s;hudCtr.textContent=s;
+  document.querySelectorAll('.di').forEach((d,i)=>d.classList.toggle('on',i===cur));
+  bp.disabled=cur===0;bn.disabled=cur===total-1;
+  npt.textContent=slides[cur].dataset.note||'';
+}
+
+bp.addEventListener('click',()=>go(cur-1));
+bn.addEventListener('click',()=>go(cur+1));
+
+document.addEventListener('keydown',e=>{
+  if(['ArrowRight',' '].includes(e.key)){e.preventDefault();go(cur+1);}
+  if(e.key==='ArrowLeft'){e.preventDefault();go(cur-1);}
+  if(e.key==='n'||e.key==='N'){np.classList.toggle('on');npt.textContent=slides[cur].dataset.note||'';}
+  if(e.key==='f'||e.key==='F'){!document.fullscreenElement?document.documentElement.requestFullscreen().catch(()=>{}):document.exitFullscreen();}
+  if(e.key==='Home')go(0);if(e.key==='End')go(total-1);
+});
+
+let tx=0;
+document.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;},{passive:true});
+document.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>55){dx<0?go(cur+1):go(cur-1);}});
+
+document.getElementById('fs-btn').addEventListener('click',()=>{!document.fullscreenElement?document.documentElement.requestFullscreen().catch(()=>{}):document.exitFullscreen();});
+document.getElementById('note-btn').addEventListener('click',()=>{np.classList.toggle('on');npt.textContent=slides[cur].dataset.note||'';});
+
+go(0);bp.disabled=true;
+</script>
+</body>
+</html>

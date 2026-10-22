@@ -140,4 +140,38 @@ class EmployeeDetails extends BaseModel
         return $this->belongsTo(Team::class, 'department_id');
     }
 
+    /**
+     * Calcule automatiquement le prochain matricule numérique disponible pour l'entreprise.
+     * Détermine le plus grand matricule numérique utilisé et renvoie le suivant (+ 1).
+     *
+     * @param int|null $companyId
+     * @return string
+     */
+    public static function nextEmployeeId(?int $companyId = null): string
+    {
+        $companyId = $companyId ?: (company() ? company()->id : null);
+
+        $query = self::withoutGlobalScopes();
+        if ($companyId) {
+            $query->where('company_id', $companyId);
+        }
+
+        $maxId = $query->whereNotNull('employee_id')
+            ->whereRaw("employee_id REGEXP '^[0-9]+$'")
+            ->selectRaw("MAX(CAST(employee_id AS UNSIGNED)) as max_id")
+            ->value('max_id');
+
+        $next = ($maxId !== null && $maxId !== '') ? ((int) $maxId + 1) : 1;
+
+        // Sécurité supplémentaire : s'assurer que le matricule n'existe pas déjà
+        while (self::withoutGlobalScopes()
+            ->when($companyId, fn($q) => $q->where('company_id', $companyId))
+            ->where('employee_id', (string) $next)
+            ->exists()) {
+            $next++;
+        }
+
+        return (string) $next;
+    }
+
 }

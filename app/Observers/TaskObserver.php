@@ -44,6 +44,24 @@ class TaskObserver
                 $task->event_id = $this->googleCalendarEvent($task);
             }
         }
+
+        // Automatisation de la date de réalisation et synchronisation du statut
+        if ($task->board_column_id) {
+            $completeColumn = TaskboardColumn::completeColumn();
+            if ($completeColumn && $task->board_column_id == $completeColumn->id) {
+                $task->status = 'completed';
+                // Renseigner automatiquement la date si absente ou si la colonne vient de passer à Terminée
+                if (empty($task->completed_on) || $task->isDirty('board_column_id')) {
+                    $task->completed_on = now()->format('Y-m-d');
+                }
+            } elseif ($completeColumn && $task->board_column_id != $completeColumn->id) {
+                $task->status = 'incomplete';
+                // Réouverture d'une tâche : réinitialisation de completed_on
+                if ($task->isDirty('board_column_id')) {
+                    $task->completed_on = null;
+                }
+            }
+        }
     }
 
     public function saved(Task $task)

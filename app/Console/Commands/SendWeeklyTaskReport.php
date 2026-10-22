@@ -19,14 +19,14 @@ class SendWeeklyTaskReport extends Command
      *
      * @var string
      */
-    protected $signature = 'send-weekly-task-report {--week= : Semaine ISO au format YYYY-Www (ex: 2026-W36). Par défaut la semaine courante}';
+    protected $signature = 'send-weekly-task-report {--week= : Semaine ISO au format YYYY-Www (ex: 2026-W36). Par défaut la semaine courante} {--email= : Adresse e-mail de test}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Envoie le rapport hebdomadaire des tâches au format PDF par e-mail à tous les administrateurs.';
+    protected $description = 'Envoie le rapport hebdomadaire des tâches au format PDF par e-mail.';
 
     /**
      * Execute the console command.
@@ -35,7 +35,7 @@ class SendWeeklyTaskReport extends Command
      */
     public function handle()
     {
-        $this->info('Démarrage de l\'envoi des rapports hebdomadaires aux administrateurs...');
+        $this->info('Démarrage de l\'envoi des rapports hebdomadaires...');
 
         $companies = Company::active()->get();
 
@@ -44,13 +44,15 @@ class SendWeeklyTaskReport extends Command
             return Command::SUCCESS;
         }
 
-        $semaine = $this->option('week') ?: null;
-
         foreach ($companies as $company) {
             $this->line("--- Société : {$company->company_name} (ID: {$company->id}) ---");
 
             // Définir la société dans la session pour les helpers company()
             session(['company' => $company]);
+
+            // Par défaut, le lundi matin le rapport porte sur la semaine écoulée clôturée le dimanche
+            $tz = $company->timezone ?? config('app.timezone');
+            $semaine = $this->option('week') ?: now($tz)->subWeek()->format('o-\WW');
 
             try {
                 // 1. Calcul du rapport hebdomadaire global pour le cabinet (limiteA = null)
@@ -76,32 +78,41 @@ class SendWeeklyTaskReport extends Command
                 $pdf->setPaper('a4', 'portrait');
                 $pdfContent = $pdf->output();
 
-                // 4. Récupération des destinataires : tous les ADMIN + les comptes spécifiés
-                $recipients = User::allAdmins($company->id);
+                // Récupération des destinataires : option --email pour les tests, sinon tous les admins en production
+                if ($this->option('email')) {
+                    $testEmail = $this->option('email');
+                    $virtualUser = new User();
+                    $virtualUser->name = 'Destinataire Test (' . $testEmail . ')';
+                    $virtualUser->email = $testEmail;
+                    $virtualUser->company_id = $company->id;
+                    $recipients = collect([$virtualUser]);
+                } else {
+                    $recipients = User::allAdmins($company->id);
 
-                $specificEmails = [
-                    'constant.keyman@dcknowing.com',
-                    'donalde.keyman@dcknowing.com',
-                ];
+                    $specificEmails = [
+                        'constant.keyman@dcknowing.com',
+                        'donalde.keyman@dcknowing.com',
+                    ];
 
-                $specificUsers = User::whereIn('email', $specificEmails)->get();
-                $recipients = $recipients->concat($specificUsers);
+                    $specificUsers = User::whereIn('email', $specificEmails)->get();
+                    $recipients = $recipients->concat($specificUsers);
 
-                // Ajout sous forme de compte virtuel si non trouvé en base (garantie de réception)
-                foreach ($specificEmails as $email) {
-                    if (!$recipients->contains('email', $email)) {
-                        $virtualUser = new User();
-                        $virtualUser->name = explode('@', $email)[0];
-                        $virtualUser->email = $email;
-                        $virtualUser->company_id = $company->id;
-                        $recipients->push($virtualUser);
+                    // Ajout sous forme de compte virtuel si non trouvé en base (garantie de réception)
+                    foreach ($specificEmails as $email) {
+                        if (!$recipients->contains('email', $email)) {
+                            $virtualUser = new User();
+                            $virtualUser->name = explode('@', $email)[0];
+                            $virtualUser->email = $email;
+                            $virtualUser->company_id = $company->id;
+                            $recipients->push($virtualUser);
+                        }
                     }
-                }
 
-                // Dédoublonnage par adresse e-mail
-                $recipients = $recipients->unique('email')->filter(function ($u) {
-                    return !empty($u->email);
-                });
+                    // Dédoublonnage par adresse e-mail
+                    $recipients = $recipients->unique('email')->filter(function ($u) {
+                        return !empty($u->email);
+                    });
+                }
 
                 if ($recipients->isEmpty()) {
                     $this->warn("Aucun destinataire trouvé pour {$company->company_name}.");
