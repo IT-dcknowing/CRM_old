@@ -17,6 +17,7 @@ use App\Http\Requests\Tasks\ActionTask;
 use App\Models\TaskComment;
 
 use App\Models\BaseModel;
+use App\Models\Team;
 
 use App\Models\TaskLabel;
 use App\Models\SubTaskFile;
@@ -112,6 +113,7 @@ class TaskController extends AccountBaseController
             $this->taskCategories = TaskCategory::all();
             $this->taskLabels = TaskLabelList::all();
             $this->milestones = ProjectMilestone::all();
+            $this->departments = Team::orderBy('team_name')->get();
 
             $taskBoardColumn = TaskboardColumn::waitingForApprovalColumn();
 
@@ -1676,19 +1678,28 @@ class TaskController extends AccountBaseController
                 $referer = urldecode($referer);
             }
 
-            // On ne memorise pas l'URL si elle boucle sur le detail de cette tache
+            // On ne memorise pas l'URL si elle boucle sur le detail de cette tache ou sur un formulaire
             $isSelf = $taskId ? str_contains($referer, '/account/tasks/' . $taskId) : false;
+            $isForm = str_contains($referer, '/account/tasks/create')
+                   || str_contains($referer, '/edit')
+                   || str_contains($referer, '/account/tasks/import');
 
-            if (!$isSelf && (str_contains($referer, '/account/taskboards') || str_contains($referer, '/account/tasks'))) {
+            if (!$isSelf && !$isForm && (str_contains($referer, '/account/taskboards') || str_contains($referer, '/account/tasks'))) {
                 session(['task_back_url' => $referer]);
             }
         }
 
         $backUrl = session('task_back_url');
 
-        // Si aucune URL memorisee ou si elle boucle sur la tache courante, retour au tableau des taches
-        if (!$backUrl || ($taskId && str_contains($backUrl, '/account/tasks/' . $taskId))) {
+        // Si aucune URL memorisee ou si elle boucle sur la tache courante ou un formulaire, retour au tableau des taches
+        if (!$backUrl
+            || ($taskId && str_contains($backUrl, '/account/tasks/' . $taskId))
+            || str_contains($backUrl, '/account/tasks/create')
+            || str_contains($backUrl, '/edit')
+            || str_contains($backUrl, '/account/tasks/import')
+        ) {
             $backUrl = route('taskboards.index');
+            session(['task_back_url' => $backUrl]);
         }
 
         return $backUrl;
@@ -1822,7 +1833,9 @@ class TaskController extends AccountBaseController
 
     public function clientDetail(Request $request)
     {
-        $project = Project::with('client')->findOrFail($request->id);
+        if (empty($request->id)) { return Reply::dataOnly(['data' => '']); }
+        $project = Project::with('client')->find($request->id);
+        if (is_null($project)) { return Reply::dataOnly(['data' => '']); }
 
         if (!is_null($project->client)) {
             $data = '<h5 class= "mb-2 f-13"> ' . __('modules.projects.projectClient') . '</h5>';

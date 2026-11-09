@@ -85,7 +85,7 @@
                                             :popover="__('modules.tasks.notFinishedProjects')"
                                             search="true">
                                 <option value="">--</option>
-                                @if($viewProjectPermission != 'none' && in_array('employee', user_roles()))
+                                @if($viewProjectPermission != 'none')
                                 @foreach ($projects as $data)
                                     <option
                                         data-content="{!! '<strong>'.$data->project_short_code."</strong> ".$data->project_name !!}"
@@ -516,6 +516,7 @@
         });
 
         $('#board_column_id').selectpicker();
+        $('#task_category_id').selectpicker();
 
         // Remove title attribute from selectpicker button
         $('#board_column_id').on('loaded.bs.select', function () {
@@ -695,6 +696,21 @@
             }
         });
 
+        // Prise en compte immédiate et fermeture du dropdown lors de la sélection (Assigné à et Domaine)
+        $(document).off('changed.bs.select.autoClose').on('changed.bs.select.autoClose', '#selectAssignee, #task_category_id', function (e, clickedIndex, isSelected, previousValue) {
+            if (typeof clickedIndex !== 'undefined' && clickedIndex !== null) {
+                var $select = $(this);
+                setTimeout(function () {
+                    var $parent = $select.closest('.bootstrap-select');
+                    if ($parent.hasClass('show')) {
+                        var $toggleBtn = $parent.find('button.dropdown-toggle');
+                        $toggleBtn.dropdown('toggle');
+                        $toggleBtn.trigger('focus');
+                    }
+                }, 10);
+            }
+        });
+
 
         const dp1 = datepicker('#task_start_date', {
             position: 'bl',
@@ -867,9 +883,19 @@
                     var atValues = data.userData;
                     destory_editor('#description')
                     quillMention(atValues, '#description');
+                    $('#selectAssignee').selectpicker('destroy');
                     $('#selectAssignee').html(data.data);
                     $('.projectId').text(data.unique_id + '-');
-                    $('#selectAssignee').selectpicker('refresh');
+                    $('#selectAssignee').selectpicker({
+                        actionsBox: true,
+                        selectAllText: "{{ __('modules.permission.selectAll') }}",
+                        deselectAllText: "{{ __('modules.permission.deselectAll') }}",
+                        multipleSeparator: " ",
+                        selectedTextFormat: "count > 8",
+                        countSelectedText: function (selected, total) {
+                            return selected + " {{ __('app.membersSelected') }} ";
+                        }
+                    });
                 }
             })
         });
