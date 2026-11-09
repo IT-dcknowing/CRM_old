@@ -245,6 +245,9 @@ $viewUnassignedTasksPermission = user()->permission('view_unassigned_tasks');
                         @lang('Importer')
                     </x-forms.link-secondary>
                 @endif
+
+                {{-- Filtre Département placé à côté du bouton Importer --}}
+                @include('tasks.filters.department', ['wrapperClass' => 'my-0'])
             </x-slot>
         </x-dck.page-head>
 
@@ -254,9 +257,6 @@ $viewUnassignedTasksPermission = user()->permission('view_unassigned_tasks');
                 <div class="d-flex align-items-center flex-wrap">
                     {{-- Conteneur d'injection du bouton d'export (initComplete) --}}
                     <div id="table-actions" class="d-flex align-items-center mr-3"></div>
-
-                    {{-- Filtre Département --}}
-                    @include('tasks.filters.department', ['wrapperClass' => 'mr-3 my-1'])
                 </div>
 
                 {{-- Selecteur de vue --}}

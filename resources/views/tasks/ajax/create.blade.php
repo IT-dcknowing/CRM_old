@@ -516,6 +516,7 @@
         });
 
         $('#board_column_id').selectpicker();
+        $('#task_category_id').selectpicker();
 
         // Remove title attribute from selectpicker button
         $('#board_column_id').on('loaded.bs.select', function () {
@@ -692,6 +693,21 @@
             selectedTextFormat: "count > 8",
             countSelectedText: function (selected, total) {
                 return selected + " {{ __('app.membersSelected') }} ";
+            }
+        });
+
+        // Prise en compte immédiate et fermeture du dropdown lors de la sélection (Assigné à et Domaine)
+        $(document).off('changed.bs.select.autoClose').on('changed.bs.select.autoClose', '#selectAssignee, #task_category_id', function (e, clickedIndex, isSelected, previousValue) {
+            if (typeof clickedIndex !== 'undefined' && clickedIndex !== null) {
+                var $select = $(this);
+                setTimeout(function () {
+                    var $parent = $select.closest('.bootstrap-select');
+                    if ($parent.hasClass('show')) {
+                        var $toggleBtn = $parent.find('button.dropdown-toggle');
+                        $toggleBtn.dropdown('toggle');
+                        $toggleBtn.trigger('focus');
+                    }
+                }, 10);
             }
         });
 

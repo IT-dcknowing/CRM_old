@@ -732,6 +732,21 @@ $editMilestonePermission = user()->permission('edit_project_milestones');
                 return selected + " {{ __('app.membersSelected') }} ";
             }
         });
+
+        // Prise en compte immédiate et fermeture du dropdown lors de la sélection (Assigné à et Domaine)
+        $(document).off('changed.bs.select.autoClose').on('changed.bs.select.autoClose', '#selectAssignee, #task_category_id', function (e, clickedIndex, isSelected, previousValue) {
+            if (typeof clickedIndex !== 'undefined' && clickedIndex !== null) {
+                var $select = $(this);
+                setTimeout(function () {
+                    var $parent = $select.closest('.bootstrap-select');
+                    if ($parent.hasClass('show')) {
+                        var $toggleBtn = $parent.find('button.dropdown-toggle');
+                        $toggleBtn.dropdown('toggle');
+                        $toggleBtn.trigger('focus');
+                    }
+                }, 10);
+            }
+        });
         const atValues = @json($userData);
 
         quillMention(atValues, '#description');
