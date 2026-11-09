@@ -775,30 +775,24 @@ class TaskBoardController extends AccountBaseController
         $currentSequence->save();
     }
 
+    /**
+     * Applique le filtre par département sur une requête de tâches.
+     *
+     * Seules les tâches dont au moins un utilisateur assigné appartient
+     * au département sélectionné sont retournées. Les tâches assignées
+     * à des employés d'autres départements sont exclues, même si leur
+     * projet est rattaché au département sélectionné.
+     */
     private function applyDepartmentFilter($query, $request)
     {
         $departmentId = $request->department ?? $request->department_id;
         if ($departmentId != '' && $departmentId != null && $departmentId != 'all') {
-            $query->where(function ($subQ) use ($departmentId) {
-                $subQ->whereExists(function ($sub) use ($departmentId) {
-                    $sub->select(DB::raw(1))
-                        ->from('task_users')
-                        ->join('employee_details', 'employee_details.user_id', '=', 'task_users.user_id')
-                        ->whereColumn('task_users.task_id', 'tasks.id')
-                        ->where('employee_details.department_id', $departmentId);
-                })
-                ->orWhereExists(function ($sub) use ($departmentId) {
-                    $sub->select(DB::raw(1))
-                        ->from('project_departments')
-                        ->whereColumn('project_departments.project_id', 'tasks.project_id')
-                        ->where('project_departments.team_id', $departmentId);
-                })
-                ->orWhereExists(function ($sub) use ($departmentId) {
-                    $sub->select(DB::raw(1))
-                        ->from('projects')
-                        ->whereColumn('projects.id', 'tasks.project_id')
-                        ->where('projects.team_id', $departmentId);
-                });
+            $query->whereExists(function ($sub) use ($departmentId) {
+                $sub->select(DB::raw(1))
+                    ->from('task_users')
+                    ->join('employee_details', 'employee_details.user_id', '=', 'task_users.user_id')
+                    ->whereColumn('task_users.task_id', 'tasks.id')
+                    ->where('employee_details.department_id', $departmentId);
             });
         }
     }
