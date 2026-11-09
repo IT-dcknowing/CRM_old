@@ -400,7 +400,7 @@ $addTaskPermission = user()->permission('add_tasks');
 <?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag && $constructor = (new ReflectionClass(App\View\Components\Forms\LinkSecondary::class))->getConstructor()): ?>
 <?php $attributes = $attributes->except(collect($constructor->getParameters())->map->getName()->all()); ?>
 <?php endif; ?>
-<?php $component->withAttributes([]); ?>
+<?php $component->withAttributes(['class' => 'mr-lg-3 mr-1']); ?>
                         <?php echo app('translator')->get('Importer'); ?>
                      <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
@@ -414,13 +414,16 @@ $addTaskPermission = user()->permission('add_tasks');
 <?php endif; ?>
                 <?php endif; ?>
 
+                
+                <?php echo $__env->make('tasks.filters.department', ['wrapperClass' => 'my-1 mr-lg-3 mr-1'], \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+
             </div>
 
             <div class="btn-group mt-2 mt-lg-0 mt-md-0 ml-0 ml-lg-3 ml-md-3" role="group">
-                <a href="<?php echo e(route('tasks.index')); ?>" class="btn btn-secondary f-14" data-toggle="tooltip"
+                <a href="<?php echo e(route('tasks.index') . (request('department') ? '?department=' . request('department') : '')); ?>" class="btn btn-secondary f-14 view-list-link" data-toggle="tooltip"
                     data-original-title="<?php echo app('translator')->get('app.menu.tasks'); ?>"><i class="side-icon bi bi-list-ul"></i></a>
 
-                <a href="<?php echo e(route('taskboards.index')); ?>" class="btn btn-secondary f-14 btn-active" data-toggle="tooltip"
+                <a href="<?php echo e(route('taskboards.index') . (request('department') ? '?department=' . request('department') : '')); ?>" class="btn btn-secondary f-14 btn-active" data-toggle="tooltip"
                     data-original-title="<?php echo app('translator')->get('modules.tasks.taskBoard'); ?>"><i class="side-icon bi bi-kanban"></i></a>
 
                 <a href="<?php echo e(route('task-calendar.index')); ?>" class="btn btn-secondary f-14" data-toggle="tooltip"
@@ -498,9 +501,21 @@ $addTaskPermission = user()->permission('add_tasks');
             ...datepickerConfig
         });
 
-        $('#billable_task, #status, #clientID, #category_id, #assignedBY, #assignedTo, #label, #project_id')
+        function updateViewLinks() {
+            var deptVal = $('#department').val();
+            var listBtn = $('.view-list-link');
+            var baseListUrl = "<?php echo e(route('tasks.index')); ?>";
+            if (deptVal && deptVal !== 'all') {
+                listBtn.attr('href', baseListUrl + '?department=' + encodeURIComponent(deptVal));
+            } else {
+                listBtn.attr('href', baseListUrl);
+            }
+        }
+
+        $('#billable_task, #status, #clientID, #category_id, #assignedBY, #assignedTo, #label, #project_id, #department')
             .on('change keyup',
                 function() {
+                    updateViewLinks();
                     if ($('#status').val() != "not finished") {
                         $('#reset-filters').removeClass('d-none');
                         loadData();
@@ -525,6 +540,9 @@ $addTaskPermission = user()->permission('add_tasks');
                     } else if ($('#billable_task').val() != "all") {
                         $('#reset-filters').removeClass('d-none');
                         loadData();
+                    } else if ($('#department').val() != "all") {
+                        $('#reset-filters').removeClass('d-none');
+                        loadData();
                     } else {
                         $('#reset-filters').addClass('d-none');
                         loadData();
@@ -543,6 +561,9 @@ $addTaskPermission = user()->permission('add_tasks');
 
             $('.filter-box #status').val('not finished');
             $('.filter-box .select-picker').selectpicker("refresh");
+            $('#department').val('all');
+            $('#department').selectpicker("refresh");
+            updateViewLinks();
             $('#reset-filters').addClass('d-none');
             loadData();
         });
@@ -569,11 +590,12 @@ $addTaskPermission = user()->permission('add_tasks');
             var labelId = $('#label').val();
             var searchText = $('#search-text-field').val();
             var billable = $('#billable_task').val();
+            var department = $('#department').val();
 
             var url = "<?php echo e(route('taskboards.index')); ?>?startDate=" + encodeURIComponent(startDate) + '&endDate=' +
                 encodeURIComponent(endDate) + '&clientID=' + clientID + '&assignedBY=' + assignedBY + '&assignedTo=' +
                 assignedTo + '&projectID=' + projectID + '&category_id=' + categoryId + '&label_id=' + labelId +
-                '&searchText=' + searchText + '&billable=' + billable;
+                '&searchText=' + searchText + '&billable=' + billable + '&department=' + encodeURIComponent(department);
 
             $.easyAjax({
                 url: url,
@@ -612,13 +634,15 @@ $addTaskPermission = user()->permission('add_tasks');
             var categoryId = $('#category_id').val();
             var labelId = $('#label').val();
             var searchText = $('#search-text-field').val();
+            var department = $('#department').val();
 
             var url = "<?php echo e(route('taskboards.load_more')); ?>?startDate=" + encodeURIComponent(startDate) +
                 '&endDate=' +
                 encodeURIComponent(endDate) + '&clientID=' + clientID + '&assignedBY=' + assignedBY +
                 '&assignedTo=' +
                 assignedTo + '&projectID=' + projectID + '&category_id=' + categoryId + '&label_id=' + labelId +
-                '&searchText=' + searchText + '&columnId=' + columnId + '&currentTotalTasks=' + currentTotalTasks +
+                '&searchText=' + searchText + '&department=' + encodeURIComponent(department) +
+                '&columnId=' + columnId + '&currentTotalTasks=' + currentTotalTasks +
                 '&totalTasks=' + totalTasks;
 
             $.easyAjax({
@@ -757,6 +781,11 @@ $addTaskPermission = user()->permission('add_tasks');
                 channel.bind('task-updated', function (data) {
                 loadData()
             });
+        }
+
+        updateViewLinks();
+        if ($('#department').val() && $('#department').val() !== 'all') {
+            $('#reset-filters').removeClass('d-none');
         }
 
         loadData();

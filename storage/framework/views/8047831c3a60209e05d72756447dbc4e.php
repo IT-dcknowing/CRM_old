@@ -26,11 +26,9 @@ $content = "<div class='d-flex align-items-center text-left'>
     ?>
 
     <option <?php if($selected): echo 'selected'; endif; ?> 
+        title="<?php echo e(trim($user->name_salutation ?? $user->name)); ?>"
         data-content="<?php echo $content; ?>" 
         data-email="<?php echo e($user->email); ?>" 
         data-mobile="<?php echo e($user->mobile); ?>" 
-        value="<?php echo e($userID ?? $user->id); ?>">
-        <?php echo e($user->name_salutation); ?>
-
-    </option>
+        value="<?php echo e($userID ?? $user->id); ?>"><?php echo e(trim($user->name_salutation)); ?></option>
 <?php /**PATH C:\laragon\www\CRM\resources\views/components/user-option.blade.php ENDPATH**/ ?>
