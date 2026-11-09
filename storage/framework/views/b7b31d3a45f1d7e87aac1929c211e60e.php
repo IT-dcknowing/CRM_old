@@ -1,3 +1,5 @@
+
+
 <?php $__env->startPush('styles'); ?>
     <!-- Drag and Drop CSS -->
     <link rel='stylesheet' href="<?php echo e(asset('vendor/css/dragula.css')); ?>" type='text/css' />
@@ -290,31 +292,23 @@ $addTaskPermission = user()->permission('add_tasks');
 <?php $__env->startSection('content'); ?>
 
     <!-- CONTENT WRAPPER START -->
-    <div class="w-task-board-box px-4 py-2 bg-white dck-front">
-        <!-- Add Task Export Buttons Start -->
-        <div class="d-grid d-lg-flex d-md-flex action-bar my-3">
+    <div class="content-wrapper dck-front">
 
-            <?php if (isset($component)) { $__componentOriginal5194778a3a7b899dcee5619d0610f5cf = $component; } ?>
-<?php if (isset($attributes)) { $__attributesOriginal5194778a3a7b899dcee5619d0610f5cf = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.alert','data' => ['type' => 'warning','icon' => 'info','class' => 'd-lg-none']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? (array) $attributes->getIterator() : [])); ?>
-<?php $component->withName('alert'); ?>
+        <?php if (isset($component)) { $__componentOriginale44c97c7bfb598419dda3f1c66ab979c = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginale44c97c7bfb598419dda3f1c66ab979c = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.dck.page-head','data' => ['titre' => __('app.menu.tasks'),'description' => $waitingApprovalCount > 0
+                            ? $waitingApprovalCount . ' ' . __('app.menu.waiting-approval')
+                            : null]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? (array) $attributes->getIterator() : [])); ?>
+<?php $component->withName('dck.page-head'); ?>
 <?php if ($component->shouldRender()): ?>
 <?php $__env->startComponent($component->resolveView(), $component->data()); ?>
 <?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag && $constructor = (new ReflectionClass(Illuminate\View\AnonymousComponent::class))->getConstructor()): ?>
 <?php $attributes = $attributes->except(collect($constructor->getParameters())->map->getName()->all()); ?>
 <?php endif; ?>
-<?php $component->withAttributes(['type' => 'warning','icon' => 'info','class' => 'd-lg-none']); ?><?php echo app('translator')->get('messages.dragDropScreenInfo'); ?> <?php echo $__env->renderComponent(); ?>
-<?php endif; ?>
-<?php if (isset($__attributesOriginal5194778a3a7b899dcee5619d0610f5cf)): ?>
-<?php $attributes = $__attributesOriginal5194778a3a7b899dcee5619d0610f5cf; ?>
-<?php unset($__attributesOriginal5194778a3a7b899dcee5619d0610f5cf); ?>
-<?php endif; ?>
-<?php if (isset($__componentOriginal5194778a3a7b899dcee5619d0610f5cf)): ?>
-<?php $component = $__componentOriginal5194778a3a7b899dcee5619d0610f5cf; ?>
-<?php unset($__componentOriginal5194778a3a7b899dcee5619d0610f5cf); ?>
-<?php endif; ?>
-
-            <div id="table-actions" class="flex-grow-1 align-items-center mb-2 mb-lg-0 mb-md-0">
+<?php $component->withAttributes(['titre' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(__('app.menu.tasks')),'description' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute($waitingApprovalCount > 0
+                            ? $waitingApprovalCount . ' ' . __('app.menu.waiting-approval')
+                            : null)]); ?>
+             <?php $__env->slot('actions', null, []); ?> 
                 <?php if($addTaskPermission == 'all' || $addTaskPermission == 'added'): ?>
                     <?php if (isset($component)) { $__componentOriginaldbb84df4c3a5cbdd95fb35d18ba6410f = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginaldbb84df4c3a5cbdd95fb35d18ba6410f = $attributes; } ?>
@@ -325,9 +319,8 @@ $addTaskPermission = user()->permission('add_tasks');
 <?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag && $constructor = (new ReflectionClass(App\View\Components\Forms\LinkPrimary::class))->getConstructor()): ?>
 <?php $attributes = $attributes->except(collect($constructor->getParameters())->map->getName()->all()); ?>
 <?php endif; ?>
-<?php $component->withAttributes(['class' => 'mr-lg-3 mr-1 openRightModal float-left','data-redirect-url' => ''.e(url()->full()).'']); ?>
-                        <?php echo app('translator')->get('app.add'); ?>
-                        <?php echo app('translator')->get('app.task'); ?>
+<?php $component->withAttributes(['class' => 'openRightModal','data-redirect-url' => ''.e(url()->full()).'']); ?>
+                        <?php echo app('translator')->get('app.addTask'); ?>
                      <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginaldbb84df4c3a5cbdd95fb35d18ba6410f)): ?>
@@ -350,7 +343,7 @@ $addTaskPermission = user()->permission('add_tasks');
 <?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag && $constructor = (new ReflectionClass(App\View\Components\Forms\ButtonSecondary::class))->getConstructor()): ?>
 <?php $attributes = $attributes->except(collect($constructor->getParameters())->map->getName()->all()); ?>
 <?php endif; ?>
-<?php $component->withAttributes(['class' => 'mr-lg-3 mr-1 float-left','id' => 'add-column']); ?>
+<?php $component->withAttributes(['id' => 'add-column']); ?>
                         <?php echo app('translator')->get('modules.tasks.addBoardColumn'); ?>
                      <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
@@ -363,7 +356,6 @@ $addTaskPermission = user()->permission('add_tasks');
 <?php unset($__componentOriginal5e57c6582b8a883148a28bb7ee46d2ad); ?>
 <?php endif; ?>
                 <?php endif; ?>
-
 
                 <?php if(!in_array('client', user_roles())): ?>
                     <?php if (isset($component)) { $__componentOriginal5e57c6582b8a883148a28bb7ee46d2ad = $component; } ?>
@@ -400,7 +392,7 @@ $addTaskPermission = user()->permission('add_tasks');
 <?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag && $constructor = (new ReflectionClass(App\View\Components\Forms\LinkSecondary::class))->getConstructor()): ?>
 <?php $attributes = $attributes->except(collect($constructor->getParameters())->map->getName()->all()); ?>
 <?php endif; ?>
-<?php $component->withAttributes(['class' => 'mr-lg-3 mr-1']); ?>
+<?php $component->withAttributes([]); ?>
                         <?php echo app('translator')->get('Importer'); ?>
                      <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
@@ -415,61 +407,53 @@ $addTaskPermission = user()->permission('add_tasks');
                 <?php endif; ?>
 
                 
-                <?php echo $__env->make('tasks.filters.department', ['wrapperClass' => 'my-1 mr-lg-3 mr-1'], \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+                <?php echo $__env->make('tasks.filters.department', ['wrapperClass' => 'my-0'], \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+             <?php $__env->endSlot(); ?>
+         <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginale44c97c7bfb598419dda3f1c66ab979c)): ?>
+<?php $attributes = $__attributesOriginale44c97c7bfb598419dda3f1c66ab979c; ?>
+<?php unset($__attributesOriginale44c97c7bfb598419dda3f1c66ab979c); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginale44c97c7bfb598419dda3f1c66ab979c)): ?>
+<?php $component = $__componentOriginale44c97c7bfb598419dda3f1c66ab979c; ?>
+<?php unset($__componentOriginale44c97c7bfb598419dda3f1c66ab979c); ?>
+<?php endif; ?>
 
-            </div>
+        <div class="dck-card mb-3">
+            <div class="dck-card__bar">
+                <div class="d-flex align-items-center flex-wrap">
+                    <div id="table-actions" class="d-flex align-items-center mr-3"></div>
+                </div>
 
-            <div class="btn-group mt-2 mt-lg-0 mt-md-0 ml-0 ml-lg-3 ml-md-3" role="group">
-                <a href="<?php echo e(route('tasks.index') . (request('department') ? '?department=' . request('department') : '')); ?>" class="btn btn-secondary f-14 view-list-link" data-toggle="tooltip"
-                    data-original-title="<?php echo app('translator')->get('app.menu.tasks'); ?>"><i class="side-icon bi bi-list-ul"></i></a>
+                
+                <div class="btn-group dck-seg ml-auto" role="group">
+                    <a href="<?php echo e(route('tasks.index') . (request('department') ? '?department=' . request('department') : '')); ?>" class="btn btn-secondary f-14 view-list-link" data-toggle="tooltip"
+                        data-original-title="<?php echo app('translator')->get('app.menu.tasks'); ?>"><i class="side-icon bi bi-list-ul"></i></a>
 
-                <a href="<?php echo e(route('taskboards.index') . (request('department') ? '?department=' . request('department') : '')); ?>" class="btn btn-secondary f-14 btn-active" data-toggle="tooltip"
-                    data-original-title="<?php echo app('translator')->get('modules.tasks.taskBoard'); ?>"><i class="side-icon bi bi-kanban"></i></a>
+                    <a href="<?php echo e(route('taskboards.index') . (request('department') ? '?department=' . request('department') : '')); ?>" class="btn btn-secondary f-14 btn-active" data-toggle="tooltip"
+                        data-original-title="<?php echo app('translator')->get('modules.tasks.taskBoard'); ?>"><i class="side-icon bi bi-kanban"></i></a>
 
-                <a href="<?php echo e(route('task-calendar.index')); ?>" class="btn btn-secondary f-14" data-toggle="tooltip"
-                    data-original-title="<?php echo app('translator')->get('app.menu.calendar'); ?>"><i class="side-icon bi bi-calendar"></i></a>
+                    <a href="<?php echo e(route('task-calendar.index')); ?>" class="btn btn-secondary f-14" data-toggle="tooltip"
+                        data-original-title="<?php echo app('translator')->get('app.menu.calendar'); ?>"><i class="side-icon bi bi-calendar"></i></a>
 
                     <?php if(in_array('admin', user_roles()) || in_array('employee', user_roles())): ?>
-                    <a href="<?php echo e(route('tasks.waiting-approval')); ?>" class="btn btn-secondary f-14 show-waiting-approval-task" data-toggle="tooltip"
-                        data-original-title="<?php echo app('translator')->get('app.menu.waiting-approval'); ?>">
-                        <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" fill="#000000" width="18" height="18">
-                            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                            <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
-                            <g id="SVGRepo_iconCarrier">
-                                <path d="m 7 0 c -0.554688 0 -1 0.445312 -1 1 h -2 c -1.644531 0 -3 1.355469 -3 3 v 9 c 0 1.644531 1.355469 3 3 3 h 2 c 0.550781 0 1 -0.449219 1 -1 s -0.449219 -1 -1 -1 h -2 c -0.570312 0 -1 -0.429688 -1 -1 v -9 c 0 -0.570312 0.429688 -1 1 -1 h 1 v 1 c 0 0.554688 0.445312 1 1 1 h 4 c 0.554688 0 1 -0.445312 1 -1 v -1 h 1 c 0.570312 0 1 0.429688 1 1 v 2 c 0 0.550781 0.449219 1 1 1 s 1 -0.449219 1 -1 v -2 c 0 -1.644531 -1.355469 -3 -3 -3 h -2 c 0 -0.554688 -0.445312 -1 -1 -1 z m 0 0" fill="#2e3436"></path>
-                                <path d="m 8.875 8 c -0.492188 0 -0.875 0.382812 -0.875 0.875 v 6.25 c 0 0.492188 0.382812 0.875 0.875 0.875 h 6.25 c 0.492188 0 0.875 -0.382812 0.875 -0.875 v -6.25 c 0 -0.492188 -0.382812 -0.875 -0.875 -0.875 z m 2.125 1 h 2 v 2.5 s 0 0.5 -0.5 0.5 h -1 c -0.5 0 -0.5 -0.5 -0.5 -0.5 z m 0.5 4 h 1 c 0.277344 0 0.5 0.222656 0.5 0.5 v 1 c 0 0.277344 -0.222656 0.5 -0.5 0.5 h -1 c -0.277344 0 -0.5 -0.222656 -0.5 -0.5 v -1 c 0 -0.277344 0.222656 -0.5 0.5 -0.5 z m 0 0" class="warning" fill="#ff7800"></path>
-                            </g>
-                        </svg>
-                        <?php if($waitingApprovalCount > 0): ?><span class="badge badge-pill badge-danger position-absolute"><?php echo e($waitingApprovalCount); ?></span><?php endif; ?>
-                    </a>
-                <?php endif; ?>
+                        <a href="<?php echo e(route('tasks.waiting-approval')); ?>" class="btn btn-secondary f-14 show-waiting-approval-task" data-toggle="tooltip"
+                            data-original-title="<?php echo app('translator')->get('app.menu.waiting-approval'); ?>">
+                            <i class="side-icon bi bi-hourglass-split"></i>
+                            <?php if($waitingApprovalCount > 0): ?>
+                                <span class="badge badge-pill badge-danger position-absolute"><?php echo e($waitingApprovalCount); ?></span>
+                            <?php endif; ?>
+                        </a>
+                    <?php endif; ?>
+                </div>
             </div>
         </div>
 
-        <?php if (isset($component)) { $__componentOriginal5194778a3a7b899dcee5619d0610f5cf = $component; } ?>
-<?php if (isset($attributes)) { $__attributesOriginal5194778a3a7b899dcee5619d0610f5cf = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.alert','data' => ['type' => 'warning']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? (array) $attributes->getIterator() : [])); ?>
-<?php $component->withName('alert'); ?>
-<?php if ($component->shouldRender()): ?>
-<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
-<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag && $constructor = (new ReflectionClass(Illuminate\View\AnonymousComponent::class))->getConstructor()): ?>
-<?php $attributes = $attributes->except(collect($constructor->getParameters())->map->getName()->all()); ?>
-<?php endif; ?>
-<?php $component->withAttributes(['type' => 'warning']); ?>
-            <div><b>Note:</b><?php echo app('translator')->get('modules.tasks.taskboardNote'); ?> <a href="<?php echo e(route('tasks.index')); ?>"><?php echo app('translator')->get('app.tasks'); ?></a> <?php echo app('translator')->get('modules.tasks.menu'); ?> </div>
-         <?php echo $__env->renderComponent(); ?>
-<?php endif; ?>
-<?php if (isset($__attributesOriginal5194778a3a7b899dcee5619d0610f5cf)): ?>
-<?php $attributes = $__attributesOriginal5194778a3a7b899dcee5619d0610f5cf; ?>
-<?php unset($__attributesOriginal5194778a3a7b899dcee5619d0610f5cf); ?>
-<?php endif; ?>
-<?php if (isset($__componentOriginal5194778a3a7b899dcee5619d0610f5cf)): ?>
-<?php $component = $__componentOriginal5194778a3a7b899dcee5619d0610f5cf; ?>
-<?php unset($__componentOriginal5194778a3a7b899dcee5619d0610f5cf); ?>
-<?php endif; ?>
+        <div class="w-task-board-box">
+            <div class="w-task-board-panel d-flex" id="taskboard-columns">
 
-        <div class="w-task-board-panel d-flex" id="taskboard-columns">
-
+            </div>
         </div>
     </div>
     <!-- CONTENT WRAPPER END -->
