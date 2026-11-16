@@ -50,9 +50,9 @@ class SendWeeklyTaskReport extends Command
             // Définir la société dans la session pour les helpers company()
             session(['company' => $company]);
 
-            // Par défaut, le lundi matin le rapport porte sur la semaine écoulée clôturée le dimanche
+            // Par défaut, le vendredi soir à 18h00 le rapport porte sur la semaine courante achevée
             $tz = $company->timezone ?? config('app.timezone');
-            $semaine = $this->option('week') ?: now($tz)->subWeek()->format('o-\WW');
+            $semaine = $this->option('week') ?: now($tz)->format('o-\WW');
 
             try {
                 // 1. Calcul du rapport hebdomadaire global pour le cabinet (limiteA = null)
