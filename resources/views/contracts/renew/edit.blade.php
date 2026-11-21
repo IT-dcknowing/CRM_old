@@ -14,13 +14,13 @@
             <div class="col-md-6 col-lg-4">
                 <x-forms.datepicker fieldId="renew_start_date" fieldRequired="true"
                     :fieldLabel="__('modules.projects.startDate')" fieldName="start_date"
-                    :fieldValue="$renew->start_date->timezone(company()->timezone)->format(company()->date_format)"
+                    :fieldValue="$renew->start_date->format(company()->date_format)"
                     :fieldPlaceholder="__('placeholders.date')" />
             </div>
 
             <div class="col-md-6 col-lg-4">
                 <x-forms.datepicker fieldId="renew_end_date"
-                    :fieldValue="(($renew->end_date==null) ? $renew->end_date : $renew->end_date->timezone(company()->timezone)->format(company()->date_format))"
+                    :fieldValue="(($renew->end_date==null) ? $renew->end_date : $renew->end_date->format(company()->date_format))"
                     :fieldLabel="__('modules.timeLogs.endDate')" fieldName="end_date"
                     :fieldPlaceholder="__('placeholders.date')" />
             </div>

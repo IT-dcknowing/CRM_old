@@ -258,6 +258,7 @@ return [
         'active' => 'Actif',
         'expired' => 'Expiré',
         'aboutToExpire' => 'Bientôt expiré',
+        'upcoming' => 'À venir',
         'renewContract' => 'Renouveler le contrat',
         'renewedThisContract' => 'a renouvelé ce contrat',
         'contractRenewalHistory' => 'Historique des renouvellements',
