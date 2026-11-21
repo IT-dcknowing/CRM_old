@@ -71,10 +71,33 @@ class ContractRenewController extends AccountBaseController
     public function update(Request $request, $id)
     {
         $contractRenew = ContractRenew::findOrFail($id);
+
+        $editPermission = user()->permission('edit_contract');
+        abort_403(!($editPermission == 'all' || ($editPermission == 'added' && $contractRenew->added_by == user()->id)));
+
+        $format = company()->date_format;
+        $request->validate([
+            'amount' => 'required',
+            'start_date' => 'required|date_format:"' . $format . '"',
+            'end_date' => 'required|date_format:"' . $format . '"|after_or_equal:start_date',
+        ]);
+
         $contractRenew->amount = $request->amount;
         $contractRenew->start_date = companyToYmd($request->start_date);
         $contractRenew->end_date = companyToYmd($request->end_date);
         $contractRenew->save();
+
+        /* Si ce renouvellement est le plus recent du contrat, c'est lui qui
+           porte les dates en vigueur : le contrat doit refleter la correction. */
+        $dernier = ContractRenew::where('contract_id', $contractRenew->contract_id)->latest('id')->first();
+
+        if ($dernier && $dernier->id == $contractRenew->id) {
+            $contract = Contract::findOrFail($contractRenew->contract_id);
+            $contract->amount = $contractRenew->amount;
+            $contract->start_date = $contractRenew->start_date->toDateString();
+            $contract->end_date = $contractRenew->end_date->toDateString();
+            $contract->save();
+        }
 
         $this->contract = Contract::with('signature', 'client', 'client.clientDetails', 'files', 'renewHistory', 'renewHistory.renewedBy')->findOrFail($contractRenew->contract_id);
 
@@ -93,10 +116,17 @@ class ContractRenewController extends AccountBaseController
 
         $this->deletePermission = user()->permission('delete_contract');
         abort_403(!($this->deletePermission == 'all' || ($this->deletePermission == 'added' && $this->renew->added_by == user()->id)));
-        $findNext = ContractRenew::where('created_at', '>', $contractRenew->created_at)->first();
+        /* Recherche limitee aux renouvellements DU MEME contrat : sans ce
+           filtre, les dates d'un autre contrat pouvaient etre restaurees. */
+        $findNext = ContractRenew::where('contract_id', $contractRenew->contract_id)
+            ->where('id', '>', $contractRenew->id)
+            ->first();
 
         if (!$findNext) {
-            $findPrevious = ContractRenew::where('created_at', '<', $contractRenew->created_at)->latest()->first();
+            $findPrevious = ContractRenew::where('contract_id', $contractRenew->contract_id)
+                ->where('id', '<', $contractRenew->id)
+                ->latest('id')
+                ->first();
             $contract = Contract::findOrFail($contractRenew->contract_id);
 
             if ($findPrevious) {

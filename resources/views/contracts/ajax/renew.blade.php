@@ -23,13 +23,13 @@ $addContractPermission = user()->permission('renew_contract');
                     <div class="col-md-6 col-lg-4">
                         <x-forms.datepicker fieldId="start_date" fieldRequired="true"
                             :fieldLabel="__('modules.projects.startDate')" fieldName="start_date"
-                            :fieldValue="(!is_null($contract->end_date) ? $contract->end_date->timezone(company()->timezone)->format(company()->date_format) : $contract->start_date->timezone(company()->timezone)->translatedFormat(company()->date_format))"
+                            :fieldValue="(!is_null($contract->end_date) ? $contract->end_date->format(company()->date_format) : $contract->start_date->translatedFormat(company()->date_format))"
                             :fieldPlaceholder="__('placeholders.date')" />
                     </div>
 
                     <div class="col-md-6 col-lg-4">
                         <x-forms.datepicker fieldId="end_date"
-                            :fieldValue="($contract ? ($contract->end_date==null ? $contract->end_date : $contract->end_date->timezone(company()->timezone)->format(company()->date_format)) : '')"
+                            :fieldValue="($contract ? ($contract->end_date==null ? $contract->end_date : $contract->end_date->format(company()->date_format)) : '')"
                             :fieldLabel="__('modules.timeLogs.endDate')" fieldName="end_date"
                             :fieldPlaceholder="__('placeholders.date')" />
                     </div>

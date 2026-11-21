@@ -1858,7 +1858,8 @@ class AuthController extends Controller
                         'start_date' => $contract->start_date->format('d/m/Y'),
                         'end_date' => $contract->end_date ? $contract->end_date->format('d/m/Y') : 'Indéfini',
                         'type' => $contract->contractType->name ?? 'N/A',
-                        'status' => $contract->end_date && $contract->end_date->isPast() ? 'Expiré' : 'Actif'
+                        // Meme regle que le web : le contrat reste valable jusqu'a la fin de son dernier jour
+                        'status' => $contract->statut() === Contract::STATUT_EXPIRE ? 'Expiré' : 'Actif'
                     ];
                 });
 
