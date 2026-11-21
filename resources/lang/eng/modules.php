@@ -1900,6 +1900,7 @@ return [
         'expired' => 'Expired',
         'active' => 'Active',
         'aboutToExpire' => 'About To Expire',
+        'upcoming' => 'Upcoming',
         'manageContractType' => 'Manage Contract Type',
         'addContractType' => 'Add Contract Type',
         'notes' => 'Notes',

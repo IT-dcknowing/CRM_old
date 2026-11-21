@@ -131,14 +131,14 @@
                     <div class="col-md-6 col-lg-5">
                         <x-forms.datepicker fieldId="start_date" fieldRequired="true"
                                             :fieldLabel="__('modules.projects.startDate')" fieldName="start_date"
-                                            :fieldValue="($contract ? $contract->start_date->timezone(company()->timezone)->format(company()->date_format) : '')"
+                                            :fieldValue="($contract ? $contract->start_date->format(company()->date_format) : $dateDebutParDefaut)"
                                             :fieldPlaceholder="__('placeholders.date')"/>
                     </div>
 
                     <div class="col-md-6 col-lg-5 due-date-box"
                          @if($contract && is_null($contract->end_date)) style="display: none" @endif>
                         <x-forms.datepicker fieldId="end_date"
-                                            :fieldValue="($contract ? ($contract->end_date==null ? $contract->end_date : $contract->end_date->timezone(company()->timezone)->format(company()->date_format)) : '')"
+                                            :fieldValue="($contract ? ($contract->end_date==null ? $contract->end_date : $contract->end_date->format(company()->date_format)) : '')"
                                             :fieldLabel="__('modules.timeLogs.endDate')" fieldName="end_date"
                                             :fieldPlaceholder="__('placeholders.date')"/>
                     </div>
@@ -263,27 +263,20 @@
             const text = selectedOption.text.trim();
             const lowerText = text.toLowerCase();
             subjectInput.value = text;
-            
-            // Logique d'automatisation des dates pour Nouvelle Adhésion (plus robuste)
-            if (lowerText.includes('nouvelle') && (lowerText.includes('adh') || lowerText.includes('adhésion'))) {
-                const now = new Date();
-                const year = now.getFullYear();
-                const month = now.getMonth() + 1;
 
-                let startDate;
-                if (month === 1) {
-                    startDate = now;
-                } else {
-                    startDate = new Date(year, 0, 31); // 31 Janvier (mois commence à 0)
-                }
-                const endDate = new Date(year, 11, 31); // 31 Décembre
+            /* "Nouvelle adhesion" : on PROPOSE une fin au 31 decembre de
+               l'annee de debut. La date de debut n'est pas touchee et les
+               deux dates restent modifiables ; le serveur enregistre
+               exactement ce qui est saisi. */
+            if (lowerText.includes('nouvelle') && lowerText.includes('adh')
+                && typeof dp1 !== 'undefined' && typeof dp2 !== 'undefined'
+                && !$('#without_duedate').is(':checked')) {
+                const debut = dp1.dateSelected || new Date();
+                const finAnnee = new Date(debut.getFullYear(), 11, 31);
 
-                if (typeof dp1 !== 'undefined') {
-                    dp1.setDate(startDate);
-                }
-                if (typeof dp2 !== 'undefined') {
-                    dp2.setDate(endDate);
-                }
+                dp2.setMin(debut);
+                dp2.setDate(finAnnee, true);
+                dp1.setMax(finAnnee);
             }
         }
 
@@ -295,14 +288,21 @@
 
     let dp1, dp2;
     $(document).ready(function () {
+        // Date de debut pre-remplie : le jour de l'enregistrement (fuseau de l'entreprise)
+        @php
+            $debutParDefaut = \Carbon\Carbon::parse(\App\Models\Contract::aujourdhui());
+        @endphp
         dp1 = datepicker('#start_date', {
             position: 'bl',
+            dateSelected: new Date({{ $debutParDefaut->year }}, {{ $debutParDefaut->month - 1 }}, {{ $debutParDefaut->day }}),
             onSelect: (instance, date) => {
+                if (!date) {
+                    return;
+                }
+                // La fin ne peut pas preceder le debut. Une fin vide reste
+                // vide : elle n'est plus recopiee depuis le debut.
                 if (typeof dp2.dateSelected !== 'undefined' && dp2.dateSelected.getTime() < date
                     .getTime()) {
-                    dp2.setDate(date, true)
-                }
-                if (typeof dp2.dateSelected === 'undefined') {
                     dp2.setDate(date, true)
                 }
                 dp2.setMin(date);
@@ -447,8 +447,17 @@
             })
         });
 
+        // "Sans date d'echeance" : la date de fin est reellement videe
         $('#without_duedate').click(function () {
-            $('.due-date-box').toggle();
+            const sansFin = $(this).is(':checked');
+
+            $('.due-date-box').toggle(!sansFin);
+
+            if (sansFin) {
+                dp2.setDate();
+                $('#end_date').val('');
+                dp1.setMax();
+            }
         });
 
         init(RIGHT_MODAL);

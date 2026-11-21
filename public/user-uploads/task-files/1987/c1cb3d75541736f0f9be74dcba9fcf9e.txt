@@ -1,0 +1,66 @@
+================================================================================
+ÉBAUCHE DE SPÉCIFICATION TECHNIQUE
+Architecture d'Envoi Asynchrone des Notifications et Traitement en Arrière-Plan
+================================================================================
+
+1. CONTEXTE ET PROBLÉMATIQUE
+--------------------------------------------------------------------------------
+Lors de l'enregistrement d'une tâche dans l'application, le système effectue
+actuellement de manière synchrone l'enregistrement en base de données ainsi que
+l'envoi des notifications par e-mail (via protocole SMTP/IMAP) et par WhatsApp.
+
+Problèmes identifiés :
+- Latence élevée : L'établissement de la connexion réseau externe (SMTP/IMAP)
+  pendant la requête d'enregistrement ralentit fortement le retour de confirmation
+  à l'utilisateur.
+- Instabilité et Timeouts : En cas de réseau instable ou lent, la requête subit un
+  timeout, bloquant la suite du processus et empêchant l'expedition des autres
+  notifications prévues.
+
+
+2. OBJECTIFS TECHNIQUE ET ARCHITECTURE PROPOSÉE
+--------------------------------------------------------------------------------
+Objectif principal : Découpler la logique métier d'enregistrement de la tâche de
+la logique d'envoi des messages de notification afin d'assurer un retour instantané
+à l'utilisateur et de fiabiliser la distribution des messages.
+
+Schéma du workflow cible :
+[ Utilisateur ] --> ( Enregistrement de la tâche ) --> [ Base de Données ]
+                         |
+                         +--> ( Réponse immédiate : "Tâche enregistrée" )
+                         |
+                         +--> [ Création d'un Job de Notification (Statut: PENDING) ]
+                                                        |
+                                                        v
+                                         [ File d'attente (Queue) ]
+                                                        |
+                                                        v
+                                      [ Worker / Traitement en Arrière-plan ]
+                                                        |
+                                                        +--> Envoi Mail (SMTP/IMAP)
+                                                        +--> Envoi WhatsApp
+
+
+3. DÉTAILS DE L'IMPLÉMENTATION
+--------------------------------------------------------------------------------
+A. Découplage du Processus d'Enregistrement :
+   1. Réception de la requête d'enregistrement de tâche.
+   2. Écriture en base de données.
+   3. Création des entrées de notification dans la file d'attente avec le statut "PENDING".
+   4. Envoi immédiat de la réponse de confirmation à l'utilisateur.
+
+B. Traitement des Jobs en Arrière-Plan (Background Worker) :
+   1. Le processus d'arrière-plan parcourt régulièrement la file d'attente des jobs "PENDING".
+   2. Traitement séquentiel ou parallèle sécurisé des envois (E-mail / WhatsApp).
+   3. Mise à jour du statut des jobs en cas de succès ou de réessai en cas d'échec
+      temporaire de connexion réseau.
+
+
+4. PLAN D'ACTION ET TÂCHES CONNEXES
+--------------------------------------------------------------------------------
+- Tâche 1 : Spécification et architecture du système de files d'attente (Background Jobs).
+- Tâche 2 : Évolution fonctionnelle d'importation avec l'ajout de la colonne "assigné".
+- Tâche 3 : Analyse et revue rapide du module / de la fonctionnalité "drone".
+- Tâche 4 : Recherches complémentaires et finalisation du document de spécification
+          technique pour validation avec le mentor (échéance lundi).
+================================================================================

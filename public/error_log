@@ -1,0 +1,490 @@
+[02-Oct-2026 10:41:19 Africa/Abidjan] PHP Warning:  require(/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php): Failed to open stream: No such file or directory in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:41:19 Africa/Abidjan] PHP Fatal error:  Uncaught Error: Failed opening required '/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php' (include_path='.:/opt/alt/php83/usr/share/pear:/opt/alt/php83/usr/share/php:/usr/share/pear:/usr/share/php') in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php(45): {closure}()
+#1 /home/cp2255957p00/public_html/tacheflux/vendor/autoload.php(22): ComposerAutoloaderInitd031baae89a2e641f6ce82f5c44a21a2::getLoader()
+#2 /home/cp2255957p00/public_html/tacheflux/public/index.php(46): require('/home/cp2255957...')
+#3 {main}
+  thrown in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:41:19 Africa/Abidjan] PHP Warning:  require(/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php): Failed to open stream: No such file or directory in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:41:19 Africa/Abidjan] PHP Fatal error:  Uncaught Error: Failed opening required '/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php' (include_path='.:/opt/alt/php83/usr/share/pear:/opt/alt/php83/usr/share/php:/usr/share/pear:/usr/share/php') in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php(45): {closure}()
+#1 /home/cp2255957p00/public_html/tacheflux/vendor/autoload.php(22): ComposerAutoloaderInitd031baae89a2e641f6ce82f5c44a21a2::getLoader()
+#2 /home/cp2255957p00/public_html/tacheflux/public/index.php(46): require('/home/cp2255957...')
+#3 {main}
+  thrown in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:41:19 Africa/Abidjan] PHP Warning:  require(/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php): Failed to open stream: No such file or directory in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:41:19 Africa/Abidjan] PHP Fatal error:  Uncaught Error: Failed opening required '/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php' (include_path='.:/opt/alt/php83/usr/share/pear:/opt/alt/php83/usr/share/php:/usr/share/pear:/usr/share/php') in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php(45): {closure}()
+#1 /home/cp2255957p00/public_html/tacheflux/vendor/autoload.php(22): ComposerAutoloaderInitd031baae89a2e641f6ce82f5c44a21a2::getLoader()
+#2 /home/cp2255957p00/public_html/tacheflux/public/index.php(46): require('/home/cp2255957...')
+#3 {main}
+  thrown in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:41:19 Africa/Abidjan] PHP Warning:  require(/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php): Failed to open stream: No such file or directory in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:41:19 Africa/Abidjan] PHP Fatal error:  Uncaught Error: Failed opening required '/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php' (include_path='.:/opt/alt/php83/usr/share/pear:/opt/alt/php83/usr/share/php:/usr/share/pear:/usr/share/php') in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php(45): {closure}()
+#1 /home/cp2255957p00/public_html/tacheflux/vendor/autoload.php(22): ComposerAutoloaderInitd031baae89a2e641f6ce82f5c44a21a2::getLoader()
+#2 /home/cp2255957p00/public_html/tacheflux/public/index.php(46): require('/home/cp2255957...')
+#3 {main}
+  thrown in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:41:25 Africa/Abidjan] PHP Warning:  require(/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php): Failed to open stream: No such file or directory in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:41:25 Africa/Abidjan] PHP Fatal error:  Uncaught Error: Failed opening required '/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php' (include_path='.:/opt/alt/php83/usr/share/pear:/opt/alt/php83/usr/share/php:/usr/share/pear:/usr/share/php') in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php(45): {closure}()
+#1 /home/cp2255957p00/public_html/tacheflux/vendor/autoload.php(22): ComposerAutoloaderInitd031baae89a2e641f6ce82f5c44a21a2::getLoader()
+#2 /home/cp2255957p00/public_html/tacheflux/public/index.php(46): require('/home/cp2255957...')
+#3 {main}
+  thrown in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:41:27 Africa/Abidjan] PHP Warning:  require(/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php): Failed to open stream: No such file or directory in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:41:27 Africa/Abidjan] PHP Fatal error:  Uncaught Error: Failed opening required '/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php' (include_path='.:/opt/alt/php83/usr/share/pear:/opt/alt/php83/usr/share/php:/usr/share/pear:/usr/share/php') in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php(45): {closure}()
+#1 /home/cp2255957p00/public_html/tacheflux/vendor/autoload.php(22): ComposerAutoloaderInitd031baae89a2e641f6ce82f5c44a21a2::getLoader()
+#2 /home/cp2255957p00/public_html/tacheflux/public/index.php(46): require('/home/cp2255957...')
+#3 {main}
+  thrown in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:41:28 Africa/Abidjan] PHP Warning:  require(/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php): Failed to open stream: No such file or directory in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:41:28 Africa/Abidjan] PHP Fatal error:  Uncaught Error: Failed opening required '/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php' (include_path='.:/opt/alt/php83/usr/share/pear:/opt/alt/php83/usr/share/php:/usr/share/pear:/usr/share/php') in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php(45): {closure}()
+#1 /home/cp2255957p00/public_html/tacheflux/vendor/autoload.php(22): ComposerAutoloaderInitd031baae89a2e641f6ce82f5c44a21a2::getLoader()
+#2 /home/cp2255957p00/public_html/tacheflux/public/index.php(46): require('/home/cp2255957...')
+#3 {main}
+  thrown in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:41:34 Africa/Abidjan] PHP Warning:  require(/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php): Failed to open stream: No such file or directory in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:41:34 Africa/Abidjan] PHP Fatal error:  Uncaught Error: Failed opening required '/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php' (include_path='.:/opt/alt/php83/usr/share/pear:/opt/alt/php83/usr/share/php:/usr/share/pear:/usr/share/php') in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php(45): {closure}()
+#1 /home/cp2255957p00/public_html/tacheflux/vendor/autoload.php(22): ComposerAutoloaderInitd031baae89a2e641f6ce82f5c44a21a2::getLoader()
+#2 /home/cp2255957p00/public_html/tacheflux/public/index.php(46): require('/home/cp2255957...')
+#3 {main}
+  thrown in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:42:11 Africa/Abidjan] PHP Warning:  require(/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php): Failed to open stream: No such file or directory in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:42:11 Africa/Abidjan] PHP Fatal error:  Uncaught Error: Failed opening required '/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php' (include_path='.:/opt/alt/php83/usr/share/pear:/opt/alt/php83/usr/share/php:/usr/share/pear:/usr/share/php') in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php(45): {closure}()
+#1 /home/cp2255957p00/public_html/tacheflux/vendor/autoload.php(22): ComposerAutoloaderInitd031baae89a2e641f6ce82f5c44a21a2::getLoader()
+#2 /home/cp2255957p00/public_html/tacheflux/public/index.php(46): require('/home/cp2255957...')
+#3 {main}
+  thrown in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:42:13 Africa/Abidjan] PHP Warning:  require(/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php): Failed to open stream: No such file or directory in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:42:13 Africa/Abidjan] PHP Fatal error:  Uncaught Error: Failed opening required '/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php' (include_path='.:/opt/alt/php83/usr/share/pear:/opt/alt/php83/usr/share/php:/usr/share/pear:/usr/share/php') in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php(45): {closure}()
+#1 /home/cp2255957p00/public_html/tacheflux/vendor/autoload.php(22): ComposerAutoloaderInitd031baae89a2e641f6ce82f5c44a21a2::getLoader()
+#2 /home/cp2255957p00/public_html/tacheflux/public/index.php(46): require('/home/cp2255957...')
+#3 {main}
+  thrown in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:42:15 Africa/Abidjan] PHP Warning:  require(/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php): Failed to open stream: No such file or directory in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:42:15 Africa/Abidjan] PHP Fatal error:  Uncaught Error: Failed opening required '/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php' (include_path='.:/opt/alt/php83/usr/share/pear:/opt/alt/php83/usr/share/php:/usr/share/pear:/usr/share/php') in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php(45): {closure}()
+#1 /home/cp2255957p00/public_html/tacheflux/vendor/autoload.php(22): ComposerAutoloaderInitd031baae89a2e641f6ce82f5c44a21a2::getLoader()
+#2 /home/cp2255957p00/public_html/tacheflux/public/index.php(46): require('/home/cp2255957...')
+#3 {main}
+  thrown in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:42:48 Africa/Abidjan] PHP Warning:  require(/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php): Failed to open stream: No such file or directory in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:42:48 Africa/Abidjan] PHP Fatal error:  Uncaught Error: Failed opening required '/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php' (include_path='.:/opt/alt/php83/usr/share/pear:/opt/alt/php83/usr/share/php:/usr/share/pear:/usr/share/php') in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php(45): {closure}()
+#1 /home/cp2255957p00/public_html/tacheflux/vendor/autoload.php(22): ComposerAutoloaderInitd031baae89a2e641f6ce82f5c44a21a2::getLoader()
+#2 /home/cp2255957p00/public_html/tacheflux/public/index.php(46): require('/home/cp2255957...')
+#3 {main}
+  thrown in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:42:55 Africa/Abidjan] PHP Warning:  require(/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php): Failed to open stream: No such file or directory in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:42:55 Africa/Abidjan] PHP Fatal error:  Uncaught Error: Failed opening required '/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php' (include_path='.:/opt/alt/php83/usr/share/pear:/opt/alt/php83/usr/share/php:/usr/share/pear:/usr/share/php') in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php(45): {closure}()
+#1 /home/cp2255957p00/public_html/tacheflux/vendor/autoload.php(22): ComposerAutoloaderInitd031baae89a2e641f6ce82f5c44a21a2::getLoader()
+#2 /home/cp2255957p00/public_html/tacheflux/public/index.php(46): require('/home/cp2255957...')
+#3 {main}
+  thrown in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:43:00 Africa/Abidjan] PHP Warning:  require(/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php): Failed to open stream: No such file or directory in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:43:00 Africa/Abidjan] PHP Fatal error:  Uncaught Error: Failed opening required '/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php' (include_path='.:/opt/alt/php83/usr/share/pear:/opt/alt/php83/usr/share/php:/usr/share/pear:/usr/share/php') in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php(45): {closure}()
+#1 /home/cp2255957p00/public_html/tacheflux/vendor/autoload.php(22): ComposerAutoloaderInitd031baae89a2e641f6ce82f5c44a21a2::getLoader()
+#2 /home/cp2255957p00/public_html/tacheflux/public/index.php(46): require('/home/cp2255957...')
+#3 {main}
+  thrown in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:43:03 Africa/Abidjan] PHP Warning:  require(/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php): Failed to open stream: No such file or directory in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:43:03 Africa/Abidjan] PHP Fatal error:  Uncaught Error: Failed opening required '/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php' (include_path='.:/opt/alt/php83/usr/share/pear:/opt/alt/php83/usr/share/php:/usr/share/pear:/usr/share/php') in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php(45): {closure}()
+#1 /home/cp2255957p00/public_html/tacheflux/vendor/autoload.php(22): ComposerAutoloaderInitd031baae89a2e641f6ce82f5c44a21a2::getLoader()
+#2 /home/cp2255957p00/public_html/tacheflux/public/index.php(46): require('/home/cp2255957...')
+#3 {main}
+  thrown in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:43:13 Africa/Abidjan] PHP Warning:  require(/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php): Failed to open stream: No such file or directory in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:43:13 Africa/Abidjan] PHP Fatal error:  Uncaught Error: Failed opening required '/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php' (include_path='.:/opt/alt/php83/usr/share/pear:/opt/alt/php83/usr/share/php:/usr/share/pear:/usr/share/php') in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php(45): {closure}()
+#1 /home/cp2255957p00/public_html/tacheflux/vendor/autoload.php(22): ComposerAutoloaderInitd031baae89a2e641f6ce82f5c44a21a2::getLoader()
+#2 /home/cp2255957p00/public_html/tacheflux/public/index.php(46): require('/home/cp2255957...')
+#3 {main}
+  thrown in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:43:15 Africa/Abidjan] PHP Warning:  require(/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php): Failed to open stream: No such file or directory in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:43:15 Africa/Abidjan] PHP Fatal error:  Uncaught Error: Failed opening required '/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php' (include_path='.:/opt/alt/php83/usr/share/pear:/opt/alt/php83/usr/share/php:/usr/share/pear:/usr/share/php') in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php(45): {closure}()
+#1 /home/cp2255957p00/public_html/tacheflux/vendor/autoload.php(22): ComposerAutoloaderInitd031baae89a2e641f6ce82f5c44a21a2::getLoader()
+#2 /home/cp2255957p00/public_html/tacheflux/public/index.php(46): require('/home/cp2255957...')
+#3 {main}
+  thrown in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:43:15 Africa/Abidjan] PHP Warning:  require(/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php): Failed to open stream: No such file or directory in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:43:15 Africa/Abidjan] PHP Fatal error:  Uncaught Error: Failed opening required '/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php' (include_path='.:/opt/alt/php83/usr/share/pear:/opt/alt/php83/usr/share/php:/usr/share/pear:/usr/share/php') in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php(45): {closure}()
+#1 /home/cp2255957p00/public_html/tacheflux/vendor/autoload.php(22): ComposerAutoloaderInitd031baae89a2e641f6ce82f5c44a21a2::getLoader()
+#2 /home/cp2255957p00/public_html/tacheflux/public/index.php(46): require('/home/cp2255957...')
+#3 {main}
+  thrown in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:43:26 Africa/Abidjan] PHP Warning:  require(/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php): Failed to open stream: No such file or directory in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:43:26 Africa/Abidjan] PHP Fatal error:  Uncaught Error: Failed opening required '/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php' (include_path='.:/opt/alt/php83/usr/share/pear:/opt/alt/php83/usr/share/php:/usr/share/pear:/usr/share/php') in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php(45): {closure}()
+#1 /home/cp2255957p00/public_html/tacheflux/vendor/autoload.php(22): ComposerAutoloaderInitd031baae89a2e641f6ce82f5c44a21a2::getLoader()
+#2 /home/cp2255957p00/public_html/tacheflux/public/index.php(46): require('/home/cp2255957...')
+#3 {main}
+  thrown in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:43:29 Africa/Abidjan] PHP Warning:  require(/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php): Failed to open stream: No such file or directory in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:43:29 Africa/Abidjan] PHP Fatal error:  Uncaught Error: Failed opening required '/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php' (include_path='.:/opt/alt/php83/usr/share/pear:/opt/alt/php83/usr/share/php:/usr/share/pear:/usr/share/php') in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php(45): {closure}()
+#1 /home/cp2255957p00/public_html/tacheflux/vendor/autoload.php(22): ComposerAutoloaderInitd031baae89a2e641f6ce82f5c44a21a2::getLoader()
+#2 /home/cp2255957p00/public_html/tacheflux/public/index.php(46): require('/home/cp2255957...')
+#3 {main}
+  thrown in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:43:32 Africa/Abidjan] PHP Warning:  require(/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php): Failed to open stream: No such file or directory in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:43:32 Africa/Abidjan] PHP Fatal error:  Uncaught Error: Failed opening required '/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php' (include_path='.:/opt/alt/php83/usr/share/pear:/opt/alt/php83/usr/share/php:/usr/share/pear:/usr/share/php') in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php(45): {closure}()
+#1 /home/cp2255957p00/public_html/tacheflux/vendor/autoload.php(22): ComposerAutoloaderInitd031baae89a2e641f6ce82f5c44a21a2::getLoader()
+#2 /home/cp2255957p00/public_html/tacheflux/public/index.php(46): require('/home/cp2255957...')
+#3 {main}
+  thrown in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:43:32 Africa/Abidjan] PHP Warning:  require(/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php): Failed to open stream: No such file or directory in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:43:32 Africa/Abidjan] PHP Fatal error:  Uncaught Error: Failed opening required '/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php' (include_path='.:/opt/alt/php83/usr/share/pear:/opt/alt/php83/usr/share/php:/usr/share/pear:/usr/share/php') in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php(45): {closure}()
+#1 /home/cp2255957p00/public_html/tacheflux/vendor/autoload.php(22): ComposerAutoloaderInitd031baae89a2e641f6ce82f5c44a21a2::getLoader()
+#2 /home/cp2255957p00/public_html/tacheflux/public/index.php(46): require('/home/cp2255957...')
+#3 {main}
+  thrown in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:43:34 Africa/Abidjan] PHP Warning:  require(/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php): Failed to open stream: No such file or directory in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:43:34 Africa/Abidjan] PHP Fatal error:  Uncaught Error: Failed opening required '/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php' (include_path='.:/opt/alt/php83/usr/share/pear:/opt/alt/php83/usr/share/php:/usr/share/pear:/usr/share/php') in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php(45): {closure}()
+#1 /home/cp2255957p00/public_html/tacheflux/vendor/autoload.php(22): ComposerAutoloaderInitd031baae89a2e641f6ce82f5c44a21a2::getLoader()
+#2 /home/cp2255957p00/public_html/tacheflux/public/index.php(46): require('/home/cp2255957...')
+#3 {main}
+  thrown in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:43:39 Africa/Abidjan] PHP Warning:  require(/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php): Failed to open stream: No such file or directory in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:43:39 Africa/Abidjan] PHP Fatal error:  Uncaught Error: Failed opening required '/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php' (include_path='.:/opt/alt/php83/usr/share/pear:/opt/alt/php83/usr/share/php:/usr/share/pear:/usr/share/php') in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php(45): {closure}()
+#1 /home/cp2255957p00/public_html/tacheflux/vendor/autoload.php(22): ComposerAutoloaderInitd031baae89a2e641f6ce82f5c44a21a2::getLoader()
+#2 /home/cp2255957p00/public_html/tacheflux/public/index.php(46): require('/home/cp2255957...')
+#3 {main}
+  thrown in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:43:45 Africa/Abidjan] PHP Warning:  require(/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php): Failed to open stream: No such file or directory in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:43:45 Africa/Abidjan] PHP Fatal error:  Uncaught Error: Failed opening required '/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php' (include_path='.:/opt/alt/php83/usr/share/pear:/opt/alt/php83/usr/share/php:/usr/share/pear:/usr/share/php') in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php(45): {closure}()
+#1 /home/cp2255957p00/public_html/tacheflux/vendor/autoload.php(22): ComposerAutoloaderInitd031baae89a2e641f6ce82f5c44a21a2::getLoader()
+#2 /home/cp2255957p00/public_html/tacheflux/public/index.php(46): require('/home/cp2255957...')
+#3 {main}
+  thrown in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:43:54 Africa/Abidjan] PHP Warning:  require(/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php): Failed to open stream: No such file or directory in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:43:54 Africa/Abidjan] PHP Fatal error:  Uncaught Error: Failed opening required '/home/cp2255957p00/public_html/tacheflux/vendor/composer/../amphp/amp/lib/functions.php' (include_path='.:/opt/alt/php83/usr/share/pear:/opt/alt/php83/usr/share/php:/usr/share/pear:/usr/share/php') in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php:41
+Stack trace:
+#0 /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php(45): {closure}()
+#1 /home/cp2255957p00/public_html/tacheflux/vendor/autoload.php(22): ComposerAutoloaderInitd031baae89a2e641f6ce82f5c44a21a2::getLoader()
+#2 /home/cp2255957p00/public_html/tacheflux/public/index.php(46): require('/home/cp2255957...')
+#3 {main}
+  thrown in /home/cp2255957p00/public_html/tacheflux/vendor/composer/autoload_real.php on line 41
+[02-Oct-2026 10:44:29 UTC] PHP Fatal error:  Uncaught ReflectionException: Class "view" does not exist in /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php:912
+Stack trace:
+#0 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php(912): ReflectionClass->__construct()
+#1 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php(795): Illuminate\Container\Container->build()
+#2 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(961): Illuminate\Container\Container->resolve()
+#3 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php(731): Illuminate\Foundation\Application->resolve()
+#4 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(946): Illuminate\Container\Container->make()
+#5 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php(1454): Illuminate\Foundation\Application->make()
+#6 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(237): Illuminate\Container\Container->offsetGet()
+#7 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(208): Illuminate\Support\Facades\Facade::resolveFacadeInstance()
+#8 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(349): Illuminate\Support\Facades\Facade::getFacadeRoot()
+#9 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/RegisterErrorViewPaths.php(16): Illuminate\Support\Facades\Facade::__callStatic()
+#10 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(744): Illuminate\Foundation\Exceptions\RegisterErrorViewPaths->__invoke()
+#11 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(719): Illuminate\Foundation\Exceptions\Handler->registerErrorViewPaths()
+#12 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(650): Illuminate\Foundation\Exceptions\Handler->renderHttpException()
+#13 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(556): Illuminate\Foundation\Exceptions\Handler->prepareResponse()
+#14 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(473): Illuminate\Foundation\Exceptions\Handler->renderExceptionResponse()
+#15 /home/cp2255957p00/public_html/tacheflux/app/Exceptions/Handler.php(93): Illuminate\Foundation\Exceptions\Handler->render()
+#16 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(218): App\Exceptions\Handler->render()
+#17 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(195): Illuminate\Foundation\Bootstrap\HandleExceptions->renderHttpResponse()
+#18 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(255): Illuminate\Foundation\Bootstrap\HandleExceptions->handleException()
+#19 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->Illuminate\Foundation\Bootstrap\{closure}()
+#20 {main}
+
+Next Illuminate\Contracts\Container\BindingResolutionException: Target class [view] does not exist. in /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php:914
+Stack trace:
+#0 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php(795): Illuminate\Container\Container->build()
+#1 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(961): Illuminate\Container\Container->resolve()
+#2 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php(731): Illuminate\Foundation\Application->resolve()
+#3 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(946): Illuminate\Container\Container->make()
+#4 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php(1454): Illuminate\Foundation\Application->make()
+#5 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(237): Illuminate\Container\Container->offsetGet()
+#6 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(208): Illuminate\Support\Facades\Facade::resolveFacadeInstance()
+#7 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(349): Illuminate\Support\Facades\Facade::getFacadeRoot()
+#8 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/RegisterErrorViewPaths.php(16): Illuminate\Support\Facades\Facade::__callStatic()
+#9 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(744): Illuminate\Foundation\Exceptions\RegisterErrorViewPaths->__invoke()
+#10 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(719): Illuminate\Foundation\Exceptions\Handler->registerErrorViewPaths()
+#11 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(650): Illuminate\Foundation\Exceptions\Handler->renderHttpException()
+#12 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(556): Illuminate\Foundation\Exceptions\Handler->prepareResponse()
+#13 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(473): Illuminate\Foundation\Exceptions\Handler->renderExceptionResponse()
+#14 /home/cp2255957p00/public_html/tacheflux/app/Exceptions/Handler.php(93): Illuminate\Foundation\Exceptions\Handler->render()
+#15 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(218): App\Exceptions\Handler->render()
+#16 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(195): Illuminate\Foundation\Bootstrap\HandleExceptions->renderHttpResponse()
+#17 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(255): Illuminate\Foundation\Bootstrap\HandleExceptions->handleException()
+#18 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->Illuminate\Foundation\Bootstrap\{closure}()
+#19 {main}
+  thrown in /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php on line 914
+[02-Oct-2026 10:44:45 UTC] PHP Fatal error:  Uncaught ReflectionException: Class "view" does not exist in /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php:912
+Stack trace:
+#0 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php(912): ReflectionClass->__construct()
+#1 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php(795): Illuminate\Container\Container->build()
+#2 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(961): Illuminate\Container\Container->resolve()
+#3 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php(731): Illuminate\Foundation\Application->resolve()
+#4 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(946): Illuminate\Container\Container->make()
+#5 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php(1454): Illuminate\Foundation\Application->make()
+#6 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(237): Illuminate\Container\Container->offsetGet()
+#7 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(208): Illuminate\Support\Facades\Facade::resolveFacadeInstance()
+#8 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(349): Illuminate\Support\Facades\Facade::getFacadeRoot()
+#9 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/RegisterErrorViewPaths.php(16): Illuminate\Support\Facades\Facade::__callStatic()
+#10 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(744): Illuminate\Foundation\Exceptions\RegisterErrorViewPaths->__invoke()
+#11 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(719): Illuminate\Foundation\Exceptions\Handler->registerErrorViewPaths()
+#12 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(650): Illuminate\Foundation\Exceptions\Handler->renderHttpException()
+#13 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(556): Illuminate\Foundation\Exceptions\Handler->prepareResponse()
+#14 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(473): Illuminate\Foundation\Exceptions\Handler->renderExceptionResponse()
+#15 /home/cp2255957p00/public_html/tacheflux/app/Exceptions/Handler.php(93): Illuminate\Foundation\Exceptions\Handler->render()
+#16 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(218): App\Exceptions\Handler->render()
+#17 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(195): Illuminate\Foundation\Bootstrap\HandleExceptions->renderHttpResponse()
+#18 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(255): Illuminate\Foundation\Bootstrap\HandleExceptions->handleException()
+#19 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->Illuminate\Foundation\Bootstrap\{closure}()
+#20 {main}
+
+Next Illuminate\Contracts\Container\BindingResolutionException: Target class [view] does not exist. in /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php:914
+Stack trace:
+#0 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php(795): Illuminate\Container\Container->build()
+#1 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(961): Illuminate\Container\Container->resolve()
+#2 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php(731): Illuminate\Foundation\Application->resolve()
+#3 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(946): Illuminate\Container\Container->make()
+#4 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php(1454): Illuminate\Foundation\Application->make()
+#5 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(237): Illuminate\Container\Container->offsetGet()
+#6 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(208): Illuminate\Support\Facades\Facade::resolveFacadeInstance()
+#7 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(349): Illuminate\Support\Facades\Facade::getFacadeRoot()
+#8 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/RegisterErrorViewPaths.php(16): Illuminate\Support\Facades\Facade::__callStatic()
+#9 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(744): Illuminate\Foundation\Exceptions\RegisterErrorViewPaths->__invoke()
+#10 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(719): Illuminate\Foundation\Exceptions\Handler->registerErrorViewPaths()
+#11 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(650): Illuminate\Foundation\Exceptions\Handler->renderHttpException()
+#12 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(556): Illuminate\Foundation\Exceptions\Handler->prepareResponse()
+#13 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(473): Illuminate\Foundation\Exceptions\Handler->renderExceptionResponse()
+#14 /home/cp2255957p00/public_html/tacheflux/app/Exceptions/Handler.php(93): Illuminate\Foundation\Exceptions\Handler->render()
+#15 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(218): App\Exceptions\Handler->render()
+#16 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(195): Illuminate\Foundation\Bootstrap\HandleExceptions->renderHttpResponse()
+#17 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(255): Illuminate\Foundation\Bootstrap\HandleExceptions->handleException()
+#18 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->Illuminate\Foundation\Bootstrap\{closure}()
+#19 {main}
+  thrown in /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php on line 914
+[02-Oct-2026 10:46:15 UTC] PHP Fatal error:  Uncaught ReflectionException: Class "view" does not exist in /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php:912
+Stack trace:
+#0 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php(912): ReflectionClass->__construct()
+#1 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php(795): Illuminate\Container\Container->build()
+#2 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(961): Illuminate\Container\Container->resolve()
+#3 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php(731): Illuminate\Foundation\Application->resolve()
+#4 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(946): Illuminate\Container\Container->make()
+#5 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php(1454): Illuminate\Foundation\Application->make()
+#6 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(237): Illuminate\Container\Container->offsetGet()
+#7 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(208): Illuminate\Support\Facades\Facade::resolveFacadeInstance()
+#8 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(349): Illuminate\Support\Facades\Facade::getFacadeRoot()
+#9 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/RegisterErrorViewPaths.php(16): Illuminate\Support\Facades\Facade::__callStatic()
+#10 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(744): Illuminate\Foundation\Exceptions\RegisterErrorViewPaths->__invoke()
+#11 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(719): Illuminate\Foundation\Exceptions\Handler->registerErrorViewPaths()
+#12 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(650): Illuminate\Foundation\Exceptions\Handler->renderHttpException()
+#13 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(556): Illuminate\Foundation\Exceptions\Handler->prepareResponse()
+#14 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(473): Illuminate\Foundation\Exceptions\Handler->renderExceptionResponse()
+#15 /home/cp2255957p00/public_html/tacheflux/app/Exceptions/Handler.php(93): Illuminate\Foundation\Exceptions\Handler->render()
+#16 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(218): App\Exceptions\Handler->render()
+#17 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(195): Illuminate\Foundation\Bootstrap\HandleExceptions->renderHttpResponse()
+#18 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(255): Illuminate\Foundation\Bootstrap\HandleExceptions->handleException()
+#19 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->Illuminate\Foundation\Bootstrap\{closure}()
+#20 {main}
+
+Next Illuminate\Contracts\Container\BindingResolutionException: Target class [view] does not exist. in /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php:914
+Stack trace:
+#0 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php(795): Illuminate\Container\Container->build()
+#1 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(961): Illuminate\Container\Container->resolve()
+#2 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php(731): Illuminate\Foundation\Application->resolve()
+#3 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(946): Illuminate\Container\Container->make()
+#4 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php(1454): Illuminate\Foundation\Application->make()
+#5 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(237): Illuminate\Container\Container->offsetGet()
+#6 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(208): Illuminate\Support\Facades\Facade::resolveFacadeInstance()
+#7 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(349): Illuminate\Support\Facades\Facade::getFacadeRoot()
+#8 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/RegisterErrorViewPaths.php(16): Illuminate\Support\Facades\Facade::__callStatic()
+#9 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(744): Illuminate\Foundation\Exceptions\RegisterErrorViewPaths->__invoke()
+#10 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(719): Illuminate\Foundation\Exceptions\Handler->registerErrorViewPaths()
+#11 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(650): Illuminate\Foundation\Exceptions\Handler->renderHttpException()
+#12 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(556): Illuminate\Foundation\Exceptions\Handler->prepareResponse()
+#13 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(473): Illuminate\Foundation\Exceptions\Handler->renderExceptionResponse()
+#14 /home/cp2255957p00/public_html/tacheflux/app/Exceptions/Handler.php(93): Illuminate\Foundation\Exceptions\Handler->render()
+#15 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(218): App\Exceptions\Handler->render()
+#16 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(195): Illuminate\Foundation\Bootstrap\HandleExceptions->renderHttpResponse()
+#17 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(255): Illuminate\Foundation\Bootstrap\HandleExceptions->handleException()
+#18 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->Illuminate\Foundation\Bootstrap\{closure}()
+#19 {main}
+  thrown in /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php on line 914
+[02-Oct-2026 10:46:22 UTC] PHP Fatal error:  Uncaught ReflectionException: Class "view" does not exist in /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php:912
+Stack trace:
+#0 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php(912): ReflectionClass->__construct()
+#1 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php(795): Illuminate\Container\Container->build()
+#2 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(961): Illuminate\Container\Container->resolve()
+#3 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php(731): Illuminate\Foundation\Application->resolve()
+#4 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(946): Illuminate\Container\Container->make()
+#5 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php(1454): Illuminate\Foundation\Application->make()
+#6 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(237): Illuminate\Container\Container->offsetGet()
+#7 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(208): Illuminate\Support\Facades\Facade::resolveFacadeInstance()
+#8 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(349): Illuminate\Support\Facades\Facade::getFacadeRoot()
+#9 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/RegisterErrorViewPaths.php(16): Illuminate\Support\Facades\Facade::__callStatic()
+#10 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(744): Illuminate\Foundation\Exceptions\RegisterErrorViewPaths->__invoke()
+#11 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(719): Illuminate\Foundation\Exceptions\Handler->registerErrorViewPaths()
+#12 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(650): Illuminate\Foundation\Exceptions\Handler->renderHttpException()
+#13 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(556): Illuminate\Foundation\Exceptions\Handler->prepareResponse()
+#14 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(473): Illuminate\Foundation\Exceptions\Handler->renderExceptionResponse()
+#15 /home/cp2255957p00/public_html/tacheflux/app/Exceptions/Handler.php(93): Illuminate\Foundation\Exceptions\Handler->render()
+#16 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(218): App\Exceptions\Handler->render()
+#17 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(195): Illuminate\Foundation\Bootstrap\HandleExceptions->renderHttpResponse()
+#18 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(255): Illuminate\Foundation\Bootstrap\HandleExceptions->handleException()
+#19 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->Illuminate\Foundation\Bootstrap\{closure}()
+#20 {main}
+
+Next Illuminate\Contracts\Container\BindingResolutionException: Target class [view] does not exist. in /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php:914
+Stack trace:
+#0 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php(795): Illuminate\Container\Container->build()
+#1 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(961): Illuminate\Container\Container->resolve()
+#2 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php(731): Illuminate\Foundation\Application->resolve()
+#3 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(946): Illuminate\Container\Container->make()
+#4 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php(1454): Illuminate\Foundation\Application->make()
+#5 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(237): Illuminate\Container\Container->offsetGet()
+#6 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(208): Illuminate\Support\Facades\Facade::resolveFacadeInstance()
+#7 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(349): Illuminate\Support\Facades\Facade::getFacadeRoot()
+#8 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/RegisterErrorViewPaths.php(16): Illuminate\Support\Facades\Facade::__callStatic()
+#9 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(744): Illuminate\Foundation\Exceptions\RegisterErrorViewPaths->__invoke()
+#10 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(719): Illuminate\Foundation\Exceptions\Handler->registerErrorViewPaths()
+#11 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(650): Illuminate\Foundation\Exceptions\Handler->renderHttpException()
+#12 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(556): Illuminate\Foundation\Exceptions\Handler->prepareResponse()
+#13 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(473): Illuminate\Foundation\Exceptions\Handler->renderExceptionResponse()
+#14 /home/cp2255957p00/public_html/tacheflux/app/Exceptions/Handler.php(93): Illuminate\Foundation\Exceptions\Handler->render()
+#15 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(218): App\Exceptions\Handler->render()
+#16 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(195): Illuminate\Foundation\Bootstrap\HandleExceptions->renderHttpResponse()
+#17 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(255): Illuminate\Foundation\Bootstrap\HandleExceptions->handleException()
+#18 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->Illuminate\Foundation\Bootstrap\{closure}()
+#19 {main}
+  thrown in /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php on line 914
+[02-Oct-2026 10:46:25 UTC] PHP Fatal error:  Uncaught ReflectionException: Class "view" does not exist in /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php:912
+Stack trace:
+#0 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php(912): ReflectionClass->__construct()
+#1 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php(795): Illuminate\Container\Container->build()
+#2 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(961): Illuminate\Container\Container->resolve()
+#3 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php(731): Illuminate\Foundation\Application->resolve()
+#4 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(946): Illuminate\Container\Container->make()
+#5 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php(1454): Illuminate\Foundation\Application->make()
+#6 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(237): Illuminate\Container\Container->offsetGet()
+#7 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(208): Illuminate\Support\Facades\Facade::resolveFacadeInstance()
+#8 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(349): Illuminate\Support\Facades\Facade::getFacadeRoot()
+#9 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/RegisterErrorViewPaths.php(16): Illuminate\Support\Facades\Facade::__callStatic()
+#10 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(744): Illuminate\Foundation\Exceptions\RegisterErrorViewPaths->__invoke()
+#11 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(719): Illuminate\Foundation\Exceptions\Handler->registerErrorViewPaths()
+#12 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(650): Illuminate\Foundation\Exceptions\Handler->renderHttpException()
+#13 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(556): Illuminate\Foundation\Exceptions\Handler->prepareResponse()
+#14 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(473): Illuminate\Foundation\Exceptions\Handler->renderExceptionResponse()
+#15 /home/cp2255957p00/public_html/tacheflux/app/Exceptions/Handler.php(93): Illuminate\Foundation\Exceptions\Handler->render()
+#16 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(218): App\Exceptions\Handler->render()
+#17 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(195): Illuminate\Foundation\Bootstrap\HandleExceptions->renderHttpResponse()
+#18 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(255): Illuminate\Foundation\Bootstrap\HandleExceptions->handleException()
+#19 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->Illuminate\Foundation\Bootstrap\{closure}()
+#20 {main}
+
+Next Illuminate\Contracts\Container\BindingResolutionException: Target class [view] does not exist. in /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php:914
+Stack trace:
+#0 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php(795): Illuminate\Container\Container->build()
+#1 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(961): Illuminate\Container\Container->resolve()
+#2 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php(731): Illuminate\Foundation\Application->resolve()
+#3 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(946): Illuminate\Container\Container->make()
+#4 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php(1454): Illuminate\Foundation\Application->make()
+#5 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(237): Illuminate\Container\Container->offsetGet()
+#6 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(208): Illuminate\Support\Facades\Facade::resolveFacadeInstance()
+#7 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(349): Illuminate\Support\Facades\Facade::getFacadeRoot()
+#8 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/RegisterErrorViewPaths.php(16): Illuminate\Support\Facades\Facade::__callStatic()
+#9 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(744): Illuminate\Foundation\Exceptions\RegisterErrorViewPaths->__invoke()
+#10 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(719): Illuminate\Foundation\Exceptions\Handler->registerErrorViewPaths()
+#11 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(650): Illuminate\Foundation\Exceptions\Handler->renderHttpException()
+#12 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(556): Illuminate\Foundation\Exceptions\Handler->prepareResponse()
+#13 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(473): Illuminate\Foundation\Exceptions\Handler->renderExceptionResponse()
+#14 /home/cp2255957p00/public_html/tacheflux/app/Exceptions/Handler.php(93): Illuminate\Foundation\Exceptions\Handler->render()
+#15 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(218): App\Exceptions\Handler->render()
+#16 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(195): Illuminate\Foundation\Bootstrap\HandleExceptions->renderHttpResponse()
+#17 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(255): Illuminate\Foundation\Bootstrap\HandleExceptions->handleException()
+#18 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->Illuminate\Foundation\Bootstrap\{closure}()
+#19 {main}
+  thrown in /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php on line 914
+[02-Oct-2026 10:48:30 UTC] PHP Fatal error:  Uncaught ReflectionException: Class "view" does not exist in /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php:912
+Stack trace:
+#0 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php(912): ReflectionClass->__construct()
+#1 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php(795): Illuminate\Container\Container->build()
+#2 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(961): Illuminate\Container\Container->resolve()
+#3 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php(731): Illuminate\Foundation\Application->resolve()
+#4 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(946): Illuminate\Container\Container->make()
+#5 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php(1454): Illuminate\Foundation\Application->make()
+#6 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(237): Illuminate\Container\Container->offsetGet()
+#7 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(208): Illuminate\Support\Facades\Facade::resolveFacadeInstance()
+#8 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(349): Illuminate\Support\Facades\Facade::getFacadeRoot()
+#9 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/RegisterErrorViewPaths.php(16): Illuminate\Support\Facades\Facade::__callStatic()
+#10 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(744): Illuminate\Foundation\Exceptions\RegisterErrorViewPaths->__invoke()
+#11 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(719): Illuminate\Foundation\Exceptions\Handler->registerErrorViewPaths()
+#12 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(650): Illuminate\Foundation\Exceptions\Handler->renderHttpException()
+#13 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(556): Illuminate\Foundation\Exceptions\Handler->prepareResponse()
+#14 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(473): Illuminate\Foundation\Exceptions\Handler->renderExceptionResponse()
+#15 /home/cp2255957p00/public_html/tacheflux/app/Exceptions/Handler.php(93): Illuminate\Foundation\Exceptions\Handler->render()
+#16 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(218): App\Exceptions\Handler->render()
+#17 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(195): Illuminate\Foundation\Bootstrap\HandleExceptions->renderHttpResponse()
+#18 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(255): Illuminate\Foundation\Bootstrap\HandleExceptions->handleException()
+#19 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->Illuminate\Foundation\Bootstrap\{closure}()
+#20 {main}
+
+Next Illuminate\Contracts\Container\BindingResolutionException: Target class [view] does not exist. in /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php:914
+Stack trace:
+#0 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php(795): Illuminate\Container\Container->build()
+#1 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(961): Illuminate\Container\Container->resolve()
+#2 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php(731): Illuminate\Foundation\Application->resolve()
+#3 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(946): Illuminate\Container\Container->make()
+#4 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php(1454): Illuminate\Foundation\Application->make()
+#5 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(237): Illuminate\Container\Container->offsetGet()
+#6 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(208): Illuminate\Support\Facades\Facade::resolveFacadeInstance()
+#7 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(349): Illuminate\Support\Facades\Facade::getFacadeRoot()
+#8 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/RegisterErrorViewPaths.php(16): Illuminate\Support\Facades\Facade::__callStatic()
+#9 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(744): Illuminate\Foundation\Exceptions\RegisterErrorViewPaths->__invoke()
+#10 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(719): Illuminate\Foundation\Exceptions\Handler->registerErrorViewPaths()
+#11 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(650): Illuminate\Foundation\Exceptions\Handler->renderHttpException()
+#12 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(556): Illuminate\Foundation\Exceptions\Handler->prepareResponse()
+#13 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(473): Illuminate\Foundation\Exceptions\Handler->renderExceptionResponse()
+#14 /home/cp2255957p00/public_html/tacheflux/app/Exceptions/Handler.php(93): Illuminate\Foundation\Exceptions\Handler->render()
+#15 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(218): App\Exceptions\Handler->render()
+#16 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(195): Illuminate\Foundation\Bootstrap\HandleExceptions->renderHttpResponse()
+#17 /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(255): Illuminate\Foundation\Bootstrap\HandleExceptions->handleException()
+#18 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->Illuminate\Foundation\Bootstrap\{closure}()
+#19 {main}
+  thrown in /home/cp2255957p00/public_html/tacheflux/vendor/laravel/framework/src/Illuminate/Container/Container.php on line 914

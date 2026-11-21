@@ -88,13 +88,13 @@ $addClientPermission = user()->permission('add_clients');
                     <div class="col-md-6 col-lg-3">
                         <x-forms.datepicker fieldId="start_date" fieldRequired="true"
                             :fieldLabel="__('modules.projects.startDate')" fieldName="start_date"
-                            :fieldValue="$contract->start_date->timezone(company()->timezone)->format(company()->date_format)"
+                            :fieldValue="$contract->start_date->format(company()->date_format)"
                             :fieldPlaceholder="__('placeholders.date')" />
                     </div>
 
                     <div class="col-md-6 col-lg-3">
                         <x-forms.datepicker fieldId="end_date"
-                            :fieldValue="$contract->end_date==null ? $contract->end_date : $contract->end_date->timezone(company()->timezone)->format(company()->date_format)"
+                            :fieldValue="$contract->end_date==null ? $contract->end_date : $contract->end_date->format(company()->date_format)"
                             :fieldLabel="__('modules.timeLogs.endDate')" fieldName="end_date"
                             :fieldPlaceholder="__('placeholders.date')" />
                     </div>
@@ -215,13 +215,14 @@ $addClientPermission = user()->permission('add_clients');
 
         dp1 = datepicker('#start_date', {
             position: 'bl',
-            dateSelected: new Date("{{ str_replace('-', '/', $contract->start_date) }}"),
+            dateSelected: new Date({{ $contract->start_date->year }}, {{ $contract->start_date->month - 1 }}, {{ $contract->start_date->day }}),
             onSelect: (instance, date) => {
+                if (!date) {
+                    return;
+                }
+                // La fin ne peut pas preceder le debut ; une fin vide reste vide.
                 if (typeof dp2.dateSelected !== 'undefined' && dp2.dateSelected.getTime() < date
                     .getTime()) {
-                    dp2.setDate(date, true)
-                }
-                if (typeof dp2.dateSelected === 'undefined') {
                     dp2.setDate(date, true)
                 }
                 dp2.setMin(date);
@@ -231,50 +232,18 @@ $addClientPermission = user()->permission('add_clients');
 
         dp2 = datepicker('#end_date', {
             position: 'bl',
-            dateSelected: new Date("{{ $contract->end_date ? str_replace('-', '/', $contract->end_date) : str_replace('-', '/', now()) }}"),
+            @if ($contract->end_date)
+            dateSelected: new Date({{ $contract->end_date->year }}, {{ $contract->end_date->month - 1 }}, {{ $contract->end_date->day }}),
+            @endif
+            minDate: new Date({{ $contract->start_date->year }}, {{ $contract->start_date->month - 1 }}, {{ $contract->start_date->day }}),
             onSelect: (instance, date) => {
                 dp1.setMax(date);
             },
             ...datepickerConfig
         });
 
-        var contractTypeSelect = document.getElementById('contractType');
-        
-        function updateContractDates() {
-            const selectedOption = contractTypeSelect.options[contractTypeSelect.selectedIndex];
-            if (!selectedOption) return;
-
-            const text = selectedOption.text.trim();
-            const lowerText = text.toLowerCase();
-            
-            // Logique d'automatisation des dates pour Nouvelle Adhésion (plus robuste)
-            if (lowerText.includes('nouvelle') && (lowerText.includes('adh') || lowerText.includes('adhésion'))) {
-                const now = new Date();
-                const year = now.getFullYear();
-                const month = now.getMonth() + 1;
-
-                let startDate;
-                if (month === 1) {
-                    startDate = now;
-                } else {
-                    startDate = new Date(year, 0, 31); // 31 Janvier (mois commence à 0)
-                }
-                const endDate = new Date(year, 11, 31); // 31 Décembre
-
-                if (typeof dp1 !== 'undefined') {
-                    dp1.setDate(startDate);
-                }
-                if (typeof dp2 !== 'undefined') {
-                    dp2.setDate(endDate);
-                }
-            }
-        }
-
-        if (contractTypeSelect) {
-            contractTypeSelect.addEventListener('change', updateContractDates);
-            // Pas de setTimeout ici car en édition on ne veut généralement pas écraser les dates existantes
-            // Sauf si l'utilisateur change explicitement le type.
-        }
+        /* En modification, changer le type de contrat ne touche plus aux
+           dates : elles restent celles enregistrees, modifiables a la main. */
 
         $('.custom-date-picker').each(function(ind, el) {
             datepicker(el, {
