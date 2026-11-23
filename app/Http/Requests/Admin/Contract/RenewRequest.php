@@ -29,9 +29,7 @@ class RenewRequest extends CoreRequest
 
         $rules = [
             'amount' => 'required',
-            // La colonne contract_renews.end_date est NOT NULL : une fin vide
-            // provoquait une erreur SQL au lieu d'un message de validation.
-            'end_date' => 'required|date_format:"' . $setting->date_format . '"|after_or_equal:start_date',
+            'end_date' => 'nullable|date_format:"' . $setting->date_format . '"|after_or_equal:start_date',
         ];
 
 

@@ -29,15 +29,5 @@ class ContractType extends BaseModel
 
     use HasCompany;
 
-    /**
-     * Reconnait le type "Nouvelle adhesion" a partir de son libelle.
-     * Point unique de detection : a remplacer par un code stable si
-     * le libelle venait a changer.
-     */
-    public function estNouvelleAdhesion(): bool
-    {
-        $nom = mb_strtolower((string) $this->name);
-
-        return str_contains($nom, 'nouvelle') && str_contains($nom, 'adh');
-    }
+    //
 }
