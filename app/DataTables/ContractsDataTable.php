@@ -156,14 +156,20 @@ class ContractsDataTable extends BaseDataTable
 
                 $date = $row->end_date->translatedFormat($this->company->date_format);
 
-                // Statut calcule par le modele : memes regles que les compteurs et l'API
-                $ton = match ($row->statut()) {
-                    Contract::STATUT_EXPIRE => 'is-err',
-                    Contract::STATUT_BIENTOT_EXPIRE => 'is-warn',
-                    Contract::STATUT_A_VENIR => 'is-wait',
-                    default => 'is-ok',
-                };
-                $etat = $row->libelleStatut();
+                // Meme seuil que ContractController::index() : 7 jours
+                $aujourdhui = now()->startOfDay();
+                $limite = now()->timezone($this->company->timezone)->addDays(7)->startOfDay();
+
+                if ($row->end_date->lt($aujourdhui)) {
+                    $ton = 'is-err';
+                    $etat = __('modules.contracts.expired');
+                } elseif ($row->end_date->lt($limite)) {
+                    $ton = 'is-warn';
+                    $etat = __('modules.contracts.aboutToExpire');
+                } else {
+                    $ton = 'is-ok';
+                    $etat = __('modules.contracts.active');
+                }
 
                 return '<div class="dck-cell-stack">'
                     . '<span class="dck-date">' . $date . '</span>'

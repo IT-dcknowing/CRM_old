@@ -46,8 +46,8 @@ $deleteContractPermission = user()->permission('delete_contract');
                             <th class="text-right">@lang('modules.contracts.newAmount')</th>
                         </x-slot>
                         <tr>
-                            <td>{{ $history->start_date->translatedFormat(company()->date_format) }}</td>
-                            <td>{{ $history->end_date->translatedFormat(company()->date_format) }}</td>
+                            <td>{{ $history->start_date->timezone(company()->timezone)->translatedFormat(company()->date_format) }}</td>
+                            <td>{{ $history->end_date->timezone(company()->timezone)->translatedFormat(company()->date_format) }}</td>
                             <td class="text-right">{{ currency_format($history->amount, $contract->currency_id) }}</td>
                         </tr>
                     </x-table>

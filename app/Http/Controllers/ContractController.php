@@ -11,7 +11,6 @@ use App\Http\Requests\Admin\Contract\UpdateRequest;
 use App\Http\Requests\ClientContracts\SignRequest;
 use App\Models\BaseModel;
 use App\Models\Contract;
-use App\Models\ContractRenew;
 use App\Models\ContractSign;
 use App\Models\ContractTemplate;
 use App\Models\ContractType;
@@ -56,12 +55,35 @@ class ContractController extends AccountBaseController
 
             $this->contractTypes = ContractType::all();
 
-            /* Compteurs restreints aux memes droits que la liste, et calcules
-               avec les memes regles de statut que les badges du tableau. */
-            $compteurs = $this->compteursContrats();
-            $this->contractCounts = $compteurs['total'];
-            $this->expiredCounts = $compteurs['expires'];
-            $this->aboutToExpireCounts = $compteurs['bientot'];
+            /* Les compteurs portaient sur l'ensemble des contrats, sans les
+               restrictions de droits appliquees par la liste : un utilisateur
+               limite a ses propres contrats lisait un total qui ne
+               correspondait pas au tableau affiche en dessous. */
+            $portee = function () {
+                $q = Contract::query();
+                $droit = user()->permission('view_contract');
+
+                if ($droit == 'added') {
+                    $q->where('added_by', user()->id);
+                }
+                elseif ($droit == 'owned') {
+                    $q->where('client_id', user()->id);
+                }
+                elseif ($droit == 'both') {
+                    $q->where(fn ($s) => $s->where('added_by', user()->id)->orWhere('client_id', user()->id));
+                }
+
+                return $q;
+            };
+
+            $this->contractCounts = $portee()->count();
+            $this->expiredCounts = $portee()
+                ->where(DB::raw('DATE(`end_date`)'), '<', now()->format('Y-m-d'))
+                ->count();
+            $this->aboutToExpireCounts = $portee()
+                ->where(DB::raw('DATE(`end_date`)'), '>', now()->format('Y-m-d'))
+                ->where(DB::raw('DATE(`end_date`)'), '<', now()->timezone($this->company->timezone)->addDays(7)->format('Y-m-d'))
+                ->count();
         }
 
         return $dataTable->render('contracts.index', $this->data);
@@ -135,8 +157,11 @@ class ContractController extends AccountBaseController
         };
 
         $total = $portee()->count();
-        $expires = $portee()->expires()->count();
-        $bientot = $portee()->bientotExpires()->count();
+        $expires = $portee()->where(DB::raw('DATE(`end_date`)'), '<', now()->format('Y-m-d'))->count();
+        $bientot = $portee()
+            ->where(DB::raw('DATE(`end_date`)'), '>', now()->format('Y-m-d'))
+            ->where(DB::raw('DATE(`end_date`)'), '<', now()->timezone(company()->timezone)->addDays(7)->format('Y-m-d'))
+            ->count();
 
         return [
             'total'   => $total,
@@ -170,8 +195,6 @@ class ContractController extends AccountBaseController
         $this->currencies = Currency::all();
         $this->projects = Project::all();
 
-        // Date de debut proposee : le jour de l'enregistrement, modifiable.
-        $this->dateDebutParDefaut = Carbon::parse(Contract::aujourdhui())->format(company()->date_format);
 
         $this->lastContract = Contract::lastContractNumber() + 1;
         $this->invoiceSetting = invoice_setting();
@@ -209,47 +232,40 @@ class ContractController extends AccountBaseController
 
     }
 
-    public function store(StoreRequest $request)
-    {
-        /* Date d'adhesion du client et contrat sont enregistres ensemble :
-           si le contrat echoue, la date d'adhesion n'est pas conservee. */
-        $contract = DB::transaction(function () use ($request) {
-            $this->definirDateAdhesionClient($request);
+   public function store(StoreRequest $request)
+{
+    $contract = new Contract();
+    
+    // Définir la date d'adhésion avant d'appeler storeUpdate
+    $clientDetails = \App\Models\ClientDetails::where('user_id', $request->client_id)->first();
+    
+    // Si le client existe ET si la date d'adhésion n'est pas encore définie
+    if ($clientDetails && empty($clientDetails->skype)) {
+        $now = now();
+        $adhesionDate = $now->copy();
 
-            return $this->storeUpdate($request, new Contract());
-        });
+        // Récupérer le type de contrat pour vérifier si c'est une "Nouvelle adhésion"
+        $contractTypeId = $request->contract_type_id ?? $request->contract_type;
+        $contractType = \App\Models\ContractType::find($contractTypeId);
+        $typeName = $contractType ? strtolower($contractType->name) : '';
+        $isNouvelleAdhesion = str_contains($typeName, 'nouvelle') && str_contains($typeName, 'adh');
 
-        $this->notifierContrat($request, $contract);
-
-        return Reply::redirect(route('contracts.index'), __('messages.recordSaved'));
-    }
-
-    /**
-     * Date d'adhesion du client (stockee dans client_details.skype), fixee
-     * une seule fois, au premier contrat. Regle metier inchangee : pour une
-     * "Nouvelle adhesion" signee apres janvier, l'adhesion est datee du
-     * 31 janvier de l'annee en cours.
-     */
-    private function definirDateAdhesionClient($request): void
-    {
-        $clientDetails = ClientDetails::where('user_id', $request->client_id)->first();
-
-        if (!$clientDetails || !empty($clientDetails->skype)) {
-            return;
+        if ($isNouvelleAdhesion) {
+            if ($now->month !== 1) { // Si on est après Janvier
+                $adhesionDate = \Carbon\Carbon::create($now->year, 1, 31);
+            }
         }
 
-        $aujourdhui = Carbon::parse(Contract::aujourdhui());
-        $adhesionDate = $aujourdhui->copy();
-
-        $contractType = ContractType::find($request->contract_type_id ?? $request->contract_type);
-
-        if ($contractType?->estNouvelleAdhesion() && $aujourdhui->month !== 1) {
-            $adhesionDate = Carbon::create($aujourdhui->year, 1, 31);
-        }
-
+        // Définit la date d'adhésion
         $clientDetails->skype = $adhesionDate->format('Y-m-d');
         $clientDetails->save();
     }
+    
+    // Ensuite, enregistrer le contrat
+    $this->storeUpdate($request, $contract);
+
+    return Reply::redirect(route('contracts.index'), __('messages.recordSaved'));
+}
 
 
     public function edit($id)
@@ -296,7 +312,6 @@ class ContractController extends AccountBaseController
     {
         $contract = Contract::findOrFail($id);
         $this->storeUpdate($request, $contract);
-        $this->notifierContrat($request, $contract);
 
         return Reply::redirect(route('contracts.index'), __('messages.updateSuccess'));
     }
@@ -319,25 +334,23 @@ class ContractController extends AccountBaseController
         $contract->country = $request->country;
         $contract->postal_code = $request->postal_code;
         
-        $contract->contract_type_id = $request->contract_type_id ?? $request->contract_type ?? $contract->contract_type_id;
+        // $contract->contract_type_id = $request->contract_type;
+       $contract->contract_type_id = $request->contract_type_id ?? $request->contract_type ?? $contract->contract_type_id;
         $contract->contract_number = $request->contract_number;
-
-        /* Dates : toujours celles saisies dans le formulaire, quel que soit
-           le type de contrat (le formulaire propose des valeurs par defaut,
-           modifiables). La date de fin est deja ramenee a null par la
-           validation quand "Sans date d'echeance" est coche. */
+        
+        // Dates : celles choisies dans le formulaire, quel que soit le type de
+        // contrat. Pour une "Nouvelle adhesion", le formulaire pre-remplit
+        // toujours debut et fin, mais l'utilisateur peut les modifier et le
+        // serveur ne les ecrase plus.
         $contract->start_date = companyToYmd($request->start_date);
-        $contract->end_date = companyToYmd($request->end_date);
-
-        // Les dates d'origine sont figees a la creation : elles servent a
-        // restaurer le contrat quand tous ses renouvellements sont supprimes.
-        if (!$contract->exists) {
-            $contract->original_start_date = $contract->start_date;
-            $contract->original_end_date = $contract->end_date;
-        }
+        $contract->original_start_date = companyToYmd($request->start_date);
+        $contract->end_date = $request->end_date == null ? $request->end_date : companyToYmd($request->end_date);
+        $contract->original_end_date = $request->end_date == null ? $request->end_date : companyToYmd($request->end_date);
 
         $contract->description = trim_editor($request->description);
         $contract->contract_detail = trim_editor($request->description);
+        // Un seul enregistrement : touch() suivi de save() ecrivait le contrat
+        // deux fois et relancait deux fois l'observer (synchro Google Agenda).
         $contract->save();
 
         // To add custom fields data
@@ -345,67 +358,67 @@ class ContractController extends AccountBaseController
             $contract->updateCustomFieldData($request->custom_fields_data);
         }
 
-        return $contract;
-    }
+        // Notifications (e-mail, WhatsApp) : envoyees apres la reponse HTTP.
+        // L'envoi SMTP synchrone bloquait le bouton "Enregistrer" plusieurs
+        // dizaines de secondes. Les erreurs restent journalisees comme avant.
+        $contractId = $contract->id;
+        $channels = $request->chosen_channels ?? ['email', 'whatsapp'];
 
-    private function notifierContrat($request, Contract $contract): void
-    {
-        try {
-            $dispatcher = new \App\Services\NotificationDispatcher();
-            $channels = $request->chosen_channels ?? ['email', 'whatsapp'];
-            $dispatcher->dispatchContractInit($contract, $channels);
-        } catch (\Throwable $e) {
-            \Log::error('Error dispatching contract notifications: ' . $e->getMessage());
-        }
+        dispatch(static function () use ($contractId, $channels) {
+            try {
+                $contract = Contract::find($contractId);
+
+                if ($contract) {
+                    (new \App\Services\NotificationDispatcher())->dispatchContractInit($contract, $channels);
+                }
+            } catch (\Throwable $e) {
+                \Log::error('Error dispatching contract notifications: ' . $e->getMessage());
+            }
+        })->afterResponse();
+
+        return $contract;
     }
 
     public function updateRenew($id)
     {
-        $contract = Contract::findOrFail($id);
-
-        $editPermission = user()->permission('edit_contract');
-        abort_403(!(
-            $editPermission == 'all'
-            || ($editPermission == 'added' && user()->id == $contract->added_by)
-            || ($editPermission == 'owned' && user()->id == $contract->client_id)
-            || ($editPermission == 'both' && (user()->id == $contract->client_id || user()->id == $contract->added_by))
-        ));
-
         try {
-            DB::transaction(function () use ($contract) {
-                $clientDetails = $contract->client?->clientDetails;
-
-                // Type "Renouvellement d'attestation d'adhesion"
-                $contract->subject = 'Renouvellement d\'attestation d\'adhésion';
-                $contract->amount = 0;
-                $contract->contract_name = 'Renouvellement d\'attestation d\'adhésion';
-                $contract->contract_type_id = 4;
-                $contract->sign_date = now();
-
-                // Nouvelle periode d'un an a partir d'aujourd'hui (dates
-                // modifiables ensuite depuis le formulaire du contrat).
-                $debut = Carbon::parse(Contract::aujourdhui());
-                $contract->start_date = $debut->toDateString();
-                $contract->end_date = $debut->copy()->addYear()->toDateString();
-                $contract->save();
-
-                // Trace dans l'historique des renouvellements, comme un
-                // renouvellement saisi depuis l'onglet dedie.
-                $renouvellement = new ContractRenew();
-                $renouvellement->contract_id = $contract->id;
-                $renouvellement->renewed_by = user()->id;
-                $renouvellement->amount = 0;
-                $renouvellement->start_date = $contract->start_date->toDateString();
-                $renouvellement->end_date = $contract->end_date->toDateString();
-                $renouvellement->save();
-
-                // La date d'adhesion existante est conservee
-                if ($clientDetails && empty($clientDetails->skype)) {
-                    $clientDetails->skype = $debut->format('Y-m-d');
+            // Récupérer le contrat ou échouer si non trouvé
+            $contract = Contract::findOrFail($id);
+            
+            // Récupérer la date d'adhésion actuelle depuis les détails du client
+            $clientDetails = $contract->client->clientDetails;
+            $adhesionDate = $clientDetails->skype;
+            
+            // Mettre à jour les attributs du contrat
+            $contract->subject = 'Renouvellement d\'attestation d\'adhésion';
+            $contract->amount = 0;
+            $contract->contract_name = 'Renouvellement d\'attestation d\'adhésion';
+            $contract->contract_type_id = 4;
+            
+            // Mettre à jour la date de signature avec la date actuelle
+            $contract->sign_date = now();
+            
+            // Calculer les nouvelles dates de début et de fin (1 an à partir de maintenant)
+            $newStartDate = now();
+            $newEndDate = now()->addYear();
+            
+            // Mettre à jour les dates du contrat
+            $contract->start_date = $newStartDate;
+            $contract->end_date = $newEndDate;
+            
+            // Enregistrer les modifications
+            $contract->save();
+            
+            // Mettre à jour la date de signature dans les détails du client si nécessaire
+            if ($clientDetails) {
+                // On ne modifie pas la date d'adhésion existante, on la conserve
+                if (empty($clientDetails->skype)) {
+                    $clientDetails->skype = now()->format('Y-m-d');
                     $clientDetails->save();
                 }
-            });
+            }
 
+            // Rediriger avec un message de succès
             return Reply::redirect(route('clients.index'), __('messages.updateSuccess'));
 
         } catch (\Exception $e) {

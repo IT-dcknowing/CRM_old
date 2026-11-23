@@ -110,21 +110,11 @@ class Contract extends BaseModel
 
     use CustomFieldsTrait, HasFactory, HasCompany;
 
-    /* start_date et end_date sont des colonnes DATE : un cast 'date'
-       evite de leur preter une heure, et donc un fuseau, qu'elles n'ont pas. */
     protected $casts = [
-        'start_date' => 'date',
-        'end_date' => 'date',
+        'start_date' => 'datetime',
+        'end_date' => 'datetime',
         'sign_date' => 'datetime',
     ];
-
-    /** Delai, en jours, pendant lequel un contrat est signale "bientot expire". */
-    const JOURS_AVANT_EXPIRATION = 7;
-
-    const STATUT_A_VENIR = 'upcoming';
-    const STATUT_ACTIF = 'active';
-    const STATUT_BIENTOT_EXPIRE = 'aboutToExpire';
-    const STATUT_EXPIRE = 'expired';
 
     protected $with = [];
 
@@ -196,80 +186,6 @@ class Contract extends BaseModel
     public function getCompanySignatureAttribute()
     {
         return asset_url_local_s3('contract/sign/' . $this->company_sign);
-    }
-
-    /**
-     * Date du jour (Y-m-d) dans le fuseau de l'entreprise : c'est la
-     * reference unique pour pre-remplir les formulaires et calculer
-     * les statuts.
-     */
-    public static function aujourdhui(): string
-    {
-        return now(self::fuseau())->toDateString();
-    }
-
-    /** Date limite (exclue) du statut "bientot expire". */
-    public static function limiteBientotExpire(): string
-    {
-        return now(self::fuseau())->addDays(self::JOURS_AVANT_EXPIRATION)->toDateString();
-    }
-
-    /**
-     * Fuseau de l'entreprise, avec repli sur celui de l'application.
-     * company() peut renvoyer false (console, API sans session) : un
-     * simple ?-> ne suffit pas.
-     */
-    private static function fuseau(): string
-    {
-        $company = company();
-
-        return ($company && $company->timezone) ? $company->timezone : config('app.timezone');
-    }
-
-    /**
-     * Statut calcule a partir des dates. Un contrat reste valable
-     * jusqu'a la fin de son dernier jour inclus.
-     */
-    public function statut(): string
-    {
-        $aujourdhui = self::aujourdhui();
-
-        if ($this->start_date && $this->start_date->toDateString() > $aujourdhui) {
-            return self::STATUT_A_VENIR;
-        }
-
-        if (is_null($this->end_date)) {
-            return self::STATUT_ACTIF;
-        }
-
-        $fin = $this->end_date->toDateString();
-
-        if ($fin < $aujourdhui) {
-            return self::STATUT_EXPIRE;
-        }
-
-        return $fin < self::limiteBientotExpire() ? self::STATUT_BIENTOT_EXPIRE : self::STATUT_ACTIF;
-    }
-
-    public function libelleStatut(): string
-    {
-        return __('modules.contracts.' . $this->statut());
-    }
-
-    /** Contrats dont la date de fin est depassee. */
-    public function scopeExpires($query)
-    {
-        return $query->whereNotNull('contracts.end_date')
-            ->whereDate('contracts.end_date', '<', self::aujourdhui());
-    }
-
-    /** Contrats qui expirent dans les JOURS_AVANT_EXPIRATION jours (aujourd'hui inclus). */
-    public function scopeBientotExpires($query)
-    {
-        $limite = self::limiteBientotExpire();
-
-        return $query->whereDate('contracts.end_date', '>=', self::aujourdhui())
-            ->whereDate('contracts.end_date', '<', $limite);
     }
 
 }
