@@ -256,41 +256,16 @@
         var contractTypeSelect = document.getElementById('contractType');
         const subjectInput = document.querySelector('[name="subject"]');
 
-        function updateContractDates() {
+        // Le type de contrat renseigne uniquement l'objet : les dates restent
+        // celles choisies par l'utilisateur (aucune valeur imposee cote client).
+        function updateSubject() {
             const selectedOption = contractTypeSelect.options[contractTypeSelect.selectedIndex];
             if (!selectedOption) return;
 
-            const text = selectedOption.text.trim();
-            const lowerText = text.toLowerCase();
-            subjectInput.value = text;
-            
-            // Logique d'automatisation des dates pour Nouvelle Adhésion (plus robuste)
-            if (lowerText.includes('nouvelle') && (lowerText.includes('adh') || lowerText.includes('adhésion'))) {
-                const now = new Date();
-                const year = now.getFullYear();
-                const month = now.getMonth() + 1;
-
-                let startDate;
-                if (month === 1) {
-                    startDate = now;
-                } else {
-                    startDate = new Date(year, 0, 31); // 31 Janvier (mois commence à 0)
-                }
-                const endDate = new Date(year, 11, 31); // 31 Décembre
-
-                if (typeof dp1 !== 'undefined') {
-                    dp1.setDate(startDate);
-                }
-                if (typeof dp2 !== 'undefined') {
-                    dp2.setDate(endDate);
-                }
-            }
+            subjectInput.value = selectedOption.text.trim();
         }
 
-        contractTypeSelect.addEventListener('change', updateContractDates);
-        
-        // Exécuter immédiatement au cas où un type est déjà sélectionné (template)
-        setTimeout(updateContractDates, 500); 
+        contractTypeSelect.addEventListener('change', updateSubject);
     });
 
     let dp1, dp2;

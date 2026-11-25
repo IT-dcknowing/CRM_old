@@ -76,6 +76,13 @@ class ContractRenewController extends AccountBaseController
         $contractRenew->end_date = companyToYmd($request->end_date);
         $contractRenew->save();
 
+        // L'aperçu et le PDF lisent les dates sur le contrat : la modification
+        // d'un renouvellement doit donc remonter au contrat parent.
+        $contract = Contract::findOrFail($contractRenew->contract_id);
+        $contract->start_date = $contractRenew->start_date;
+        $contract->end_date = $contractRenew->end_date;
+        $contract->save();
+
         $this->contract = Contract::with('signature', 'client', 'client.clientDetails', 'files', 'renewHistory', 'renewHistory.renewedBy')->findOrFail($contractRenew->contract_id);
 
         $view = view('contracts.renew.renew_history', $this->data)->render();
