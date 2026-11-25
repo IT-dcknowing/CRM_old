@@ -50,6 +50,17 @@ $isRenouvellement = str_contains($ctLower, 'renouvellement');
 $isNouvelleAdhesion = str_contains($ctLower, 'nouvelle') && str_contains($ctLower, 'adh');
 $compagnie = $contract->client->clientDetails->numadh;
 $numadh = $contract->client->clientDetails->company_name;
+
+// La date de début enregistrée fait foi pour "Fait à Abidjan".
+$contractStartDate = $contract->start_date
+    ? \Carbon\Carbon::parse($contract->start_date)->format('d/m/Y')
+    : '';
+$adhesionDateSource = optional($contract->client->clientDetails)->skype
+    ?? $contract->original_start_date
+    ?? $contract->start_date;
+$adhesionDate = $adhesionDateSource
+    ? \Carbon\Carbon::parse($adhesionDateSource)->format('d/m/Y')
+    : '';
 @endphp
 
 <!doctype html>
@@ -401,33 +412,6 @@ $numadh = $contract->client->clientDetails->company_name;
                     <p style="text-align:center;"><span style="font-size:14pt;"><strong><u>ATTESTATION D&#8217;ADHESION AU CENTRE DE GESTION AGREE</u></strong></span></p>
                     <p>Nous soussign&#233;s,<br>Centre de Gestion Agr&#233;&#233; D&#233;nomm&#233;&#160;: <strong>DC-KNOWING CGA SARL </strong><br>Compte Contribuable&#160;: <strong>1864699 A</strong><br>Forme Juridique&#160;: <strong>SARL</strong><br>Siege social : <strong>COCODY II Plateaux 7<sup>&#232;me</sup> tranche</strong><br>Ayant obtenu l&#8217;agr&#233;ment pour exercer en qualit&#233; de Centre de Gestion Agr&#233;e sous le num&#233;ro&#160;: <strong>296/SEPMBPE/DGI DU 29 MARS 2018</strong></p>
                     
-                    @php
-                        // Récupérer la date d'adhésion depuis le champ skype
-                        $adhesionDate = $contract->client->clientDetails->skype ?? null;
-                        
-                        // Formater la date si elle existe, sinon utiliser une chaîne vide
-                        if (!empty($adhesionDate)) {
-                            try {
-                                $adhesionDate = \Carbon\Carbon::createFromFormat('Y-m-d', $adhesionDate)->format('d-m-Y');
-                            } catch (\Exception $e) {
-                                // En cas d'erreur de format, on garde la valeur brute
-                                $adhesionDate = $contract->client->clientDetails->skype;
-                            }
-                        } else {
-                            $adhesionDate = 'Non définie';
-                        }
-                        
-                        // Debug: Afficher les valeurs pour vérification
-                        $debugInfo = [
-                            'original_start_date' => $contract->original_start_date ?? 'non défini',
-                            'start_date' => $contract->start_date ?? 'non défini',
-                            'client_skype' => $contract->client->clientDetails->skype ?? 'non défini',
-                            'client_id' => $contract->client->id ?? 'non défini',
-                            'current_date' => now()->format('Y-m-d'),
-                            'formatted_adhesion_date' => $adhesionDate
-                        ];
-                        echo '<!-- DEBUG: ' . print_r($debugInfo, true) . ' -->';
-                    @endphp
                     <p>D&#233;clare que l&#8217;entit&#233; <strong>&#171; {{$contract->client->clientDetails->company_name}} &#187;</strong> est adh&#233;rente de notre &#233;tablissement depuis le <strong>{{ $adhesionDate }}</strong>&#160;sous le num&#233;ro d&#8217;enregistrement&#160;:<strong> {{$contract->client->clientDetails->numadh}}</strong></p>
                     <ol>
                     <li>&#8211; Nom commercial de l&#8217;adh&#233;rent&#160;<strong>: {{$contract->client->clientDetails->company_name}}</strong></li>
@@ -444,7 +428,7 @@ $numadh = $contract->client->clientDetails->company_name;
                                 <td style="width:33.3333%;height:10px; border: none;"></td>
                                 <td style="width:33.3333%;height:10px; border: none;"></td>
                                 <td style="width:33.3333%;vertical-align:top;height:10px; border: none;">
-                                    <span style="font-size:10pt;"><strong>Fait à Abidjan, le {{ now()->format('d-m-Y') }}</strong></span>
+                                    <span style="font-size:10pt;"><strong>Fait à Abidjan, le {{ $contractStartDate }}</strong></span>
                                 </td>
                             </tr>
                             <tr style="height:10px;">
@@ -544,13 +528,7 @@ $numadh = $contract->client->clientDetails->company_name;
                     <p style="text-align:center;"><span style="font-size:14pt;"><strong><u>ATTESTATION D&#8217;ADHESION AU CENTRE DE GESTION AGREE</u></strong></span></p>
                     <p>Nous soussign&#233;s,<br>Centre de Gestion Agr&#233;&#233; D&#233;nomm&#233;&#160;: <strong>DC-KNOWING CGA SARL </strong><br>Compte Contribuable&#160;: <strong>1864699 A</strong><br>Forme Juridique&#160;: <strong>SARL</strong><br>Siege social : <strong>COCODY II Plateaux 7<sup>&#232;me</sup> tranche</strong><br>Ayant obtenu l&#8217;agr&#233;ment pour exercer en qualit&#233; de Centre de Gestion Agr&#233;e sous le num&#233;ro&#160;: <strong>296/SEPMBPE/DGI DU 29 MARS 2018</strong></p>
                     
-                    @php
-                        $startDate = \Carbon\Carbon::parse($contract->start_date);
-                        if ($startDate->month > 1) { // Si on est après Janvier
-                            $startDate = \Carbon\Carbon::create($startDate->year, 1, 31);
-                        }
-                    @endphp
-                    <p>D&#233;clare que l&#8217;entit&#233; <strong>&#171; {{$contract->client->clientDetails->company_name}} &#187;</strong> est adh&#233;rente de notre &#233;tablissement depuis le <strong>{{ $startDate->format('d-m-Y') }}</strong>&#160;sous le num&#233;ro d&#8217;enregistrement&#160;:<strong> {{$contract->client->clientDetails->numadh}}</strong></p>
+                    <p>D&#233;clare que l&#8217;entit&#233; <strong>&#171; {{$contract->client->clientDetails->company_name}} &#187;</strong> est adh&#233;rente de notre &#233;tablissement depuis le <strong>{{ $adhesionDate }}</strong>&#160;sous le num&#233;ro d&#8217;enregistrement&#160;:<strong> {{$contract->client->clientDetails->numadh}}</strong></p>
                     <ol>
                     <li>&#8211; Nom commercial de l&#8217;adh&#233;rent&#160;<strong>: {{$contract->client->clientDetails->company_name}}</strong></li>
                     <li>&#8211; Localisation : <strong>{{$contract->client->clientDetails->address}}</strong></li>
@@ -566,7 +544,7 @@ $numadh = $contract->client->clientDetails->company_name;
                                 <td style="width:33.3333%; height:15px; border: none;"></td>
                                 <td style="width:33.3333%; height:15px; border: none;"></td>
                                 <td style="width:33.3333%; vertical-align:top; height:15px; border: none; text-align: right;">
-                                    <span style="font-size:10pt;"><strong>Fait à Abidjan, le {{ $startDate->format('d-m-Y') }}</strong></span>
+                                    <span style="font-size:10pt;"><strong>Fait à Abidjan, le {{ $contractStartDate }}</strong></span>
                                 </td>
                             </tr>
                             <tr style="height:10px;">
@@ -722,7 +700,7 @@ $numadh = $contract->client->clientDetails->company_name;
                     <table border="0" style="width:100%; margin-top: 20px; margin-bottom: 20px;">
                         <tr>
                             <td style="width:33.3333%;vertical-align:top;height:15px; text-align: right;">
-                                <span style="font-size:10pt;"><strong>Fait à Abidjan, le {{ \Carbon\Carbon::parse($contract->start_date)->format('d-m-Y') }}</strong></span>
+                                <span style="font-size:10pt;"><strong>Fait à Abidjan, le {{ $contractStartDate }}</strong></span>
                             </td>
                         </tr>
                     </table>

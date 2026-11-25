@@ -22,6 +22,16 @@
     $watermarkText = date('Y');
     $watermark = addWatermark($watermarkText);
     $ct = $contract->subject;
+
+    $contractStartDate = $contract->start_date
+        ? \Carbon\Carbon::parse($contract->start_date)->format('d/m/Y')
+        : '';
+    $adhesionDateSource = optional($contract->client->clientDetails)->skype
+        ?? $contract->original_start_date
+        ?? $contract->start_date;
+    $adhesionDate = $adhesionDateSource
+        ? \Carbon\Carbon::parse($adhesionDateSource)->format('d/m/Y')
+        : '';
 @endphp
 
 <style>
@@ -126,7 +136,7 @@
                             <p style="text-align:center;"><span style="font-size:14pt;"><strong><u>ATTESTATION D&#8217;ADHESION AU CENTRE DE GESTION AGREE</u></strong></span></p>
                             <p>Nous soussign&#233;s,<br>Centre de Gestion Agr&#233;&#233; D&#233;nomm&#233;&#160;: <strong>DC-KNOWING CGA SARL </strong><br>Compte Contribuable&#160;: <strong>1864699 A</strong><br>Forme Juridique&#160;: <strong>SARL</strong><br>Siege social : <strong>COCODY II Plateaux 7<sup>&#232;me</sup> tranche</strong><br>Ayant obtenu l&#8217;agr&#233;ment pour exercer en qualit&#233; de Centre de Gestion Agr&#233;e sous le num&#233;ro&#160;: <strong>296/SEPMBPE/DGI DU 29 MARS 2018</strong></p>
                             <p><strong>&#160;</strong></p>
-                            <p>D&#233;clare que l&#8217;entit&#233; <strong>&#171; {{$contract->client->clientDetails->company_name}} &#187;</strong> est adh&#233;rente de notre &#233;tablissement depuis le <strong>{{ \Carbon\Carbon::parse($contract->client->clientDetails->skype)->format('d-m-Y') }}</strong>&#160;sous le num&#233;ro d&#8217;enregistrement&#160;:<strong> {{$contract->client->clientDetails->numadh}}</strong></p>
+                            <p>D&#233;clare que l&#8217;entit&#233; <strong>&#171; {{$contract->client->clientDetails->company_name}} &#187;</strong> est adh&#233;rente de notre &#233;tablissement depuis le <strong>{{ $adhesionDate }}</strong>&#160;sous le num&#233;ro d&#8217;enregistrement&#160;:<strong> {{$contract->client->clientDetails->numadh}}</strong></p>
                             <li>&#8211; Nom commercial de l&#8217;adh&#233;rent&#160;<strong>: {{$contract->client->clientDetails->company_name}}</strong></li>
                             <li>&#8211; Localisation : <strong>{{$contract->client->clientDetails->address}}</strong></li>
                             <li>&#8211; NCC de l&#8217;adh&#233;rent&#160;<strong>: {{$contract->client->clientDetails->gst_number}}</strong></li>
@@ -142,7 +152,7 @@
                             <tr style="height:35px;">
                             <td style="width:33.3333%;height:35px;"></td>
                             <td style="width:33.3333%;height:35px;"></td>
-                            <td style="width:33.3333%;vertical-align:top;height:35px;"><span style="font-size:10pt;"><strong>Fait &#224; Abidjan, le {{ \Carbon\Carbon::now()->format('d-m-Y') }}</strong></span></td>
+                            <td style="width:33.3333%;vertical-align:top;height:35px;"><span style="font-size:10pt;"><strong>Fait &#224; Abidjan, le {{ $contractStartDate }}</strong></span></td>
                             </tr>
                             <tr style="height:27px;">
                             <td style="width:33.3333%;height:27px;"></td>
@@ -253,7 +263,7 @@
                             <p style="text-align:center;"><span style="font-size:14pt;"><strong><u>ATTESTATION D&#8217;ADHESION AU CENTRE DE GESTION AGREE</u></strong></span></p>
                             <p>Nous soussign&#233;s,<br>Centre de Gestion Agr&#233;&#233; D&#233;nomm&#233;&#160;: <strong>DC-KNOWING CGA SARL </strong><br>Compte Contribuable&#160;: <strong>1864699 A</strong><br>Forme Juridique&#160;: <strong>SARL</strong><br>Siege social : <strong>COCODY II Plateaux 7<sup>&#232;me</sup> tranche</strong><br>Ayant obtenu l&#8217;agr&#233;ment pour exercer en qualit&#233; de Centre de Gestion Agr&#233;e sous le num&#233;ro&#160;: <strong>296/SEPMBPE/DGI DU 29 MARS 2018</strong></p>
                             <p><strong>&#160;</strong></p>
-                            <p>D&#233;clare que l&#8217;entit&#233; <strong>&#171; {{$contract->client->clientDetails->company_name}} &#187;</strong> est adh&#233;rente de notre &#233;tablissement depuis le <strong>{{ \Carbon\Carbon::parse($contract->client->clientDetails->skype)->format('d-m-Y') }}</strong>&#160;sous le num&#233;ro d&#8217;enregistrement&#160;:<strong> {{$contract->client->clientDetails->numadh}}</strong></p>
+                            <p>D&#233;clare que l&#8217;entit&#233; <strong>&#171; {{$contract->client->clientDetails->company_name}} &#187;</strong> est adh&#233;rente de notre &#233;tablissement depuis le <strong>{{ $adhesionDate }}</strong>&#160;sous le num&#233;ro d&#8217;enregistrement&#160;:<strong> {{$contract->client->clientDetails->numadh}}</strong></p>
                             <ol>
                             <li>&#8211; Nom commercial de l&#8217;adh&#233;rent&#160;<strong>: {{$contract->client->clientDetails->company_name}}</strong></li>
                             <li>&#8211; Localisation : <strong>{{$contract->client->clientDetails->address}}</strong></li>
@@ -270,7 +280,7 @@
                             <tr style="height:35px;">
                             <td style="width:33.3333%;height:35px;"></td>
                             <td style="width:33.3333%;height:35px;"></td>
-                            <td style="width:33.3333%;vertical-align:top;height:35px;"><span style="font-size:10pt;"><strong>Fait &#224; Abidjan, le {{\Carbon\Carbon::parse($contract->start_date)->format('d-m-Y')}}</strong></span></td>
+                            <td style="width:33.3333%;vertical-align:top;height:35px;"><span style="font-size:10pt;"><strong>Fait &#224; Abidjan, le {{ $contractStartDate }}</strong></span></td>
                             </tr>
                             <tr style="height:27px;">
                             <td style="width:33.3333%;height:27px;"></td>
@@ -427,7 +437,7 @@
                             </li>
                             <li><span style="font-family:helvetica, arial, sans-serif;font-size:8pt;">La r&#233;siliation est notifi&#233;e &#224; l'Adh&#233;rent par le Centre par lettre recommand&#233;e avec accus&#233; de r&#233;ception.</span></li>
                             </ul>
-                            <h3><span style="font-family:helvetica, arial, sans-serif;font-size:8pt;">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; Fait &#224; Abidjan, le <strong>{{\Carbon\Carbon::parse($contract->start_date)->format('d-m-Y')}}</strong></span></h3>
+                            <h3><span style="font-family:helvetica, arial, sans-serif;font-size:8pt;">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; Fait &#224; Abidjan, le <strong>{{ $contractStartDate }}</strong></span></h3>
                             <table border="0" style="height:64px;width:100%;">
                             <tbody>
                             <tr style="height:16px;">

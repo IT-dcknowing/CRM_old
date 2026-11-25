@@ -231,50 +231,14 @@ $addClientPermission = user()->permission('add_clients');
 
         dp2 = datepicker('#end_date', {
             position: 'bl',
-            dateSelected: new Date("{{ $contract->end_date ? str_replace('-', '/', $contract->end_date) : str_replace('-', '/', now()) }}"),
+            @if($contract->end_date)
+                dateSelected: new Date("{{ str_replace('-', '/', $contract->end_date) }}"),
+            @endif
             onSelect: (instance, date) => {
                 dp1.setMax(date);
             },
             ...datepickerConfig
         });
-
-        var contractTypeSelect = document.getElementById('contractType');
-        
-        function updateContractDates() {
-            const selectedOption = contractTypeSelect.options[contractTypeSelect.selectedIndex];
-            if (!selectedOption) return;
-
-            const text = selectedOption.text.trim();
-            const lowerText = text.toLowerCase();
-            
-            // Logique d'automatisation des dates pour Nouvelle Adhésion (plus robuste)
-            if (lowerText.includes('nouvelle') && (lowerText.includes('adh') || lowerText.includes('adhésion'))) {
-                const now = new Date();
-                const year = now.getFullYear();
-                const month = now.getMonth() + 1;
-
-                let startDate;
-                if (month === 1) {
-                    startDate = now;
-                } else {
-                    startDate = new Date(year, 0, 31); // 31 Janvier (mois commence à 0)
-                }
-                const endDate = new Date(year, 11, 31); // 31 Décembre
-
-                if (typeof dp1 !== 'undefined') {
-                    dp1.setDate(startDate);
-                }
-                if (typeof dp2 !== 'undefined') {
-                    dp2.setDate(endDate);
-                }
-            }
-        }
-
-        if (contractTypeSelect) {
-            contractTypeSelect.addEventListener('change', updateContractDates);
-            // Pas de setTimeout ici car en édition on ne veut généralement pas écraser les dates existantes
-            // Sauf si l'utilisateur change explicitement le type.
-        }
 
         $('.custom-date-picker').each(function(ind, el) {
             datepicker(el, {

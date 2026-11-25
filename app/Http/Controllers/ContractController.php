@@ -235,36 +235,54 @@ class ContractController extends AccountBaseController
    public function store(StoreRequest $request)
 {
     $contract = new Contract();
-    
-    // Définir la date d'adhésion avant d'appeler storeUpdate
-    $clientDetails = \App\Models\ClientDetails::where('user_id', $request->client_id)->first();
-    
-    // Si le client existe ET si la date d'adhésion n'est pas encore définie
-    if ($clientDetails && empty($clientDetails->skype)) {
-        $now = now();
-        $adhesionDate = $now->copy();
 
-        // Récupérer le type de contrat pour vérifier si c'est une "Nouvelle adhésion"
-        $contractTypeId = $request->contract_type_id ?? $request->contract_type;
-        $contractType = \App\Models\ContractType::find($contractTypeId);
-        $typeName = $contractType ? strtolower($contractType->name) : '';
-        $isNouvelleAdhesion = str_contains($typeName, 'nouvelle') && str_contains($typeName, 'adh');
+    // La date d'adhésion affichée dans les documents doit être celle du
+    // formulaire, pas now() ni un 31/01 recalculé côté serveur.
+    $this->syncAdhesionDate(
+        $request->client_id,
+        $request->start_date,
+        $request->contract_type_id ?? $request->contract_type
+    );
 
-        if ($isNouvelleAdhesion) {
-            if ($now->month !== 1) { // Si on est après Janvier
-                $adhesionDate = \Carbon\Carbon::create($now->year, 1, 31);
-            }
-        }
-
-        // Définit la date d'adhésion
-        $clientDetails->skype = $adhesionDate->format('Y-m-d');
-        $clientDetails->save();
-    }
-    
-    // Ensuite, enregistrer le contrat
     $this->storeUpdate($request, $contract);
 
     return Reply::redirect(route('contracts.index'), __('messages.recordSaved'));
+}
+
+/**
+ * Aligne la date d'adhésion du client sur la date de début du contrat
+ * lorsque le contrat est une "Nouvelle adhésion". Les autres types
+ * (renouvellement notamment) conservent leur date d'adhésion d'origine.
+ */
+private function syncAdhesionDate($clientId, $startDate, $contractTypeId): void
+{
+    $startDateYmd = companyToYmd($startDate);
+
+    if (!$clientId || !$startDateYmd) {
+        return;
+    }
+
+    $contractType = ContractType::find($contractTypeId);
+
+    if (!$contractType) {
+        return;
+    }
+
+    $typeName = strtolower($contractType->name);
+    $isNouvelleAdhesion = str_contains($typeName, 'nouvelle') && str_contains($typeName, 'adh');
+
+    if (!$isNouvelleAdhesion) {
+        return;
+    }
+
+    $clientDetails = ClientDetails::where('user_id', $clientId)->first();
+
+    if (!$clientDetails) {
+        return;
+    }
+
+    $clientDetails->skype = $startDateYmd;
+    $clientDetails->save();
 }
 
 
@@ -312,6 +330,10 @@ class ContractController extends AccountBaseController
     {
         $contract = Contract::findOrFail($id);
         $this->storeUpdate($request, $contract);
+
+        // Si la date de début d'une nouvelle adhésion est modifiée, la date
+        // d'adhésion affichée dans les documents suit cette même valeur.
+        $this->syncAdhesionDate($contract->client_id, $request->start_date, $contract->contract_type_id);
 
         return Reply::redirect(route('contracts.index'), __('messages.updateSuccess'));
     }
@@ -387,24 +409,24 @@ class ContractController extends AccountBaseController
             
             // Récupérer la date d'adhésion actuelle depuis les détails du client
             $clientDetails = $contract->client->clientDetails;
-            $adhesionDate = $clientDetails->skype;
-            
+
             // Mettre à jour les attributs du contrat
             $contract->subject = 'Renouvellement d\'attestation d\'adhésion';
             $contract->amount = 0;
             $contract->contract_name = 'Renouvellement d\'attestation d\'adhésion';
             $contract->contract_type_id = 4;
-            
+
             // Mettre à jour la date de signature avec la date actuelle
             $contract->sign_date = now();
-            
-            // Calculer les nouvelles dates de début et de fin (1 an à partir de maintenant)
-            $newStartDate = now();
-            $newEndDate = now()->addYear();
-            
-            // Mettre à jour les dates du contrat
-            $contract->start_date = $newStartDate;
-            $contract->end_date = $newEndDate;
+
+            // Les dates du renouvellement viennent du formulaire lorsqu'il
+            // en transmet, sinon on conserve celles déjà enregistrées.
+            $contract->start_date = request()->filled('start_date')
+                ? companyToYmd(request()->start_date)
+                : $contract->start_date;
+            $contract->end_date = request()->filled('end_date')
+                ? companyToYmd(request()->end_date)
+                : $contract->end_date;
             
             // Enregistrer les modifications
             $contract->save();
