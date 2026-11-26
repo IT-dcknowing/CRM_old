@@ -51,15 +51,11 @@ $isNouvelleAdhesion = str_contains($ctLower, 'nouvelle') && str_contains($ctLowe
 $compagnie = $contract->client->clientDetails->numadh;
 $numadh = $contract->client->clientDetails->company_name;
 
-// La date de début enregistrée fait foi pour "Fait à Abidjan".
+// La date de début enregistrée fait foi pour les deux mentions de date
+// ("depuis le" et "Fait à Abidjan"), quelle que soit la date historique
+// éventuellement stockée dans clientDetails.skype.
 $contractStartDate = $contract->start_date
     ? \Carbon\Carbon::parse($contract->start_date)->format('d/m/Y')
-    : '';
-$adhesionDateSource = optional($contract->client->clientDetails)->skype
-    ?? $contract->original_start_date
-    ?? $contract->start_date;
-$adhesionDate = $adhesionDateSource
-    ? \Carbon\Carbon::parse($adhesionDateSource)->format('d/m/Y')
     : '';
 @endphp
 
@@ -412,7 +408,7 @@ $adhesionDate = $adhesionDateSource
                     <p style="text-align:center;"><span style="font-size:14pt;"><strong><u>ATTESTATION D&#8217;ADHESION AU CENTRE DE GESTION AGREE</u></strong></span></p>
                     <p>Nous soussign&#233;s,<br>Centre de Gestion Agr&#233;&#233; D&#233;nomm&#233;&#160;: <strong>DC-KNOWING CGA SARL </strong><br>Compte Contribuable&#160;: <strong>1864699 A</strong><br>Forme Juridique&#160;: <strong>SARL</strong><br>Siege social : <strong>COCODY II Plateaux 7<sup>&#232;me</sup> tranche</strong><br>Ayant obtenu l&#8217;agr&#233;ment pour exercer en qualit&#233; de Centre de Gestion Agr&#233;e sous le num&#233;ro&#160;: <strong>296/SEPMBPE/DGI DU 29 MARS 2018</strong></p>
                     
-                    <p>D&#233;clare que l&#8217;entit&#233; <strong>&#171; {{$contract->client->clientDetails->company_name}} &#187;</strong> est adh&#233;rente de notre &#233;tablissement depuis le <strong>{{ $adhesionDate }}</strong>&#160;sous le num&#233;ro d&#8217;enregistrement&#160;:<strong> {{$contract->client->clientDetails->numadh}}</strong></p>
+                    <p>D&#233;clare que l&#8217;entit&#233; <strong>&#171; {{$contract->client->clientDetails->company_name}} &#187;</strong> est adh&#233;rente de notre &#233;tablissement depuis le <strong>{{ $contractStartDate }}</strong>&#160;sous le num&#233;ro d&#8217;enregistrement&#160;:<strong> {{$contract->client->clientDetails->numadh}}</strong></p>
                     <ol>
                     <li>&#8211; Nom commercial de l&#8217;adh&#233;rent&#160;<strong>: {{$contract->client->clientDetails->company_name}}</strong></li>
                     <li>&#8211; Localisation : <strong>{{$contract->client->clientDetails->address}}</strong></li>
@@ -528,7 +524,7 @@ $adhesionDate = $adhesionDateSource
                     <p style="text-align:center;"><span style="font-size:14pt;"><strong><u>ATTESTATION D&#8217;ADHESION AU CENTRE DE GESTION AGREE</u></strong></span></p>
                     <p>Nous soussign&#233;s,<br>Centre de Gestion Agr&#233;&#233; D&#233;nomm&#233;&#160;: <strong>DC-KNOWING CGA SARL </strong><br>Compte Contribuable&#160;: <strong>1864699 A</strong><br>Forme Juridique&#160;: <strong>SARL</strong><br>Siege social : <strong>COCODY II Plateaux 7<sup>&#232;me</sup> tranche</strong><br>Ayant obtenu l&#8217;agr&#233;ment pour exercer en qualit&#233; de Centre de Gestion Agr&#233;e sous le num&#233;ro&#160;: <strong>296/SEPMBPE/DGI DU 29 MARS 2018</strong></p>
                     
-                    <p>D&#233;clare que l&#8217;entit&#233; <strong>&#171; {{$contract->client->clientDetails->company_name}} &#187;</strong> est adh&#233;rente de notre &#233;tablissement depuis le <strong>{{ $adhesionDate }}</strong>&#160;sous le num&#233;ro d&#8217;enregistrement&#160;:<strong> {{$contract->client->clientDetails->numadh}}</strong></p>
+                    <p>D&#233;clare que l&#8217;entit&#233; <strong>&#171; {{$contract->client->clientDetails->company_name}} &#187;</strong> est adh&#233;rente de notre &#233;tablissement depuis le <strong>{{ $contractStartDate }}</strong>&#160;sous le num&#233;ro d&#8217;enregistrement&#160;:<strong> {{$contract->client->clientDetails->numadh}}</strong></p>
                     <ol>
                     <li>&#8211; Nom commercial de l&#8217;adh&#233;rent&#160;<strong>: {{$contract->client->clientDetails->company_name}}</strong></li>
                     <li>&#8211; Localisation : <strong>{{$contract->client->clientDetails->address}}</strong></li>
